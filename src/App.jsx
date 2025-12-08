@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Github, X, Coins, Wallet, Send, DollarSign, Clock, Trophy, Share2, Info } from 'lucide-react';
+import { Github, X, Coins, Wallet, Send, DollarSign, Clock, Trophy, Share2, Info, ChevronDown, ArrowRight } from 'lucide-react';
 import { useDevapp, UserButton, DevappProvider, openLink } from '@devfunlabs/web-sdk';
 const API = "https://wassy-pay-backend.onrender.com";
 function App() {
@@ -58,6 +58,8 @@ function App() {
   const [showClaimSuccessModal, setShowClaimSuccessModal] = useState(false);
   const [successClaimData, setSuccessClaimData] = useState(null);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  const [showLandingPage, setShowLandingPage] = useState(true);
+  const [scrollY, setScrollY] = useState(0);
   const ACHIEVEMENTS = [{
     id: 'first_claim',
     name: 'First Blood',
@@ -315,6 +317,7 @@ function App() {
     let lastScrollY = window.scrollY;
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      setScrollY(currentScrollY);
       setShowMobileNav(false);
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
@@ -1128,6 +1131,9 @@ function App() {
       setIsSyncingDatabase(false);
     }
   };
+  if (showLandingPage) {
+    return <LandingPage onEnterApp={() => setShowLandingPage(false)} scrollY={scrollY} />;
+  }
   return <div className="min-h-screen bg-white grid-bg flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       {showConfetti && <div className="fixed inset-0 pointer-events-none z-[9999]">
           {[...Array(50)].map((_, i) => <div key={i} className="confetti-piece" style={{
@@ -1153,7 +1159,6 @@ function App() {
             </div>
           </div>
         </div>}
-      {}
       <div className="fixed left-4 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col space-y-3">
         <button onClick={() => setShowInfoModal(true)} className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white rounded-2xl border-4 border-black pixel-shadow transform hover:scale-110 active:translate-y-1 transition-all group relative">
           <Info size={24} />
@@ -1233,7 +1238,6 @@ function App() {
         })}
           </div>
         </div>}
-      {}
       <div className={`fixed left-0 top-1/2 -translate-y-1/2 z-30 md:hidden flex flex-col space-y-2 pl-2 transition-all duration-300 ${showMobileNav ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'}`}>
         <button onClick={() => setShowInfoModal(true)} className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 text-white rounded-xl border-3 border-black pixel-shadow transform active:translate-y-1 transition-all">
           <Info size={20} />
@@ -1274,7 +1278,6 @@ function App() {
           <UserButton className="w-full h-full pixel-shadow border-3 border-black bg-black hover:bg-purple-600 rounded-xl transform active:translate-y-1 transition-all" primaryColor="#8b5cf6" textColor="#ffffff" />
         </div>
       </div>
-      {}
       <div className="fixed top-0 left-0 right-0 z-[10000] bg-gradient-to-r from-red-500 via-orange-500 to-red-500 border-b-4 border-black overflow-hidden">
         <div className="scroll-container">
           <div className="scroll-text">
@@ -2292,6 +2295,388 @@ function App() {
           </a>
         </div>
       </div>
+    </div>;
+}
+function LandingPage({
+  onEnterApp,
+  scrollY
+}) {
+  const [activeSection, setActiveSection] = useState(0);
+  const sectionsRef = useRef([]);
+  const [hoveredBenefit, setHoveredBenefit] = useState(null);
+  const scrollToSection = index => {
+    sectionsRef.current[index]?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+  const navItems = [{
+    label: 'HOME',
+    index: 0
+  }, {
+    label: 'HOW IT WORKS',
+    index: 1
+  }, {
+    label: 'THE FLOW',
+    index: 2
+  }, {
+    label: 'COMING SOON',
+    index: 3
+  }, {
+    label: 'FAQ',
+    index: 4
+  }, {
+    label: 'GET STARTED',
+    index: 5
+  }];
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+      sectionsRef.current.forEach((section, index) => {
+        if (section) {
+          const {
+            offsetTop,
+            offsetHeight
+          } = section;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(index);
+          }
+        }
+      });
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  const benefits = [{
+    title: "POST. SEND. DONE.",
+    description: "Type @BOT_WASSY SEND @friend $5. That's it. Money moves.",
+    color: "bg-[#FFE5B4]",
+    image: "https://cdn.dev.fun/asset/699840f631c97306a0c4/POST SEND DONE_d67b93aa.png"
+  }, {
+    title: "VAULT SECURED",
+    description: "Your funds sit in a Solana vault. Bot can't touch them. Only you can.",
+    color: "bg-[#B4E5FF]",
+    image: "https://cdn.dev.fun/asset/699840f631c97306a0c4/VAULT SECURED_e30c801c.png"
+  }, {
+    title: "BOT HANDLES IT",
+    description: "No forms. No clicks. Bot sees your post. Bot moves money. You're done.",
+    color: "bg-[#E5B4FF]",
+    image: "https://cdn.dev.fun/asset/699840f631c97306a0c4/BOT HANDLES IT_e544f74c.png"
+  }, {
+    title: "CLAIM INSTANTLY",
+    description: "Someone sent you money? Click claim. USDC hits your wallet. Simple.",
+    color: "bg-[#B4FFE5]",
+    image: "https://cdn.dev.fun/asset/699840f631c97306a0c4/CLAIM INSTANTLY_ab185103.png"
+  }];
+  const comingSoon = [{
+    title: "MULTI-CHAIN",
+    description: "ETH. POLYGON. BASE."
+  }, {
+    title: "AUTO-REPEAT",
+    description: "SEND WEEKLY. MONTHLY."
+  }];
+  const faqs = [{
+    q: "HOW DOES IT WORK?",
+    a: "CONNECT WALLET. CONNECT X. FUND BALANCE. POST @BOT_WASSY SEND @USER $5. BOT DOES THE REST."
+  }, {
+    q: "IS IT SAFE?",
+    a: "YES. SOLANA BLOCKCHAIN. YOUR VAULT. YOUR KEYS. BOT JUST WATCHES AND EXECUTES."
+  }, {
+    q: "WHAT ARE THE FEES?",
+    a: "ZERO PLATFORM FEES. ONLY SOLANA NETWORK FEE. USUALLY UNDER $0.01."
+  }, {
+    q: "CAN I WITHDRAW?",
+    a: "YES. ANYTIME. ONE CLICK. FUNDS GO TO YOUR WALLET."
+  }];
+  return <div className="min-h-screen bg-[#FFFEF9]">
+      {}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FFFEF9] border-b-4 border-black shadow-[0_4px_0px_0px_rgba(0,0,0,1)]">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="headline-font text-2xl text-black">WASSY PAY</div>
+            <div className="hidden md:flex items-center space-x-2">
+              {navItems.map(item => <button key={item.index} onClick={() => scrollToSection(item.index)} className={`px-4 py-2 mono-font text-xs border-3 border-black hand-drawn transition-all transform hover:scale-105 active:translate-y-1 ${activeSection === item.index ? 'bg-[#B4FFE5] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]' : 'bg-white hover:bg-[#FFE5B4] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'}`}>
+                  {item.label}
+                </button>)}
+            </div>
+            <button onClick={onEnterApp} className="px-6 py-2 bg-black text-white mono-font text-xs border-3 border-black hand-drawn transform hover:scale-105 active:translate-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              LAUNCH APP
+            </button>
+          </div>
+          {}
+          <div className="md:hidden mt-3 flex flex-wrap gap-2">
+            {navItems.map(item => <button key={item.index} onClick={() => scrollToSection(item.index)} className={`px-3 py-1 mono-font text-xs border-2 border-black hand-drawn transition-all ${activeSection === item.index ? 'bg-[#B4FFE5]' : 'bg-white hover:bg-[#FFE5B4]'}`}>
+                {item.label}
+              </button>)}
+          </div>
+        </div>
+      </nav>
+
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Space+Mono:wght@400;700&display=swap');
+        
+        @keyframes wiggle {
+          0%, 100% { transform: rotate(-2deg); }
+          50% { transform: rotate(2deg); }
+        }
+        @keyframes slideInLeft {
+          from { opacity: 0; transform: translateX(-50px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(50px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-border {
+          0%, 100% { border-width: 4px; }
+          50% { border-width: 6px; }
+        }
+        .animate-wiggle {
+          animation: wiggle 0.5s ease-in-out;
+        }
+        .animate-slide-in-left {
+          animation: slideInLeft 0.8s ease-out forwards;
+        }
+        .animate-slide-in-right {
+          animation: slideInRight 0.8s ease-out forwards;
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .animate-pulse-border {
+          animation: pulse-border 2s ease-in-out infinite;
+        }
+        .hand-drawn {
+          border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        }
+        .grid-texture {
+          background-image: 
+            linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+          background-size: 24px 24px;
+        }
+        .headline-font {
+          font-family: 'Space Grotesk', sans-serif;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+        }
+        .mono-font {
+          font-family: 'Space Mono', monospace;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        }
+      `}</style>
+
+      {}
+      <section ref={el => sectionsRef.current[0] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 relative overflow-hidden grid-texture">
+        
+        <div className="text-center z-10 max-w-4xl mx-auto">
+          <h1 className="headline-font text-7xl sm:text-9xl md:text-[12rem] text-black mb-6 animate-fade-in-up leading-none">
+            WASSY<br />PAY
+          </h1>
+          
+          <div className="max-w-2xl mx-auto mb-8">
+            <p className="mono-font text-lg sm:text-2xl text-black mb-3 animate-fade-in-up" style={{
+            animationDelay: '0.2s'
+          }}>
+              POST. SEND. DONE.
+            </p>
+            <p className="mono-font text-sm sm:text-base text-black opacity-70 animate-fade-in-up" style={{
+            animationDelay: '0.3s'
+          }}>
+              TURN X INTO YOUR PAYMENT PORTAL.<br />
+              NO WALLET ADDRESSES. NO COMPLEXITY.<br />
+              JUST POST @BOT_WASSY SEND @USER $5.
+            </p>
+          </div>
+          
+          <button onClick={onEnterApp} className="group relative px-10 sm:px-16 py-5 sm:py-7 bg-[#B4FFE5] hover:bg-[#9FEAD0] text-black border-5 border-black hand-drawn transform hover:scale-105 hover:rotate-1 active:translate-y-1 transition-all mono-font text-lg sm:text-2xl animate-fade-in-up shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]" style={{
+          animationDelay: '0.4s'
+        }}>
+            <span className="flex items-center space-x-3">
+              <span>LAUNCH APP</span>
+              <ArrowRight size={28} className="group-hover:translate-x-2 transition-transform" />
+            </span>
+          </button>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <ChevronDown size={48} className="text-black opacity-30" />
+        </div>
+      </section>
+
+      {}
+      <section ref={el => sectionsRef.current[1] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 grid-texture">
+        <div className="inline-block mb-12 px-6 py-2 bg-[#FFE5B4] border-4 border-black hand-drawn">
+          <p className="mono-font text-sm text-black">HOW IT WORKS</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl w-full">
+          {benefits.map((benefit, index) => <div key={index} className={`${benefit.color} p-4 border-5 border-black hand-drawn transform hover:scale-105 hover:-rotate-1 transition-all cursor-pointer shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] ${activeSection >= 1 ? 'animate-fade-in-up' : 'opacity-0'}`} style={{
+          animationDelay: `${index * 0.15}s`
+        }} onMouseEnter={() => setHoveredBenefit(index)} onMouseLeave={() => setHoveredBenefit(null)}>
+              <div className={`${hoveredBenefit === index ? 'animate-wiggle' : ''}`}>
+                <img src={benefit.image} alt={benefit.title} className="w-full h-auto object-contain border-4 border-black hand-drawn" />
+              </div>
+            </div>)}
+        </div>
+      </section>
+
+      {}
+      <section ref={el => sectionsRef.current[2] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 grid-texture">
+        <div className="inline-block mb-12 px-6 py-2 bg-[#E5B4FF] border-4 border-black hand-drawn">
+          <p className="mono-font text-sm text-black">THE FLOW</p>
+        </div>
+        
+        <div className="max-w-6xl w-full relative">
+          {}
+          <div className={`relative ${activeSection >= 2 ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            <div className="bg-white p-4 border-5 border-black hand-drawn shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mx-auto max-w-4xl">
+              <img src="https://cdn.dev.fun/asset/699840f631c97306a0c4/wassypay flow_962fc993.png" alt="Wassy Pay Flow Diagram" className="w-full h-auto object-contain" />
+            </div>
+
+            {}
+            <div className={`absolute -top-8 -left-4 sm:-left-12 md:-left-20 w-48 sm:w-56 md:w-64 ${activeSection >= 2 ? 'animate-slide-in-left' : 'opacity-0'}`} style={{
+            animationDelay: '0.2s'
+          }}>
+              <div className="bg-[#B4E5FF] p-4 sm:p-6 border-4 border-black hand-drawn shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-2 transition-all">
+                <div className="flex items-center mb-3">
+                  <div className="w-10 h-10 bg-black flex items-center justify-center text-white mono-font text-lg border-3 border-black mr-3 hand-drawn">
+                    1
+                  </div>
+                  <h3 className="mono-font text-lg text-black">YOU</h3>
+                </div>
+                <div className="space-y-2 mono-font text-xs text-black">
+                  <p>→ CONNECT WALLET</p>
+                  <p>→ CONNECT X ACCOUNT</p>
+                  <p>→ FUND YOUR VAULT</p>
+                  <p>→ POST: @BOT_WASSY SEND @FRIEND $5</p>
+                </div>
+              </div>
+            </div>
+
+            {}
+            <div className={`absolute -top-8 -right-4 sm:-right-12 md:-right-20 w-48 sm:w-56 md:w-64 ${activeSection >= 2 ? 'animate-slide-in-right' : 'opacity-0'}`} style={{
+            animationDelay: '0.3s'
+          }}>
+              <div className="bg-[#FFE5B4] p-4 sm:p-6 border-4 border-black hand-drawn shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-2 transition-all">
+                <div className="flex items-center mb-3">
+                  <div className="w-10 h-10 bg-black flex items-center justify-center text-white mono-font text-lg border-3 border-black mr-3 hand-drawn">
+                    2
+                  </div>
+                  <h3 className="mono-font text-lg text-black">BOT</h3>
+                </div>
+                <div className="space-y-2 mono-font text-xs text-black">
+                  <p>→ SEES YOUR POST</p>
+                  <p>→ CHECKS YOUR BALANCE</p>
+                  <p>→ MOVES FUNDS TO VAULT</p>
+                  <p>→ CONFIRMS WITH REPLY</p>
+                </div>
+              </div>
+            </div>
+
+            {}
+            <div className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-48 sm:w-56 md:w-64 ${activeSection >= 2 ? 'animate-fade-in-up' : 'opacity-0'}`} style={{
+            animationDelay: '0.5s'
+          }}>
+              <div className="bg-[#B4FFE5] p-4 sm:p-6 border-4 border-black hand-drawn shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 transition-all">
+                <div className="flex items-center mb-3">
+                  <div className="w-10 h-10 bg-black flex items-center justify-center text-white mono-font text-lg border-3 border-black mr-3 hand-drawn">
+                    3
+                  </div>
+                  <h3 className="mono-font text-lg text-black">FRIEND</h3>
+                </div>
+                <div className="space-y-2 mono-font text-xs text-black">
+                  <p>→ OPENS WASSY PAY</p>
+                  <p>→ SEES PENDING CLAIM</p>
+                  <p>→ CLICKS CLAIM</p>
+                  <p>→ USDC IN WALLET. DONE.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {}
+      <section ref={el => sectionsRef.current[3] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 grid-texture">
+        <div className="inline-block mb-12 px-6 py-2 bg-[#FFE5B4] border-4 border-black hand-drawn">
+          <p className="mono-font text-sm text-black">COMING SOON</p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl w-full">
+          {comingSoon.map((feature, index) => <div key={index} className={`bg-[#FFFEF9] p-6 border-4 border-black hand-drawn transform hover:scale-105 hover:rotate-1 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${activeSection >= 3 ? 'animate-fade-in-up' : 'opacity-0'}`} style={{
+          animationDelay: `${index * 0.1}s`
+        }}>
+              <h3 className="mono-font text-lg text-black mb-2">
+                {feature.title}
+              </h3>
+              <p className="mono-font text-xs text-black opacity-70">
+                {feature.description}
+              </p>
+            </div>)}
+        </div>
+      </section>
+
+      {}
+      <section ref={el => sectionsRef.current[4] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 grid-texture">
+        <div className="inline-block mb-12 px-6 py-2 bg-[#E5B4FF] border-4 border-black hand-drawn">
+          <p className="mono-font text-sm text-black">QUESTIONS</p>
+        </div>
+        
+        <div className="max-w-3xl w-full space-y-5">
+          {faqs.map((faq, index) => <div key={index} className={`bg-[#FFFEF9] p-6 border-4 border-black hand-drawn shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${activeSection >= 4 ? 'animate-fade-in-up' : 'opacity-0'}`} style={{
+          animationDelay: `${index * 0.1}s`
+        }}>
+              <h3 className="mono-font text-lg text-black mb-3">
+                {faq.q}
+              </h3>
+              <p className="mono-font text-sm text-black opacity-80 leading-relaxed">
+                {faq.a}
+              </p>
+            </div>)}
+        </div>
+      </section>
+
+      {}
+      <section ref={el => sectionsRef.current[5] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-[#B4FFE5] grid-texture relative overflow-hidden">
+        <div className="text-center max-w-4xl z-10">
+          <div className="inline-block mb-8 px-6 py-2 bg-black text-white border-4 border-black hand-drawn">
+            <p className="mono-font text-sm">READY?</p>
+          </div>
+          
+          <h2 className="headline-font text-6xl sm:text-8xl text-black mb-6 leading-none">
+            START<br />SENDING
+          </h2>
+          
+          <p className="mono-font text-lg sm:text-xl text-black mb-12 max-w-2xl mx-auto">
+            NO SETUP. NO LEARNING CURVE.<br />
+            JUST CONNECT AND POST.
+          </p>
+          
+          <button onClick={onEnterApp} className="group px-14 py-7 bg-black hover:bg-gray-900 text-white border-5 border-black hand-drawn transform hover:scale-105 hover:-rotate-1 active:translate-y-1 transition-all mono-font text-2xl shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] hover:shadow-[14px_14px_0px_0px_rgba(0,0,0,1)]">
+            <span className="flex items-center space-x-3">
+              <span>LAUNCH NOW</span>
+              <ArrowRight size={32} className="group-hover:translate-x-2 transition-transform" />
+            </span>
+          </button>
+
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+            <a href="https://x.com/bot_wassy" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-black hover:text-gray-800 transition-colors mono-font bg-white px-6 py-3 border-4 border-black hand-drawn transform hover:scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <X size={24} />
+              <span>FOLLOW</span>
+            </a>
+            <a href="https://github.com/kasperwtrcolor/wassypay" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-black hover:text-gray-800 transition-colors mono-font bg-white px-6 py-3 border-4 border-black hand-drawn transform hover:scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Github size={24} />
+              <span>DOCS</span>
+            </a>
+          </div>
+        </div>
+      </section>
     </div>;
 }
 export default function AppWithProvider() {
