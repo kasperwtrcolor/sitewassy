@@ -1,12 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
 import { Github, X, Coins, Wallet, Send, DollarSign, Clock, Trophy, Share2, Info, ChevronDown, ArrowRight } from 'lucide-react';
 import { useDevapp, UserButton, DevappProvider, openLink } from '@devfunlabs/web-sdk';
+import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
+import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+
 const API = "https://wassy-pay-backend.onrender.com";
+const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
+const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS;
+const USDC_MINT = import.meta.env.VITE_USDC_MINT;
 function App() {
   const {
     devbaseClient,
     userWallet
   } = useDevapp();
+
+  // Privy hooks
+  const { ready: privyReady, authenticated: privyAuthenticated, login: privyLogin } = usePrivy();
+  const { wallets: privyWallets } = useWallets();
+  const privyWallet = privyWallets.find(w => w.walletClientType === 'privy');
+
   const [status, setStatus] = useState({
     message: '',
     type: ''
@@ -60,6 +73,11 @@ function App() {
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [scrollY, setScrollY] = useState(0);
+
+  // Privy delegation states
+  const [isDelegationAuthorized, setIsDelegationAuthorized] = useState(false);
+  const [isAuthorizingDelegation, setIsAuthorizingDelegation] = useState(false);
+  const [delegationAllowance, setDelegationAllowance] = useState(0);
   const ACHIEVEMENTS = [{
     id: 'first_claim',
     name: 'First Blood',
@@ -121,6 +139,111 @@ function App() {
     description: 'Claim $500 total',
     icon: '⭐'
   }];
+
+  // Privy Delegation Authorization Function
+  const handleAuthorizeDelegation = async () => {
+    if (!privyWallet || !privyAuthenticated) {
+      setStatus({
+        message: "Please login with Privy first",
+        type: "error"
+      });
+      return;
+    }
+
+    try {
+      setIsAuthorizingDelegation(true);
+      setStatus({
+        message: "Authorizing Wassy Bot...",
+        type: "loading"
+      });
+
+      // Get the Privy wallet's Solana address
+      const provider = await privyWallet.getEthereumProvider();
+      const solanaAddress = privyWallet.address;
+
+      // Create connection to Solana
+      const connection = new Connection('https://rpc.dev.fun/699840f631c97306a0c4', 'confirmed');
+
+      // Get user's USDC token account
+      const userTokenAccount = await getAssociatedTokenAddress(
+        new PublicKey(USDC_MINT),
+        new PublicKey(solanaAddress)
+      );
+
+      // Get vault's USDC token account
+      const vaultTokenAccount = await getAssociatedTokenAddress(
+        new PublicKey(USDC_MINT),
+        new PublicKey(VAULT_ADDRESS)
+      );
+
+      // Create approval for 1000 USDC (with 6 decimals)
+      const approvalAmount = 1000 * 1_000_000; // 1000 USDC
+
+      // Create the approve instruction
+      const approveInstruction = createApproveInstruction(
+        userTokenAccount,
+        new PublicKey(VAULT_ADDRESS),
+        new PublicKey(solanaAddress),
+        approvalAmount,
+        [],
+        TOKEN_PROGRAM_ID
+      );
+
+      // Create transaction
+      const transaction = new Transaction().add(approveInstruction);
+      transaction.feePayer = new PublicKey(solanaAddress);
+      transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
+      // Sign and send transaction using Privy wallet
+      const signedTransaction = await privyWallet.signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+      await connection.confirmTransaction(signature, 'confirmed');
+
+      // Store delegation status in localStorage
+      const delegationData = {
+        authorized: true,
+        allowance: 1000,
+        walletAddress: solanaAddress,
+        timestamp: Date.now(),
+        signature: signature
+      };
+      localStorage.setItem(`delegation_${solanaAddress}`, JSON.stringify(delegationData));
+
+      setIsDelegationAuthorized(true);
+      setDelegationAllowance(1000);
+
+      setStatus({
+        message: "✅ Authorization successful! You can now send payments via X",
+        type: "success"
+      });
+
+    } catch (error) {
+      console.error("Delegation authorization error:", error);
+      setStatus({
+        message: `Authorization failed: ${error.message}`,
+        type: "error"
+      });
+    } finally {
+      setIsAuthorizingDelegation(false);
+    }
+  };
+
+  // Check if delegation is already authorized on mount
+  useEffect(() => {
+    if (privyWallet && privyWallet.address) {
+      const storedDelegation = localStorage.getItem(`delegation_${privyWallet.address}`);
+      if (storedDelegation) {
+        try {
+          const data = JSON.parse(storedDelegation);
+          setIsDelegationAuthorized(data.authorized || false);
+          setDelegationAllowance(data.allowance || 0);
+        } catch (e) {
+          console.error("Error parsing delegation data:", e);
+        }
+      }
+    }
+  }, [privyWallet]);
+
   const checkAndUnlockAchievements = async () => {
     if (!userWallet || !devbaseClient) return;
     try {
@@ -1144,6 +1267,45 @@ function App() {
       }} />)}
         </div>}
 
+      {/* Migration Banner for Existing Vault Users */}
+      {userWallet && vaultBalance > 0 && !isDelegationAuthorized && (
+        <div className="fixed top-4 left-4 right-4 z-50 mx-auto max-w-2xl">
+          <div className="bg-[#FFE5B4] hand-drawn border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+            <div className="flex items-start space-x-3">
+              <Info size={24} className="text-black flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <h3 className="mono-font text-lg text-black font-bold mb-2">
+                  🚀 UPGRADE TO PRIVY WALLETS!
+                </h3>
+                <p className="mono-font text-sm text-black mb-3">
+                  Wassy Pay now uses non-custodial Privy wallets for better security! You have ${vaultBalance.toFixed(2)} in your old vault.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={() => setShowWithdrawModal(true)}
+                    className="flex-1 hand-drawn mono-font bg-[#B4FFE5] hover:bg-[#9FE5D0] text-black border-3 border-black py-2 px-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 transition-all"
+                  >
+                    WITHDRAW OLD BALANCE
+                  </button>
+                  <button
+                    onClick={() => setShowProfileModal(true)}
+                    className="flex-1 hand-drawn mono-font bg-[#E5B4FF] hover:bg-[#D0A0EA] text-black border-3 border-black py-2 px-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 transition-all"
+                  >
+                    SETUP PRIVY WALLET
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={() => localStorage.setItem('hideMigrationBanner', 'true')}
+                className="text-black hover:bg-black hover:text-white p-1 rounded transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showTransactionModal && <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/90 p-4">
           <div className="w-full max-w-md bg-[#FFFEF9] hand-drawn border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative">
             <div className="text-center">
@@ -1726,6 +1888,61 @@ function App() {
                   {userWallet?.substring(0, 8)}...{userWallet?.substring(userWallet.length - 8)}
                 </p>
               </div>
+
+              {/* Privy Wallet Section */}
+              {privyWallet && privyAuthenticated && (
+                <div className="bg-[#E5B4FF] hand-drawn p-3 sm:p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex items-center mb-2">
+                    <Wallet size={16} className="text-black mr-2 sm:w-5 sm:h-5" />
+                    <p className="mono-font text-xs sm:text-sm text-black">
+                      PRIVY WALLET (NON-CUSTODIAL)
+                    </p>
+                  </div>
+                  <p className="text-sm text-black break-all font-mono mb-3">
+                    {privyWallet.address?.substring(0, 8)}...{privyWallet.address?.substring(privyWallet.address.length - 8)}
+                  </p>
+
+                  {/* Authorization Status */}
+                  {isDelegationAuthorized ? (
+                    <div className="bg-green-200 hand-drawn p-3 border-3 border-black">
+                      <p className="mono-font text-xs text-black">
+                        ✅ AUTHORIZED FOR PAYMENTS
+                      </p>
+                      <p className="mono-font text-xs text-black mt-1 opacity-70">
+                        Allowance: ${delegationAllowance} USDC
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="bg-yellow-200 hand-drawn p-3 border-3 border-black mb-3">
+                        <p className="mono-font text-xs text-black">
+                          ⚠️ NOT AUTHORIZED YET
+                        </p>
+                        <p className="mono-font text-xs text-black mt-1 opacity-70">
+                          Authorize Wassy Bot to send payments via X posts
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleAuthorizeDelegation}
+                        disabled={isAuthorizingDelegation}
+                        className="w-full flex items-center justify-center space-x-2 py-3 hand-drawn mono-font transition-all bg-[#B4FFE5] hover:bg-[#9FE5D0] text-black border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isAuthorizingDelegation ? (
+                          <>
+                            <div className="h-5 w-5 rounded-full border-3 border-black border-t-transparent animate-spin" />
+                            <span>AUTHORIZING...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Send size={20} />
+                            <span>AUTHORIZE WASSY BOT</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="bg-gray-100 hand-drawn p-3 sm:p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <div className="flex items-center mb-2">
@@ -2657,7 +2874,45 @@ function LandingPage({
     </div>;
 }
 export default function AppWithProvider() {
-  return <DevappProvider rpcEndpoint="https://rpc.dev.fun/699840f631c97306a0c4" devbaseEndpoint="https://devbase.dev.fun" appId="699840f631c97306a0c4">
-      <App />
-    </DevappProvider>;
+  return (
+    <PrivyProvider
+      appId={PRIVY_APP_ID}
+      config={{
+        loginMethods: ['wallet', 'email', 'google', 'twitter'],
+        appearance: {
+          theme: 'light',
+          accentColor: '#B4E5FF',
+        },
+        embeddedWallets: {
+          createOnLogin: 'users-without-wallets',
+          requireUserPasswordOnCreate: false,
+        },
+        supportedChains: [
+          {
+            id: 101, // Solana Mainnet
+            name: 'Solana',
+            network: 'mainnet-beta',
+            nativeCurrency: {
+              name: 'SOL',
+              symbol: 'SOL',
+              decimals: 9,
+            },
+            rpcUrls: {
+              default: {
+                http: ['https://rpc.dev.fun/699840f631c97306a0c4'],
+              },
+            },
+          },
+        ],
+      }}
+    >
+      <DevappProvider
+        rpcEndpoint="https://rpc.dev.fun/699840f631c97306a0c4"
+        devbaseEndpoint="https://devbase.dev.fun"
+        appId="699840f631c97306a0c4"
+      >
+        <App />
+      </DevappProvider>
+    </PrivyProvider>
+  );
 }
