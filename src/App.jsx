@@ -1,2918 +1,749 @@
-import { useState, useEffect, useRef } from 'react';
-import { Github, X, Coins, Wallet, Send, DollarSign, Clock, Trophy, Share2, Info, ChevronDown, ArrowRight } from 'lucide-react';
-import { useDevapp, UserButton, DevappProvider, openLink } from '@devfunlabs/web-sdk';
+import { useState, useEffect } from 'react';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
-const API = "https://wassy-pay-backend.onrender.com";
+const API = import.meta.env.VITE_API_URL || "https://wassy-pay-backend.onrender.com";
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS;
-const USDC_MINT = import.meta.env.VITE_USDC_MINT;
-function App() {
-  const {
-    devbaseClient,
-    userWallet
-  } = useDevapp();
+const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || "https://rpc.dev.fun/699840f631c97306a0c4";
 
-  // Privy hooks
-  const { ready: privyReady, authenticated: privyAuthenticated, login: privyLogin } = usePrivy();
-  const { wallets: privyWallets } = useWallets();
-  const privyWallet = privyWallets.find(w => w.walletClientType === 'privy');
+function WassyPayApp() {
+  const { ready, authenticated, user, login, logout } = usePrivy();
+  const { wallets, ready: walletsReady } = useWallets();
 
-  const [status, setStatus] = useState({
-    message: '',
-    type: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [, setUserBalance] = useState(0);
-  const [xHandle, setXHandle] = useState('');
-  const [recentPayments, setRecentPayments] = useState([]);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [fundAmount, setFundAmount] = useState('');
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [isConnectingTwitter, setIsConnectingTwitter] = useState(false);
-  const [profileImage, setProfileImage] = useState('');
-  const [vaultBalance, setVaultBalance] = useState(0);
-  const [totalDeposited, setTotalDeposited] = useState(0);
-  const [totalSent, setTotalSent] = useState(0);
-  const [totalWithdrawn, setTotalWithdrawn] = useState(0);
-  const [pendingClaims, setPendingClaims] = useState([]);
-  const [totalClaimed, setTotalClaimed] = useState(0);
-  const [backendClaims, setBackendClaims] = useState([]);
-  const [isCheckingPayments, setIsCheckingPayments] = useState(false);
-  const [, setSuccessfulClaims] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [allUsers, setAllUsers] = useState([]);
-  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
-  const adminDashboardRef = useRef(null);
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [transactionStatus, setTransactionStatus] = useState('');
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [claimHistory, setClaimHistory] = useState([]);
-  const [isSyncingDatabase, setIsSyncingDatabase] = useState(false);
-  const [, setAllPayments] = useState([]);
-  const [allPaymentClaims, setAllPaymentClaims] = useState([]);
-  const [expandedUserClaims, setExpandedUserClaims] = useState(null);
-  const [userClaimDetails, setUserClaimDetails] = useState([]);
-  const [manuallyHiddenClaims, setManuallyHiddenClaims] = useState([]);
-  const [claimErrors, setClaimErrors] = useState({});
-  const [, setHiddenClaimsEntities] = useState([]);
-  const [showVaultModal, setShowVaultModal] = useState(false);
-  const [userAchievements, setUserAchievements] = useState([]);
-  const [showAchievementsModal, setShowAchievementsModal] = useState(false);
-  const [newAchievements, setNewAchievements] = useState([]);
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [showInfoModal, setShowInfoModal] = useState(false);
-  const [nextFetchCountdown, setNextFetchCountdown] = useState('');
-  const [showMobileNav, setShowMobileNav] = useState(true);
-  const scrollTimeoutRef = useRef(null);
-  const [showClaimSuccessModal, setShowClaimSuccessModal] = useState(false);
-  const [successClaimData, setSuccessClaimData] = useState(null);
-  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
-  const [showLandingPage, setShowLandingPage] = useState(true);
-  const [scrollY, setScrollY] = useState(0);
+  // Get Solana wallet from Privy - try multiple detection methods
+  const solanaWallet = wallets?.find(w =>
+    (w.walletClientType === 'privy' || w.connectorType === 'embedded') &&
+    (w.chainType === 'solana' || w.address?.length > 32)
+  ) || wallets?.find(w => w.address?.length > 32);
 
-  // Privy delegation states
-  const [isDelegationAuthorized, setIsDelegationAuthorized] = useState(false);
-  const [isAuthorizingDelegation, setIsAuthorizingDelegation] = useState(false);
-  const [delegationAllowance, setDelegationAllowance] = useState(0);
-  const ACHIEVEMENTS = [{
-    id: 'first_claim',
-    name: 'First Blood',
-    description: 'Claim your first payment',
-    icon: '🎯'
-  }, {
-    id: 'claim_5',
-    name: 'Getting Started',
-    description: 'Claim 5 payments',
-    icon: '🔥'
-  }, {
-    id: 'claim_10',
-    name: 'Claim Master',
-    description: 'Claim 10 payments',
-    icon: '💎'
-  }, {
-    id: 'claim_25',
-    name: 'Claim Legend',
-    description: 'Claim 25 payments',
-    icon: '👑'
-  }, {
-    id: 'first_deposit',
-    name: 'Funded Up',
-    description: 'Make your first deposit',
-    icon: '💰'
-  }, {
-    id: 'deposit_100',
-    name: 'Big Spender',
-    description: 'Deposit $100 total',
-    icon: '💸'
-  }, {
-    id: 'deposit_500',
-    name: 'Whale Alert',
-    description: 'Deposit $500 total',
-    icon: '🐋'
-  }, {
-    id: 'connect_x',
-    name: 'Connected',
-    description: 'Connect your X account',
-    icon: '🔗'
-  }, {
-    id: 'first_send',
-    name: 'First Send',
-    description: 'Send your first payment via X',
-    icon: '📤'
-  }, {
-    id: 'send_10',
-    name: 'Payment Pro',
-    description: 'Send 10 payments via X',
-    icon: '🚀'
-  }, {
-    id: 'claim_100',
-    name: 'Claim 100',
-    description: 'Claim $100 total',
-    icon: '💯'
-  }, {
-    id: 'claim_500',
-    name: 'Claim 500',
-    description: 'Claim $500 total',
-    icon: '⭐'
-  }];
+  // Debug: Log all wallets
+  useEffect(() => {
+    if (walletsReady && wallets.length > 0) {
+      console.log('🔍 Available wallets:', wallets);
+      console.log('🎯 Selected Solana wallet:', solanaWallet);
+    }
+  }, [wallets, walletsReady, solanaWallet]);
 
-  // Privy Delegation Authorization Function
+  // State
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [isDelegated, setIsDelegated] = useState(false);
+  const [delegationAmount, setDelegationAmount] = useState(1000);
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [payments, setPayments] = useState([]);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // Get X username from Privy
+  const xUsername = user?.twitter?.username || '';
+
+  // Fetch wallet balance
+  useEffect(() => {
+    if (!solanaWallet?.address) return;
+
+    const fetchBalance = async () => {
+      try {
+        const connection = new Connection(SOLANA_RPC);
+        const walletPubkey = new PublicKey(solanaWallet.address);
+        const ata = await getAssociatedTokenAddress(
+          new PublicKey(USDC_MINT),
+          walletPubkey
+        );
+
+        const balance = await connection.getTokenAccountBalance(ata);
+        setWalletBalance(parseFloat(balance.value.uiAmount || 0));
+      } catch (err) {
+        console.error('Error fetching balance:', err);
+        setWalletBalance(0);
+      }
+    };
+
+    fetchBalance();
+    const interval = setInterval(fetchBalance, 15000);
+    return () => clearInterval(interval);
+  }, [solanaWallet?.address]);
+
+  // Register user with backend on login
+  useEffect(() => {
+    if (!authenticated || !xUsername || !solanaWallet?.address) return;
+
+    const registerUser = async () => {
+      try {
+        const response = await fetch(`${API}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            x_username: xUsername,
+            x_user_id: user?.twitter?.subject || '',
+            wallet_address: solanaWallet.address
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setIsDelegated(data.is_delegated || false);
+          setDelegationAmount(data.delegation_amount || 1000);
+        }
+      } catch (err) {
+        console.error('Error registering user:', err);
+      }
+    };
+
+    registerUser();
+  }, [authenticated, xUsername, solanaWallet?.address]);
+
+  // Fetch payment history
+  useEffect(() => {
+    if (!xUsername) return;
+
+    const fetchPayments = async () => {
+      try {
+        const response = await fetch(`${API}/api/payments/${xUsername}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPayments(data.payments || []);
+        }
+      } catch (err) {
+        console.error('Error fetching payments:', err);
+      }
+    };
+
+    fetchPayments();
+    const interval = setInterval(fetchPayments, 30000);
+    return () => clearInterval(interval);
+  }, [xUsername]);
+
+  // Authorize delegation
   const handleAuthorizeDelegation = async () => {
-    if (!privyWallet || !privyAuthenticated) {
-      setStatus({
-        message: "Please login with Privy first",
-        type: "error"
-      });
+    if (!solanaWallet?.address || !VAULT_ADDRESS) {
+      setError('Wallet or vault address not configured');
       return;
     }
 
+    setIsAuthorizing(true);
+    setError('');
+    setSuccess('');
+
     try {
-      setIsAuthorizingDelegation(true);
-      setStatus({
-        message: "Authorizing Wassy Bot...",
-        type: "loading"
-      });
-
-      // Get the Privy wallet's Solana address
-      const provider = await privyWallet.getEthereumProvider();
-      const solanaAddress = privyWallet.address;
-
-      // Create connection to Solana
-      const connection = new Connection('https://rpc.dev.fun/699840f631c97306a0c4', 'confirmed');
+      const connection = new Connection(SOLANA_RPC);
+      const walletPubkey = new PublicKey(solanaWallet.address);
+      const vaultPubkey = new PublicKey(VAULT_ADDRESS);
+      const usdcMint = new PublicKey(USDC_MINT);
 
       // Get user's USDC token account
-      const userTokenAccount = await getAssociatedTokenAddress(
-        new PublicKey(USDC_MINT),
-        new PublicKey(solanaAddress)
-      );
+      const userATA = await getAssociatedTokenAddress(usdcMint, walletPubkey);
 
-      // Get vault's USDC token account
-      const vaultTokenAccount = await getAssociatedTokenAddress(
-        new PublicKey(USDC_MINT),
-        new PublicKey(VAULT_ADDRESS)
-      );
+      // Check if token account exists
+      const accountInfo = await connection.getAccountInfo(userATA);
+      if (!accountInfo) {
+        setError('Fund your wallet with USDC first.');
+        setIsAuthorizing(false);
+        return;
+      }
 
-      // Create approval for 1000 USDC (with 6 decimals)
-      const approvalAmount = 1000 * 1_000_000; // 1000 USDC
-
-      // Create the approve instruction
-      const approveInstruction = createApproveInstruction(
-        userTokenAccount,
-        new PublicKey(VAULT_ADDRESS),
-        new PublicKey(solanaAddress),
-        approvalAmount,
+      // Create approve instruction
+      const amountLamports = Math.floor(delegationAmount * 1_000_000);
+      const approveIx = createApproveInstruction(
+        userATA,
+        vaultPubkey,
+        walletPubkey,
+        amountLamports,
         [],
         TOKEN_PROGRAM_ID
       );
 
       // Create transaction
-      const transaction = new Transaction().add(approveInstruction);
-      transaction.feePayer = new PublicKey(solanaAddress);
-      transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+      const transaction = new Transaction().add(approveIx);
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = walletPubkey;
 
-      // Sign and send transaction using Privy wallet
-      const signedTransaction = await privyWallet.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-      await connection.confirmTransaction(signature, 'confirmed');
+      // Sign and send via Privy
+      const provider = await solanaWallet.getProvider();
+      const signedTx = await provider.signAndSendTransaction(transaction);
 
-      // Store delegation status in localStorage
-      const delegationData = {
-        authorized: true,
-        allowance: 1000,
-        walletAddress: solanaAddress,
-        timestamp: Date.now(),
-        signature: signature
-      };
-      localStorage.setItem(`delegation_${solanaAddress}`, JSON.stringify(delegationData));
+      // Wait for confirmation
+      await connection.confirmTransaction(signedTx);
 
-      setIsDelegationAuthorized(true);
-      setDelegationAllowance(1000);
-
-      setStatus({
-        message: "✅ Authorization successful! You can now send payments via X",
-        type: "success"
-      });
-
-    } catch (error) {
-      console.error("Delegation authorization error:", error);
-      setStatus({
-        message: `Authorization failed: ${error.message}`,
-        type: "error"
-      });
-    } finally {
-      setIsAuthorizingDelegation(false);
-    }
-  };
-
-  // Check if delegation is already authorized on mount
-  useEffect(() => {
-    if (privyWallet && privyWallet.address) {
-      const storedDelegation = localStorage.getItem(`delegation_${privyWallet.address}`);
-      if (storedDelegation) {
-        try {
-          const data = JSON.parse(storedDelegation);
-          setIsDelegationAuthorized(data.authorized || false);
-          setDelegationAllowance(data.allowance || 0);
-        } catch (e) {
-          console.error("Error parsing delegation data:", e);
-        }
-      }
-    }
-  }, [privyWallet]);
-
-  const checkAndUnlockAchievements = async () => {
-    if (!userWallet || !devbaseClient) return;
-    try {
-      const existingAchievements = await devbaseClient.listEntities('achievements', {
-        userId: userWallet
-      });
-      const unlockedIds = existingAchievements.map(a => a.achievementId);
-      const claimsList = await devbaseClient.listEntities('payment_claims', {
-        userId: userWallet
-      });
-      const completedClaims = claimsList.filter(c => c.status === 'completed');
-      const totalClaimed = completedClaims.reduce((sum, c) => sum + (c.amount || 0), 0);
-      const depositsList = await devbaseClient.listEntities('fund_deposits', {
-        userId: userWallet
-      });
-      const totalDeposited = depositsList.reduce((sum, d) => sum + (d.amount || 0), 0);
-      let backendPaymentCount = 0;
-      if (xHandle) {
-        const backendPayments = await fetchBackendPayments(xHandle);
-        backendPaymentCount = backendPayments.length;
-      }
-      const toUnlock = [];
-      if (completedClaims.length >= 1 && !unlockedIds.includes('first_claim')) toUnlock.push('first_claim');
-      if (completedClaims.length >= 5 && !unlockedIds.includes('claim_5')) toUnlock.push('claim_5');
-      if (completedClaims.length >= 10 && !unlockedIds.includes('claim_10')) toUnlock.push('claim_10');
-      if (completedClaims.length >= 25 && !unlockedIds.includes('claim_25')) toUnlock.push('claim_25');
-      if (depositsList.length >= 1 && !unlockedIds.includes('first_deposit')) toUnlock.push('first_deposit');
-      if (totalDeposited >= 100 && !unlockedIds.includes('deposit_100')) toUnlock.push('deposit_100');
-      if (totalDeposited >= 500 && !unlockedIds.includes('deposit_500')) toUnlock.push('deposit_500');
-      if (xHandle && !unlockedIds.includes('connect_x')) toUnlock.push('connect_x');
-      if (backendPaymentCount >= 1 && !unlockedIds.includes('first_send')) toUnlock.push('first_send');
-      if (backendPaymentCount >= 10 && !unlockedIds.includes('send_10')) toUnlock.push('send_10');
-      if (totalClaimed >= 100 && !unlockedIds.includes('claim_100')) toUnlock.push('claim_100');
-      if (totalClaimed >= 500 && !unlockedIds.includes('claim_500')) toUnlock.push('claim_500');
-      for (const achievementId of toUnlock) {
-        await devbaseClient.createEntity('achievements', {
-          userId: userWallet,
-          achievementId,
-          unlockedAt: Date.now()
-        });
-      }
-      if (toUnlock.length > 0) {
-        setNewAchievements(toUnlock);
-        setTimeout(() => setNewAchievements([]), 5000);
-      }
-      const updatedAchievements = await devbaseClient.listEntities('achievements', {
-        userId: userWallet
-      });
-      setUserAchievements(updatedAchievements);
-    } catch (error) {
-      console.error('Error checking achievements:', error);
-    }
-  };
-  const shareClaimOnX = claim => {
-    const amount = claim.amount.toFixed(2);
-    const sender = claim.senderHandle ? `@${claim.senderHandle}` : 'someone';
-    const text = `Just claimed ${amount} USDC from ${sender} on @WASSY_BOT! 💸\n\nTurn your posts into payments at dev.fun 🚀`;
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-    openLink(url);
-  };
-  const fetchBackendPayments = async handle => {
-    if (!handle) return [];
-    try {
-      console.log(`🔍 Fetching backend payments for handle: @${handle}`);
-      const response = await fetch(`https://wassy-pay-backend.onrender.com/api/payments`);
-      const data = await response.json();
-      console.log(`📦 Backend returned ${data.payments?.length || 0} total payments`);
-      if (data.success && data.payments) {
-        const userPayments = data.payments.filter(p => {
-          const hasSender = p.sender && p.sender.toLowerCase() === handle.toLowerCase();
-          if (hasSender) {
-            console.log(`✓ Found payment from @${p.sender}: $${p.amount} to @${p.recipient} (tweet: ${p.tweet_id})`);
-          }
-          return hasSender;
-        });
-        console.log(`💰 Total payments from @${handle}: ${userPayments.length} payments`);
-        const total = userPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-        console.log(`💵 Total sent by @${handle}: $${total.toFixed(2)}`);
-        return userPayments;
-      }
-      return [];
-    } catch (error) {
-      console.error('Error fetching backend payments:', error);
-      return [];
-    }
-  };
-  const fetchBackendClaims = async () => {
-    if (!xHandle || !devbaseClient) return [];
-    try {
-      console.log(`🔍 Fetching backend claims for handle: ${xHandle}`);
-      const response = await fetch(`https://wassy-pay-backend.onrender.com/api/claims?handle=${xHandle}`);
-      const data = await response.json();
-      console.log(`📦 Backend response:`, data);
-      if (data.success && data.claims) {
-        console.log(`✅ Fetched ${data.claims.length} total backend claims`);
-        const allProfiles = await devbaseClient.listEntities('profiles', {});
-        const allClaims = [];
-        for (const claim of data.claims) {
-          const senderProfile = allProfiles.find(p => p.xHandle && p.xHandle.toLowerCase() === claim.sender.toLowerCase());
-          if (!senderProfile) {
-            console.log(`🔍 Claim ${claim.tweet_id} from @${claim.sender}: ⚠️ SENDER NOT REGISTERED`);
-            allClaims.push({
-              ...claim,
-              canClaim: false,
-              reason: 'Sender not registered'
-            });
-            continue;
-          }
-          console.log(`🔍 Claim ${claim.tweet_id} from @${claim.sender}: ✅ READY TO CLAIM (funds already in vault)`);
-          allClaims.push({
-            ...claim,
-            canClaim: true,
-            reason: null
-          });
-        }
-        console.log(`✅ Total claims displayed: ${allClaims.length}`);
-        setBackendClaims(allClaims);
-        return allClaims;
-      } else {
-        console.log(`⚠️ No claims found or unsuccessful response`);
-        setBackendClaims([]);
-        return [];
-      }
-    } catch (error) {
-      console.error('❌ Error fetching backend claims:', error);
-      setBackendClaims([]);
-      return [];
-    }
-  };
-  const fetchVaultBalance = async () => {
-    try {
-      const vaultAddress = 'Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE';
-      const usdcMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
-      const response = await fetch('https://rpc.dev.fun/699840f631c97306a0c4', {
+      // Update backend
+      await fetch(`${API}/api/authorize`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'getTokenAccountsByOwner',
-          params: [vaultAddress, {
-            mint: usdcMint
-          }, {
-            encoding: 'jsonParsed'
-          }]
+          wallet: solanaWallet.address,
+          amount: delegationAmount,
+          signature: signedTx
         })
       });
-      const data = await response.json();
-      if (data.result && data.result.value && data.result.value.length > 0) {
-        const balance = data.result.value.reduce((total, account) => {
-          const tokenBalance = account.account.data.parsed.info.tokenAmount.uiAmount;
-          return total + (tokenBalance || 0);
-        }, 0);
-        setVaultBalance(balance);
-      } else {
-        setVaultBalance(0);
-      }
-    } catch (error) {
-      console.error('Error fetching vault balance:', error);
-    }
-  };
-  useEffect(() => {
-    fetchVaultBalance();
-    const vaultTimer = setInterval(fetchVaultBalance, 10000);
-    return () => clearInterval(vaultTimer);
-  }, []);
-  useEffect(() => {
-    if (userWallet && devbaseClient) {
-      const fetchHiddenClaims = async () => {
-        try {
-          const hiddenClaims = await devbaseClient.listEntities('hidden_claims', {
-            userId: userWallet
-          });
-          setHiddenClaimsEntities(hiddenClaims);
-          setManuallyHiddenClaims(hiddenClaims.map(hc => hc.tweetId));
-        } catch (e) {
-          console.error('Failed to load hidden claims:', e);
-        }
-      };
-      fetchHiddenClaims();
-    }
-  }, [userWallet, devbaseClient]);
-  useEffect(() => {
-    if (xHandle && devbaseClient) {
-      fetchBackendClaims();
-      checkAndUnlockAchievements();
-      const claimsTimer = setInterval(fetchBackendClaims, 300000);
-      return () => clearInterval(claimsTimer);
-    }
-  }, [xHandle, devbaseClient]);
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setScrollY(currentScrollY);
-      setShowMobileNav(false);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      scrollTimeoutRef.current = setTimeout(() => {
-        setShowMobileNav(true);
-      }, 300);
-      lastScrollY = currentScrollY;
-    };
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
-    if (mediaQuery.matches) {
-      window.addEventListener('scroll', handleScroll, {
-        passive: true
-      });
-    }
-    const handleMediaChange = e => {
-      if (e.matches) {
-        window.addEventListener('scroll', handleScroll, {
-          passive: true
-        });
-      } else {
-        window.removeEventListener('scroll', handleScroll);
-        setShowMobileNav(true);
-      }
-    };
-    mediaQuery.addEventListener('change', handleMediaChange);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      mediaQuery.removeEventListener('change', handleMediaChange);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-  useEffect(() => {
-    const calculateNextFetch = () => {
-      const now = new Date();
-      const currentMinute = now.getMinutes();
-      let nextFetchMinute;
-      if (currentMinute < 30) {
-        nextFetchMinute = 30;
-      } else {
-        nextFetchMinute = 0;
-        now.setHours(now.getHours() + 1);
-      }
-      const nextFetch = new Date(now);
-      nextFetch.setMinutes(nextFetchMinute);
-      nextFetch.setSeconds(0);
-      nextFetch.setMilliseconds(0);
-      const diff = nextFetch - new Date();
-      const minutes = Math.floor(diff / 60000);
-      const seconds = Math.floor(diff % 60000 / 1000);
-      return `${minutes}m ${seconds}s`;
-    };
-    const updateCountdown = () => {
-      setNextFetchCountdown(calculateNextFetch());
-    };
-    updateCountdown();
-    const countdownTimer = setInterval(updateCountdown, 1000);
-    return () => clearInterval(countdownTimer);
-  }, []);
-  useEffect(() => {
-    if (!userWallet || !devbaseClient) return;
-    const adminWallet = '6SxLVfFovSjR2LAFcJ5wfT6RFjc8GxsscRekGnLq8BMe';
-    setIsAdmin(userWallet === adminWallet);
-    const fetchUserData = async () => {
-      try {
-        const claimsList = await devbaseClient.listEntities('payment_claims', {});
-        const allSuccessfulClaims = claimsList.filter(c => c.status === 'completed');
-        setSuccessfulClaims(allSuccessfulClaims);
-        setAllPaymentClaims(claimsList);
-        const userSuccessfulClaims = claimsList.filter(c => c.userId === userWallet && c.status === 'completed');
-        const allPaymentsForHistory = await devbaseClient.listEntities('payments', {});
-        setAllPayments(allPaymentsForHistory);
-        const allProfilesForHistory = await devbaseClient.listEntities('profiles', {});
-        const historyWithDetails = await Promise.all(userSuccessfulClaims.map(async claim => {
-          const payment = allPaymentsForHistory.find(p => p.id === claim.paymentId || p.tweetId === claim.paymentId);
-          const senderProfile = payment ? allProfilesForHistory.find(p => p.wallet === payment.fromUser) : null;
-          return {
-            ...claim,
-            amount: claim.amount || payment?.amount || 0,
-            senderWallet: payment?.fromUser || 'Unknown',
-            senderHandle: senderProfile?.xHandle || null,
-            senderImage: senderProfile?.profileImage || null,
-            tweetId: payment?.tweetId || claim.paymentId
-          };
-        }));
-        setClaimHistory(historyWithDetails.sort((a, b) => b.createdAt - a.createdAt));
-        let profileList = await devbaseClient.listEntities('profiles', {
-          wallet: userWallet
-        });
-        if (profileList.length === 0) {
-          try {
-            await devbaseClient.createEntity('profiles', {
-              wallet: userWallet
-            });
-            profileList = await devbaseClient.listEntities('profiles', {
-              wallet: userWallet
-            });
-          } catch (error) {
-            console.log("Profile not yet available:", error);
-          }
-        } else if (!profileList[0].xHandle) {
-          try {
-            await devbaseClient.updateEntity('profiles', profileList[0].id, {
-              wallet: userWallet
-            });
-            profileList = await devbaseClient.listEntities('profiles', {
-              wallet: userWallet
-            });
-          } catch (error) {
-            console.log("Profile update pending:", error);
-          }
-        }
-        if (profileList.length > 0) {
-          setXHandle(profileList[0].xHandle || '');
-          setProfileImage(profileList[0].profileImage || '');
-        }
-        const fundsList = await devbaseClient.listEntities('funds', {
-          userId: userWallet
-        });
-        if (fundsList.length > 0) {
-          setUserBalance(fundsList[0].balanceUSDC || 0);
-        }
-        const paymentsList = await devbaseClient.listEntities('payments', {});
-        const userPayments = paymentsList.filter(p => p.fromUser === userWallet || p.toUser === userWallet).slice(0, 5);
-        setRecentPayments(userPayments);
-        const depositsList = await devbaseClient.listEntities('fund_deposits', {
-          userId: userWallet
-        });
-        const depositsTotal = depositsList.reduce((sum, deposit) => sum + (deposit.amount || 0), 0);
-        setTotalDeposited(depositsTotal);
-        const withdrawalsList = await devbaseClient.listEntities('withdrawals', {
-          userId: userWallet
-        });
-        const withdrawalsTotal = withdrawalsList.reduce((sum, withdrawal) => sum + (withdrawal.amount || 0), 0);
-        setTotalWithdrawn(withdrawalsTotal);
-        if (xHandle) {
-          console.log(`📊 Calculating total sent for @${xHandle}...`);
-          const backendPaymentsForUser = await fetchBackendPayments(xHandle);
-          const sentTotal = backendPaymentsForUser.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
-          console.log(`✅ Setting totalSent to: $${sentTotal.toFixed(2)}`);
-          setTotalSent(sentTotal);
-        } else {
-          console.log(`⚠️ No X handle connected, totalSent = $0`);
-          setTotalSent(0);
-        }
-        const allPayments = await devbaseClient.listEntities('payments', {});
-        let userPendingPayments = allPayments.filter(p => p.toUser === userWallet && p.status === 'pending');
-        if (xHandle) {
-          const allProfiles = await devbaseClient.listEntities('profiles', {});
-          const userProfile = allProfiles.find(p => p.xHandle === xHandle);
-          if (userProfile) {
-            const handleBasedPayments = allPayments.filter(p => p.toUser === userProfile.wallet && p.status === 'pending' && !userPendingPayments.find(existing => existing.id === p.id));
-            userPendingPayments = [...userPendingPayments, ...handleBasedPayments];
-          }
-        }
-        setPendingClaims(userPendingPayments);
-        const allClaimsList = await devbaseClient.listEntities('payment_claims', {});
-        const userClaims = allClaimsList.filter(c => c.userId === userWallet);
-        const claimedTotal = userClaims.reduce((sum, claim) => sum + (claim.amount || 0), 0);
-        setTotalClaimed(claimedTotal);
-      } catch (error) {
-        console.error("Error fetching payment data:", error);
-      }
-    };
-    fetchUserData();
-    const paymentTimer = setInterval(() => {
-      if (userWallet && devbaseClient) {
-        devbaseClient.listEntities('profiles', {
-          wallet: userWallet
-        }).then(profileList => {
-          if (profileList.length > 0) {
-            setXHandle(profileList[0].xHandle || '');
-            setProfileImage(profileList[0].profileImage || '');
-          }
-        }).catch(err => console.error(err));
-        devbaseClient.listEntities('funds', {
-          userId: userWallet
-        }).then(fundsList => {
-          if (fundsList.length > 0) {
-            setUserBalance(fundsList[0].balanceUSDC || 0);
-          }
-        }).catch(err => console.error(err));
-        devbaseClient.listEntities('payments', {}).then(paymentsList => {
-          setAllPayments(paymentsList);
-          const userPayments = paymentsList.filter(p => p.fromUser === userWallet || p.toUser === userWallet).slice(0, 5);
-          setRecentPayments(userPayments);
-        }).catch(err => console.error(err));
-        devbaseClient.listEntities('fund_deposits', {
-          userId: userWallet
-        }).then(depositsList => {
-          const depositsTotal = depositsList.reduce((sum, deposit) => sum + (deposit.amount || 0), 0);
-          setTotalDeposited(depositsTotal);
-        }).catch(err => console.error(err));
-        devbaseClient.listEntities('withdrawals', {
-          userId: userWallet
-        }).then(withdrawalsList => {
-          const withdrawalsTotal = withdrawalsList.reduce((sum, withdrawal) => sum + (withdrawal.amount || 0), 0);
-          setTotalWithdrawn(withdrawalsTotal);
-        }).catch(err => console.error(err));
-        devbaseClient.listEntities('profiles', {
-          wallet: userWallet
-        }).then(async profiles => {
-          const currentHandle = profiles.length > 0 ? profiles[0].xHandle : '';
-          if (currentHandle) {
-            console.log(`🔄 [Polling] Updating total sent for @${currentHandle}...`);
-            const backendPaymentsForUser = await fetchBackendPayments(currentHandle);
-            const sentTotal = backendPaymentsForUser.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
-            console.log(`🔄 [Polling] Updated totalSent to: ${sentTotal.toFixed(2)}`);
-            setTotalSent(sentTotal);
-          } else {
-            setTotalSent(0);
-          }
-        }).catch(err => {
-          console.error(err);
-          setTotalSent(0);
-        });
-        Promise.all([devbaseClient.listEntities('payments', {}), devbaseClient.listEntities('profiles', {}), devbaseClient.listEntities('payment_claims', {})]).then(([allPayments, allProfiles, allPaymentClaimsData]) => {
-          setAllPaymentClaims(allPaymentClaimsData);
-          let userPendingPayments = allPayments.filter(p => {
-            const isForUser = p.toUser === userWallet;
-            const isPending = p.status === 'pending';
-            const notClaimedInDevBase = !allPaymentClaimsData.some(pc => pc.paymentId === p.id && pc.status === 'completed');
-            return isForUser && isPending && notClaimedInDevBase;
-          });
-          if (xHandle) {
-            const userProfile = allProfiles.find(p => p.xHandle === xHandle);
-            if (userProfile) {
-              const handleBasedPayments = allPayments.filter(p => {
-                const isForProfile = p.toUser === userProfile.wallet;
-                const isPending = p.status === 'pending';
-                const notAlreadyIncluded = !userPendingPayments.find(existing => existing.id === p.id);
-                const notClaimedInDevBase = !allPaymentClaimsData.some(pc => pc.paymentId === p.id && pc.status === 'completed');
-                return isForProfile && isPending && notAlreadyIncluded && notClaimedInDevBase;
-              });
-              userPendingPayments = [...userPendingPayments, ...handleBasedPayments];
-            }
-          }
-          setPendingClaims(userPendingPayments);
-        }).catch(err => console.error(err));
-        Promise.all([devbaseClient.listEntities('payment_claims', {}), devbaseClient.listEntities('payments', {}), devbaseClient.listEntities('profiles', {})]).then(async ([claimsList, allPaymentsForHistory, allProfilesForHistory]) => {
-          const allSuccessfulClaims = claimsList.filter(c => c.status === 'completed');
-          setSuccessfulClaims(allSuccessfulClaims);
-          setAllPaymentClaims(claimsList);
-          const userSuccessfulClaims = claimsList.filter(c => c.userId === userWallet && c.status === 'completed');
-          const userClaims = claimsList.filter(c => c.userId === userWallet);
-          const claimedTotal = userClaims.reduce((sum, claim) => sum + (claim.amount || 0), 0);
-          setTotalClaimed(claimedTotal);
-          const historyWithDetails = await Promise.all(userSuccessfulClaims.map(async claim => {
-            const payment = allPaymentsForHistory.find(p => p.id === claim.paymentId || p.tweetId === claim.paymentId);
-            const senderProfile = payment ? allProfilesForHistory.find(p => p.wallet === payment.fromUser) : null;
-            return {
-              ...claim,
-              amount: claim.amount || payment?.amount || 0,
-              senderWallet: payment?.fromUser || 'Unknown',
-              senderHandle: senderProfile?.xHandle || null,
-              senderImage: senderProfile?.profileImage || null,
-              tweetId: payment?.tweetId || claim.paymentId
-            };
-          }));
-          setClaimHistory(historyWithDetails.sort((a, b) => b.createdAt - a.createdAt));
-        }).catch(err => console.error(err));
-      }
-    }, 5000);
-    return () => {
-      clearInterval(paymentTimer);
-    };
-  }, [userWallet, devbaseClient]);
-  useEffect(() => {
-    if (!devbaseClient) return;
-    const fetchLeaderboardData = async () => {
-      try {
-        const allProfiles = await devbaseClient.listEntities('profiles', {});
-        const allFunds = await devbaseClient.listEntities('funds', {});
-        const allDeposits = await devbaseClient.listEntities('fund_deposits', {});
-        const allClaims = await devbaseClient.listEntities('payment_claims', {});
-        let allBackendPayments = [];
-        try {
-          const response = await fetch(`${API}/api/payments`);
-          const data = await response.json();
-          if (data.success && data.payments) {
-            allBackendPayments = data.payments;
-          }
-        } catch (error) {
-          console.error('Error fetching backend payments:', error);
-        }
-        const usersData = allProfiles.map(user => {
-          const userFunds = allFunds.find(f => f.userId === user.wallet);
-          const userDeposits = allDeposits.filter(d => d.userId === user.wallet);
-          const userClaims = allClaims.filter(c => c.userId === user.wallet);
-          const totalDeposited = userDeposits.reduce((sum, d) => sum + (d.amount || 0), 0);
-          const totalClaimed = userClaims.reduce((sum, c) => sum + (c.amount || 0), 0);
-          let totalSent = 0;
-          if (user.xHandle && user.xHandle !== 'Not connected') {
-            const userSentPayments = allBackendPayments.filter(p => p.sender && p.sender.toLowerCase() === user.xHandle.toLowerCase());
-            totalSent = userSentPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-          }
-          return {
-            wallet: user.wallet,
-            xHandle: user.xHandle || 'Not connected',
-            profileImage: user.profileImage,
-            balance: userFunds?.balanceUSDC || 0,
-            totalDeposited,
-            totalClaimed,
-            totalSent
-          };
-        });
-        setAllUsers(usersData);
-      } catch (error) {
-        console.error('Error fetching leaderboard data:', error);
-      }
-    };
-    fetchLeaderboardData();
-    const leaderboardTimer = setInterval(fetchLeaderboardData, 30000);
-    return () => clearInterval(leaderboardTimer);
-  }, [devbaseClient]);
-  useEffect(() => {
-    if (!isAdmin || !devbaseClient) return;
-    const fetchAdminData = async () => {
-      try {
-        const allProfiles = await devbaseClient.listEntities('profiles', {});
-        const allFunds = await devbaseClient.listEntities('funds', {});
-        const allDeposits = await devbaseClient.listEntities('fund_deposits', {});
-        const allPayments = await devbaseClient.listEntities('payments', {});
-        const allClaims = await devbaseClient.listEntities('payment_claims', {});
-        setAllPaymentClaims(allClaims);
-        let allBackendPayments = [];
-        try {
-          const response = await fetch(`${API}/api/payments`);
-          const data = await response.json();
-          if (data.success && data.payments) {
-            allBackendPayments = data.payments;
-          }
-        } catch (error) {
-          console.error('Error fetching backend payments:', error);
-        }
-        const usersData = allProfiles.map(profile => {
-          const userFunds = allFunds.find(f => f.userId === profile.wallet);
-          const userDeposits = allDeposits.filter(d => d.userId === profile.wallet);
-          const userClaims = allClaims.filter(c => c.userId === profile.wallet);
-          const userPendingClaims = allPayments.filter(p => p.toUser === profile.wallet && p.status === 'pending');
-          const totalDeposited = userDeposits.reduce((sum, d) => sum + (d.amount || 0), 0);
-          const totalClaimed = userClaims.reduce((sum, c) => sum + (c.amount || 0), 0);
-          const completedClaims = userClaims.filter(c => c.status === 'completed');
-          let totalSent = 0;
-          if (profile.xHandle && profile.xHandle !== 'Not connected') {
-            const userSentPayments = allBackendPayments.filter(p => p.sender && p.sender.toLowerCase() === profile.xHandle.toLowerCase());
-            totalSent = userSentPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-            console.log(`👤 [Admin] @${profile.xHandle} sent: ${totalSent.toFixed(2)} (${userSentPayments.length} payments)`);
-          }
-          const userClaimRecords = allClaims.filter(c => c.userId === profile.wallet);
-          return {
-            wallet: profile.wallet,
-            xHandle: profile.xHandle || 'Not connected',
-            profileImage: profile.profileImage,
-            balance: userFunds?.balanceUSDC || 0,
-            totalDeposited,
-            totalClaimed,
-            totalSent,
-            pendingClaims: userPendingClaims.length,
-            claimsMade: userClaims.length,
-            confirmedClaims: completedClaims.length,
-            claimRecords: userClaimRecords
-          };
-        });
-        setAllUsers(usersData);
-      } catch (error) {
-        console.error('Error fetching admin data:', error);
-      }
-    };
-    fetchAdminData();
-    const adminTimer = setInterval(fetchAdminData, 10000);
-    return () => clearInterval(adminTimer);
-  }, [isAdmin, devbaseClient]);
-  const handleViewUserClaims = async userWallet => {
-    if (expandedUserClaims === userWallet) {
-      setExpandedUserClaims(null);
-      setUserClaimDetails([]);
-      return;
-    }
-    try {
-      const allClaims = await devbaseClient.listEntities('payment_claims', {});
-      const userClaims = allClaims.filter(c => c.userId === userWallet && c.status === 'completed');
-      const allPayments = await devbaseClient.listEntities('payments', {});
-      const allProfiles = await devbaseClient.listEntities('profiles', {});
-      const claimDetails = await Promise.all(userClaims.map(async claim => {
-        const payment = allPayments.find(p => p.id === claim.paymentId || p.tweetId === claim.paymentId);
-        const senderProfile = payment ? allProfiles.find(p => p.wallet === payment.fromUser) : null;
-        return {
-          claimId: claim.id,
-          paymentId: claim.paymentId,
-          amount: claim.amount,
-          status: claim.status,
-          createdAt: claim.createdAt,
-          tweetId: payment?.tweetId || claim.paymentId,
-          senderWallet: payment?.fromUser || 'Unknown',
-          senderHandle: senderProfile?.xHandle || null,
-          senderImage: senderProfile?.profileImage || null
-        };
-      }));
-      setUserClaimDetails(claimDetails.sort((a, b) => b.createdAt - a.createdAt));
-      setExpandedUserClaims(userWallet);
-    } catch (error) {
-      console.error('Error fetching user claim details:', error);
-    }
-  };
-  const handleFundAccount = async () => {
-    if (!userWallet || !devbaseClient) {
-      setStatus({
-        type: "error",
-        message: "Connect wallet first"
-      });
-      return;
-    }
-    if (!xHandle) {
-      setStatus({
-        type: "error",
-        message: "Connect X first"
-      });
-      return;
-    }
-    const amount = parseFloat(fundAmount);
-    if (!amount || amount <= 0) {
-      setStatus({
-        message: "Please enter a valid amount",
-        type: "error"
-      });
-      return;
-    }
-    try {
-      setLoading(true);
-      setShowTransactionModal(true);
-      setTransactionStatus('Preparing deposit transaction...');
-      await devbaseClient.createEntity('fund_deposits', {
-        userId: userWallet,
-        xHandle: xHandle,
-        amount: amount
-      });
-      setTransactionStatus('Verifying deposit...');
-      await new Promise(r => setTimeout(r, 2000));
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-      setStatus({
-        type: "success",
-        message: `Successfully deposited ${fundAmount} USDC to vault!`
-      });
-      setFundAmount('');
-      setShowPaymentModal(false);
-      await checkAndUnlockAchievements();
-    } catch (error) {
-      console.error(error);
-      setStatus({
-        message: error.message || "Failed to fund account",
-        type: "error"
-      });
+
+      setIsDelegated(true);
+      setSuccess(`Authorized ${delegationAmount} USDC!`);
+
+    } catch (err) {
+      console.error('Authorization error:', err);
+      setError(`Failed: ${err.message}`);
     } finally {
-      setLoading(false);
-      setShowTransactionModal(false);
-      setTransactionStatus('');
+      setIsAuthorizing(false);
     }
   };
-  const handleWithdrawFunds = async () => {
-    if (!userWallet || !devbaseClient) {
-      setStatus({
-        type: "error",
-        message: "Connect wallet first"
-      });
-      return;
-    }
-    const amount = parseFloat(withdrawAmount);
-    if (!amount || amount <= 0) {
-      setStatus({
-        message: "Please enter a valid amount",
-        type: "error"
-      });
-      return;
-    }
-    const availableBalance = Math.max(0, totalDeposited - totalSent - totalWithdrawn);
-    if (amount > availableBalance) {
-      setStatus({
-        message: `Insufficient balance. You have ${availableBalance.toFixed(2)} available.`,
-        type: "error"
-      });
-      return;
-    }
-    try {
-      setLoading(true);
-      setShowTransactionModal(true);
-      setTransactionStatus('Preparing withdrawal transaction...');
-      await devbaseClient.createEntity('withdrawals', {
-        userId: userWallet,
-        amount: amount
-      });
-      setTransactionStatus('Verifying withdrawal...');
-      await new Promise(r => setTimeout(r, 2000));
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-      setStatus({
-        type: "success",
-        message: `Successfully withdrew ${withdrawAmount} USDC from vault!`
-      });
-      setWithdrawAmount('');
-      setShowWithdrawModal(false);
-    } catch (error) {
-      console.error(error);
-      setStatus({
-        message: error.message || "Failed to withdraw funds",
-        type: "error"
-      });
-    } finally {
-      setLoading(false);
-      setShowTransactionModal(false);
-      setTransactionStatus('');
-    }
-  };
-  const handleCheckForPayments = async () => {
-    if (!xHandle || !devbaseClient) {
-      setStatus({
-        message: "Please connect your wallet and X account first",
-        type: "error"
-      });
-      return;
-    }
-    try {
-      setIsCheckingPayments(true);
-      setStatus({
-        message: "Scanning for payments...",
-        type: "loading"
-      });
-      console.log(`🔍 Starting payment scan for @${xHandle}...`);
-      const freshBackendClaims = await fetchBackendClaims();
-      const freshPaymentClaims = await devbaseClient.listEntities('payment_claims', {});
-      setAllPaymentClaims(freshPaymentClaims);
-      console.log(`💎 Total payment_claims in DevBase: ${freshPaymentClaims.length}`);
-      const allPayments = await devbaseClient.listEntities('payments', {});
-      console.log(`📊 Total payments in system: ${allPayments.length}`);
-      let userPendingPayments = allPayments.filter(p => {
-        const isForUser = p.toUser === userWallet;
-        const isPending = p.status === 'pending';
-        const notClaimedInDevBase = !freshPaymentClaims.some(pc => pc.paymentId === p.id && pc.status === 'completed');
-        return isForUser && isPending && notClaimedInDevBase;
-      });
-      console.log(`💰 Direct wallet pending payments (after DevBase check): ${userPendingPayments.length}`);
-      if (xHandle) {
-        const allProfiles = await devbaseClient.listEntities('profiles', {});
-        const userProfile = allProfiles.find(p => p.xHandle === xHandle);
-        console.log(`👤 User profile found:`, userProfile);
-        if (userProfile) {
-          const handleBasedPayments = allPayments.filter(p => {
-            const isForProfile = p.toUser === userProfile.wallet;
-            const isPending = p.status === 'pending';
-            const notAlreadyIncluded = !userPendingPayments.find(existing => existing.id === p.id);
-            const notClaimedInDevBase = !freshPaymentClaims.some(pc => pc.paymentId === p.id && pc.status === 'completed');
-            return isForProfile && isPending && notAlreadyIncluded && notClaimedInDevBase;
-          });
-          console.log(`📱 Handle-based pending payments (after DevBase check): ${handleBasedPayments.length}`);
-          userPendingPayments = [...userPendingPayments, ...handleBasedPayments];
-        }
-      }
-      setPendingClaims(userPendingPayments);
-      const unclaimedBackendClaims = freshBackendClaims.filter(claim => {
-        return !freshPaymentClaims.some(c => c.paymentId === claim.tweet_id && c.status === 'completed');
-      });
-      const totalBackend = unclaimedBackendClaims.length;
-      const totalOnChain = userPendingPayments.length;
-      const totalPending = totalBackend + totalOnChain;
-      console.log(`✨ Scan complete: ${totalBackend} backend + ${totalOnChain} on-chain = ${totalPending} total`);
-      if (totalPending > 0) {
-        setStatus({
-          message: `Found ${totalPending} pending payment${totalPending > 1 ? 's' : ''}! (${totalBackend} from X posts, ${totalOnChain} on-chain)`,
-          type: "success"
-        });
-      } else {
-        setStatus({
-          message: `No pending payments found for @${xHandle}. Check console for details.`,
-          type: "success"
-        });
-      }
-    } catch (error) {
-      console.error('❌ Payment scan error:', error);
-      setStatus({
-        message: error.message || "Failed to check for payments",
-        type: "error"
-      });
-    } finally {
-      setIsCheckingPayments(false);
-    }
-  };
-  const handleClaimBackendPayment = async claim => {
-    if (!xHandle || !devbaseClient || !userWallet) {
-      setClaimErrors(prev => ({
-        ...prev,
-        [claim.tweet_id]: "Please connect your wallet and X account first"
-      }));
-      return;
-    }
-    try {
-      setClaimErrors(prev => ({
-        ...prev,
-        [claim.tweet_id]: null
-      }));
-      setLoading(true);
-      setShowTransactionModal(true);
-      setTransactionStatus('Checking claim eligibility...');
-      console.log('🎯 Starting backend claim:', {
-        tweetId: claim.tweet_id,
-        amount: claim.amount,
-        sender: claim.sender,
-        recipient: claim.recipient,
-        userWallet
-      });
-      const existingClaims = await devbaseClient.listEntities('payment_claims', {});
-      const alreadyClaimed = existingClaims.some(c => c.paymentId === claim.tweet_id && c.userId === userWallet);
-      if (alreadyClaimed) {
-        console.log('⚠️ Payment already claimed, skipping');
-        const updatedClaims = await devbaseClient.listEntities('payment_claims', {});
-        const allSuccessfulClaims = updatedClaims.filter(c => c.status === 'completed');
-        setSuccessfulClaims(allSuccessfulClaims);
-        setAllPaymentClaims(updatedClaims);
-        setLoading(false);
-        setShowTransactionModal(false);
-        setClaimErrors(prev => ({
-          ...prev,
-          [claim.tweet_id]: "This payment has already been claimed!"
-        }));
-        return;
-      }
-      setTransactionStatus('Processing vault transfer...');
-      const claimEntity = await devbaseClient.createEntity('payment_claims', {
-        userId: userWallet,
-        paymentId: claim.tweet_id,
-        amount: parseFloat(claim.amount),
-        tweetId: claim.tweet_id,
-        sender: claim.sender,
-        recipient: claim.recipient
-      });
-      console.log('✅ Claim entity created with full details:', claimEntity);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-      setSuccessClaimData({
-        amount: parseFloat(claim.amount),
-        sender: claim.sender
-      });
-      setShowClaimSuccessModal(true);
-      setStatus({
-        message: `Successfully claimed ${parseFloat(claim.amount)} USDC from @${claim.sender}!`,
-        type: "success"
-      });
-      const updatedClaims = await devbaseClient.listEntities('payment_claims', {});
-      const allSuccessfulClaims = updatedClaims.filter(c => c.status === 'completed');
-      setSuccessfulClaims(allSuccessfulClaims);
-      setAllPaymentClaims(updatedClaims);
-      const updatedPayments = await devbaseClient.listEntities('payments', {});
-      setAllPayments(updatedPayments);
-      await fetchBackendClaims();
-      await checkAndUnlockAchievements();
-    } catch (error) {
-      console.error('❌ Backend claim error:', error.message);
-      console.error('📋 Error details:', error);
-      setClaimErrors(prev => ({
-        ...prev,
-        [claim.tweet_id]: error.message || "Failed to claim payment. You can retry."
-      }));
-    } finally {
-      setLoading(false);
-      setShowTransactionModal(false);
-      setTransactionStatus('');
-    }
-  };
-  const handleMarkAsClaimed = async tweetId => {
-    if (!userWallet || !devbaseClient) return;
-    try {
-      await devbaseClient.createEntity('hidden_claims', {
-        userId: userWallet,
-        tweetId: tweetId
-      });
-      const updatedHidden = [...manuallyHiddenClaims, tweetId];
-      setManuallyHiddenClaims(updatedHidden);
-      setStatus({
-        message: "Payment marked as claimed and hidden from your view",
-        type: "success"
-      });
-    } catch (error) {
-      console.error('Failed to hide claim:', error);
-      setStatus({
-        message: "Failed to hide payment. Please try again.",
-        type: "error"
-      });
-    }
-  };
-  const handleClaimPayment = async (paymentId, amount) => {
-    if (!userWallet || !devbaseClient) {
-      setClaimErrors(prev => ({
-        ...prev,
-        [paymentId]: "Please connect your wallet first"
-      }));
-      return;
-    }
-    try {
-      setClaimErrors(prev => ({
-        ...prev,
-        [paymentId]: null
-      }));
-      setLoading(true);
-      setShowTransactionModal(true);
-      setTransactionStatus('Checking claim eligibility...');
-      console.log('🎯 Starting on-chain claim:', {
-        paymentId,
-        amount,
-        userWallet
-      });
-      const existingClaims = await devbaseClient.listEntities('payment_claims', {});
-      const alreadyClaimed = existingClaims.some(c => c.paymentId === paymentId && c.userId === userWallet);
-      if (alreadyClaimed) {
-        console.log('⚠️ Payment already claimed, skipping');
-        setLoading(false);
-        setShowTransactionModal(false);
-        setClaimErrors(prev => ({
-          ...prev,
-          [paymentId]: "This payment has already been claimed!"
-        }));
-        return;
-      }
-      setTransactionStatus('Processing vault transfer...');
-      const claimEntity = await devbaseClient.createEntity('payment_claims', {
-        userId: userWallet,
-        paymentId,
-        amount
-      });
-      console.log('✅ Claim entity created:', claimEntity);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-      setSuccessClaimData({
-        amount: amount,
-        sender: null
-      });
-      setShowClaimSuccessModal(true);
-      setStatus({
-        message: `Successfully claimed ${amount} USDC from on-chain payment!`,
-        type: "success"
-      });
-      const updatedClaims = await devbaseClient.listEntities('payment_claims', {});
-      const allSuccessfulClaims = updatedClaims.filter(c => c.status === 'completed');
-      setSuccessfulClaims(allSuccessfulClaims);
-      setAllPaymentClaims(updatedClaims);
-      const updatedPayments = await devbaseClient.listEntities('payments', {});
-      setAllPayments(updatedPayments);
-      await checkAndUnlockAchievements();
-    } catch (error) {
-      console.error('❌ On-chain claim error:', error.message);
-      console.error('📋 Error details:', error);
-      setClaimErrors(prev => ({
-        ...prev,
-        [paymentId]: error.message || "Failed to claim payment. You can retry."
-      }));
-    } finally {
-      setLoading(false);
-      setShowTransactionModal(false);
-      setTransactionStatus('');
-    }
-  };
-  const handleSyncDatabases = async () => {
-    if (!devbaseClient) return;
-    try {
-      setIsSyncingDatabase(true);
-      setStatus({
-        message: "Syncing databases...",
-        type: "loading"
-      });
-      const allClaims = await devbaseClient.listEntities('payment_claims', {});
-      const completedClaims = allClaims.filter(c => c.status === 'completed');
-      console.log(`📊 Found ${completedClaims.length} completed claims to sync`);
-      const allPayments = await devbaseClient.listEntities('payments', {});
-      const allProfiles = await devbaseClient.listEntities('profiles', {});
-      let syncedCount = 0;
-      for (const claim of completedClaims) {
-        try {
-          const payment = allPayments.find(p => p.id === claim.paymentId || p.tweetId === claim.paymentId);
-          if (payment && payment.tweetId) {
-            const userProfile = allProfiles.find(p => p.wallet === claim.userId);
-            const recipient = userProfile && userProfile.xHandle ? userProfile.xHandle : claim.userId;
-            await fetch('https://wassy-pay-backend.onrender.com/api/devfun-claim-success', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                tweet_id: payment.tweetId,
-                recipient: recipient
-              })
-            });
-            syncedCount++;
-            console.log(`✅ Synced claim for tweet ${payment.tweetId}`);
-          }
-        } catch (err) {
-          console.warn(`⚠️ Failed to sync claim ${claim.id}:`, err);
-        }
-      }
-      setStatus({
-        message: `Successfully synced ${syncedCount} claims with backend!`,
-        type: "success"
-      });
-    } catch (error) {
-      console.error('❌ Database sync error:', error);
-      setStatus({
-        message: error.message || "Failed to sync databases",
-        type: "error"
-      });
-    } finally {
-      setIsSyncingDatabase(false);
-    }
-  };
-  if (showLandingPage) {
-    return <LandingPage onEnterApp={() => setShowLandingPage(false)} scrollY={scrollY} />;
+
+  // Loading state
+  if (!ready || !walletsReady) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#e8e6e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Courier Prime', monospace" }}>
+        <div style={{ fontSize: '20px', color: '#1a1a1a' }}>⏳ Loading...</div>
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-[#FFFEF9] grid-texture flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-      {showConfetti && <div className="fixed inset-0 pointer-events-none z-[9999]">
-          {[...Array(50)].map((_, i) => <div key={i} className="confetti-piece" style={{
-        left: `${Math.random() * 100}%`,
-        background: ['#8b5cf6', '#ec4899', '#10b981', '#fbbf24', '#3b82f6'][Math.floor(Math.random() * 5)],
-        animationDelay: `${Math.random() * 0.5}s`,
-        animationDuration: `${2 + Math.random() * 2}s`
-      }} />)}
-        </div>}
 
-      {/* Migration Banner for Existing Vault Users */}
-      {userWallet && vaultBalance > 0 && !isDelegationAuthorized && (
-        <div className="fixed top-4 left-4 right-4 z-50 mx-auto max-w-2xl">
-          <div className="bg-[#FFE5B4] hand-drawn border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-start space-x-3">
-              <Info size={24} className="text-black flex-shrink-0 mt-1" />
-              <div className="flex-1">
-                <h3 className="mono-font text-lg text-black font-bold mb-2">
-                  🚀 UPGRADE TO PRIVY WALLETS!
-                </h3>
-                <p className="mono-font text-sm text-black mb-3">
-                  Wassy Pay now uses non-custodial Privy wallets for better security! You have ${vaultBalance.toFixed(2)} in your old vault.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    onClick={() => setShowWithdrawModal(true)}
-                    className="flex-1 hand-drawn mono-font bg-[#B4FFE5] hover:bg-[#9FE5D0] text-black border-3 border-black py-2 px-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 transition-all"
-                  >
-                    WITHDRAW OLD BALANCE
-                  </button>
-                  <button
-                    onClick={() => setShowProfileModal(true)}
-                    className="flex-1 hand-drawn mono-font bg-[#E5B4FF] hover:bg-[#D0A0EA] text-black border-3 border-black py-2 px-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 transition-all"
-                  >
-                    SETUP PRIVY WALLET
-                  </button>
-                </div>
-              </div>
-              <button
-                onClick={() => localStorage.setItem('hideMigrationBanner', 'true')}
-                className="text-black hover:bg-black hover:text-white p-1 rounded transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  // Login screen
+  if (!authenticated) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#e8e6e1',
+        backgroundImage: 'radial-gradient(#1a1a1a 0.5px, transparent 0.5px)',
+        backgroundSize: '20px 20px',
+        padding: '40px 20px',
+        fontFamily: "'Courier Prime', monospace"
+      }}>
+        <style>
+          {`
+            @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Work+Sans:wght@900&display=swap');
+          `}
+        </style>
+        <div style={{
+          maxWidth: '800px',
+          margin: 'auto',
+          position: 'relative',
+          border: '2px solid #1a1a1a',
+          padding: '40px',
+          boxShadow: '15px 15px 0px #1a1a1a',
+          background: '#e8e6e1'
+        }}>
+          {/* Tape mark */}
+          <div style={{
+            position: 'absolute',
+            width: '100px',
+            height: '30px',
+            background: 'rgba(220, 210, 160, 0.4)',
+            top: '-15px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            borderLeft: '2px solid rgba(0,0,0,0.1)',
+            borderRight: '2px solid rgba(0,0,0,0.1)'
+          }} />
 
-      {showTransactionModal && <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/90 p-4">
-          <div className="w-full max-w-md bg-[#FFFEF9] hand-drawn border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative">
-            <div className="text-center">
-              <div className="h-20 w-20 rounded-full border-8 border-black border-t-purple-500 animate-spin mx-auto mb-6" />
-              <h2 className="mono-font text-2xl text-black mb-4">
-                PROCESSING CLAIM
-              </h2>
-              <p className="mono-font text-lg text-black">
-                {transactionStatus}
-              </p>
-              <p className="mono-font text-sm text-black opacity-70 mt-4">
-                Please wait, do not close this window...
-              </p>
-            </div>
-          </div>
-        </div>}
-
-      <div className="fixed left-4 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col space-y-3">
-        <button onClick={() => setShowLandingPage(true)} className="flex items-center justify-center w-14 h-14 bg-[#FFE5B4] hover:bg-[#EAD09F] text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110 hover:-rotate-2 active:translate-y-1 transition-all group relative">
-          <span className="text-2xl">🏠</span>
-          <div className="absolute left-full ml-3 bg-black text-white px-3 py-2 hand-drawn text-xs mono-font whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            BACK TO HOME
-          </div>
-        </button>
-        <button onClick={() => setShowInfoModal(true)} className="flex items-center justify-center w-14 h-14 bg-[#B4FFE5] hover:bg-[#9FEAD0] text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110 hover:-rotate-2 active:translate-y-1 transition-all group relative">
-          <Info size={24} />
-          <div className="absolute left-full ml-3 bg-black text-white px-3 py-2 hand-drawn text-xs mono-font whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            HOW IT WORKS
-          </div>
-        </button>
-        <button onClick={() => setShowVaultModal(true)} className="flex items-center justify-center w-14 h-14 bg-[#B4E5FF] hover:bg-[#9FD0EA] text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110 hover:rotate-2 active:translate-y-1 transition-all group relative">
-          <Wallet size={24} />
-          <div className="absolute left-full ml-3 bg-black text-white px-3 py-2 hand-drawn text-xs mono-font whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            VAULT: ${vaultBalance.toFixed(2)}
-          </div>
-        </button>
-        <button onClick={() => setShowAchievementsModal(true)} className="flex items-center justify-center w-14 h-14 bg-[#FFE5B4] hover:bg-[#EAD09F] text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110 hover:-rotate-2 active:translate-y-1 transition-all group relative">
-          <Trophy size={24} />
-          <div className="absolute left-full ml-3 bg-black text-white px-3 py-2 hand-drawn text-xs mono-font whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            {userAchievements.length}/{ACHIEVEMENTS.length} UNLOCKED
-          </div>
-        </button>
-        <button onClick={() => setShowLeaderboardModal(true)} className="flex items-center justify-center w-14 h-14 bg-[#E5B4FF] hover:bg-[#D09FEA] text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110 hover:rotate-2 active:translate-y-1 transition-all group relative">
-          <span className="text-2xl">🏆</span>
-          <div className="absolute left-full ml-3 bg-black text-white px-3 py-2 hand-drawn text-xs mono-font whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            LEADERBOARD
-          </div>
-        </button>
-        {isAdmin && <button onClick={() => {
-        setShowAdminDashboard(prev => {
-          const newState = !prev;
-          if (newState) {
-            setTimeout(() => {
-              try {
-                adminDashboardRef.current?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start'
-                });
-              } catch (e) {
-                console.log('Scroll failed:', e);
-              }
-            }, 200);
-          }
-          return newState;
-        });
-      }} className={`flex items-center justify-center w-14 h-14 ${showAdminDashboard ? 'bg-green-400 hover:bg-green-500' : 'bg-red-400 hover:bg-red-500'} text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110 hover:-rotate-2 active:translate-y-1 transition-all group relative`}>
-            <span className="text-2xl">⚙️</span>
-            <div className="absolute left-full ml-3 bg-black text-white px-3 py-2 hand-drawn text-xs mono-font whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              {showAdminDashboard ? 'HIDE ADMIN' : 'SHOW ADMIN'}
-            </div>
-          </button>}
-        {userWallet && xHandle && <button onClick={() => setShowProfileModal(true)} className="flex items-center justify-center w-14 h-14 bg-black hover:bg-gray-800 text-white hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110 hover:rotate-2 active:translate-y-1 transition-all group relative">
-            {profileImage ? <img src={profileImage} alt={xHandle} className="w-10 h-10 rounded-full border-2 border-white" /> : <X size={24} />}
-            <div className="absolute left-full ml-3 bg-black text-white px-3 py-2 hand-drawn text-xs mono-font whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              @{xHandle}
-            </div>
-          </button>}
-        {userWallet && !xHandle && <button onClick={() => setShowProfileModal(true)} className="flex items-center justify-center w-14 h-14 bg-black hover:bg-gray-800 text-white hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110 hover:-rotate-2 active:translate-y-1 transition-all group relative">
-            <X size={24} />
-            <div className="absolute left-full ml-3 bg-black text-white px-3 py-2 hand-drawn text-xs mono-font whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              CONNECT X
-            </div>
-          </button>}
-        <div className="w-14 h-14">
-          <UserButton className="w-full h-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black bg-black hover:bg-gray-800 hand-drawn transform hover:scale-110 hover:rotate-2 active:translate-y-1 transition-all" primaryColor="#000000" textColor="#ffffff" />
-        </div>
-      </div>
-
-      {newAchievements.length > 0 && <div className="fixed top-20 right-4 z-[9999] animate-bounce">
-          <div className="bg-[#FFE5B4] border-4 border-black hand-drawn p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] max-w-sm">
-            <div className="flex items-center space-x-3 mb-2">
-              <Trophy size={32} className="text-black" />
-              <h3 className="mono-font text-xl text-black">ACHIEVEMENT UNLOCKED!</h3>
-            </div>
-            {newAchievements.map(achId => {
-          const ach = ACHIEVEMENTS.find(a => a.id === achId);
-          return ach ? <div key={achId} className="text-black mono-font">
-                  <span className="text-2xl mr-2">{ach.icon}</span>
-                  <span className="text-lg">{ach.name}</span>
-                </div> : null;
-        })}
-          </div>
-        </div>}
-
-      <div className={`fixed left-0 top-1/2 -translate-y-1/2 z-30 md:hidden flex flex-col space-y-2 pl-2 transition-all duration-300 ${showMobileNav ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'}`}>
-        <button onClick={() => setShowLandingPage(true)} className="flex items-center justify-center w-12 h-12 bg-[#FFE5B4] text-black hand-drawn border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform active:translate-y-1 transition-all">
-          <span className="text-xl">🏠</span>
-        </button>
-        <button onClick={() => setShowInfoModal(true)} className="flex items-center justify-center w-12 h-12 bg-[#B4FFE5] text-black hand-drawn border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform active:translate-y-1 transition-all">
-          <Info size={20} />
-        </button>
-        <button onClick={() => setShowVaultModal(true)} className="flex items-center justify-center w-12 h-12 bg-[#B4E5FF] text-black hand-drawn border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform active:translate-y-1 transition-all">
-          <Wallet size={20} />
-        </button>
-        <button onClick={() => setShowAchievementsModal(true)} className="flex items-center justify-center w-12 h-12 bg-[#FFE5B4] text-black hand-drawn border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform active:translate-y-1 transition-all">
-          <Trophy size={20} />
-        </button>
-        <button onClick={() => setShowLeaderboardModal(true)} className="flex items-center justify-center w-12 h-12 bg-[#E5B4FF] text-black hand-drawn border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform active:translate-y-1 transition-all">
-          <span className="text-xl">🏆</span>
-        </button>
-        {isAdmin && <button onClick={() => {
-        setShowAdminDashboard(prev => {
-          const newState = !prev;
-          if (newState) {
-            setTimeout(() => {
-              try {
-                adminDashboardRef.current?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start'
-                });
-              } catch (e) {
-                console.log('Scroll failed:', e);
-              }
-            }, 200);
-          }
-          return newState;
-        });
-      }} className={`flex items-center justify-center w-12 h-12 ${showAdminDashboard ? 'bg-green-400' : 'bg-red-400'} text-black hand-drawn border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform active:translate-y-1 transition-all`}>
-            <span className="text-xl">⚙️</span>
-          </button>}
-        <button onClick={() => setShowProfileModal(true)} className="flex items-center justify-center w-12 h-12 bg-black text-white hand-drawn border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform active:translate-y-1 transition-all">
-          {userWallet && xHandle && profileImage ? <img src={profileImage} alt={xHandle} className="w-8 h-8 rounded-full border-2 border-white" /> : <X size={20} />}
-        </button>
-        <div className="w-12 h-12">
-          <UserButton className="w-full h-full shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] border-3 border-black bg-black hover:bg-gray-800 hand-drawn transform active:translate-y-1 transition-all" primaryColor="#000000" textColor="#ffffff" />
-        </div>
-      </div>
-
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Space+Mono:wght@400;700&display=swap');
-        
-        .scroll-container {
-          width: 100%;
-          overflow: hidden;
-          padding: 12px 0;
-        }
-        
-        .scroll-text {
-          display: inline-flex;
-          animation: scroll 20s linear infinite;
-          white-space: nowrap;
-        }
-        
-        @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-        
-        .hand-drawn {
-          border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
-        }
-        
-        .grid-texture {
-          background-image: 
-            linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-          background-size: 24px 24px;
-        }
-        
-        .headline-font {
-          font-family: 'Space Grotesk', sans-serif;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-        }
-        
-        .mono-font {
-          font-family: 'Space Mono', monospace;
-          font-weight: 700;
-          letter-spacing: 0.02em;
-        }
-        
-        @keyframes confetti-fall {
-          0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-        
-        .confetti-piece {
-          position: fixed;
-          width: 10px;
-          height: 10px;
-          background: #000;
-          border: 2px solid #000;
-          z-index: 9999;
-          animation: confetti-fall 3s linear forwards;
-        }
-      `}</style>
-
-      <div className="w-full max-w-2xl bg-[#FFFEF9] hand-drawn p-4 sm:p-8 md:p-12 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10 relative">
-        <div className="flex items-center justify-center mb-8">
-          <h1 className="headline-font text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-black leading-none text-center">
-            WASSY PAY
+          {/* Header */}
+          <h1 style={{
+            fontFamily: "'Work Sans', sans-serif",
+            fontSize: 'clamp(3rem, 10vw, 5rem)',
+            textTransform: 'uppercase',
+            lineHeight: '0.8',
+            letterSpacing: '-4px',
+            marginBottom: '40px',
+            transform: 'rotate(-1deg)',
+            color: '#1a1a1a'
+          }}>
+            WASSY<br />PAY<br />V2
           </h1>
-        </div>
-        
-        <p className="text-black text-center mb-8 text-xs sm:text-base md:text-lg mono-font tracking-tight px-2">
-          THE FIRST BOT THAT LETS YOU SEND CRYPTO DIRECTLY ON X. TAG. SEND. DONE
-        </p>
 
-        {status.message && <div className={`mb-4 sm:mb-6 p-3 sm:p-5 hand-drawn text-xs sm:text-sm flex items-start border-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${status.type === 'error' ? 'bg-red-100 text-black border-black' : status.type === 'success' ? 'bg-green-100 text-black border-black' : 'bg-purple-100 text-black border-black'}`}>
-            {status.type === 'error' ? <span className="mr-2 sm:mr-3 text-xl sm:text-2xl flex-shrink-0">⚠️</span> : status.type === 'success' ? <span className="mr-2 sm:mr-3 text-xl sm:text-2xl flex-shrink-0">✨</span> : <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border-4 border-black border-t-transparent animate-spin mr-2 sm:mr-3 mt-1 flex-shrink-0" />}
-            <div>
-              <p className="leading-relaxed mono-font text-xs sm:text-sm">{status.message}</p>
-            </div>
-          </div>}
-      </div>
-
-      {showPaymentModal && <div onClick={() => setShowPaymentModal(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-md bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative">
-            <button onClick={() => setShowPaymentModal(false)} className="absolute top-4 right-4 text-white bg-black hover:bg-gray-800 p-3 rounded-full transition-all z-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1">
-              <X size={24} />
-            </button>
-            <h2 className="mono-font text-2xl sm:text-3xl text-black mb-4 sm:mb-6">
-              FUND ACCOUNT
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs sm:text-sm text-black mb-2 mono-font">
-                  AMOUNT (USDC)
-                </label>
-                <input type="number" value={fundAmount} onChange={e => setFundAmount(e.target.value)} placeholder="0.00" className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gray-100 border-4 border-black hand-drawn focus:ring-4 focus:ring-purple-300 focus:border-black placeholder-gray-400 text-black mono-font text-lg sm:text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" />
-              </div>
-              <button onClick={handleFundAccount} disabled={loading || !fundAmount} className="w-full flex items-center justify-center space-x-2 py-3 sm:py-4 hand-drawn mono-font text-sm sm:text-base transition-all bg-[#B4FFE5] hover:bg-[#9FEAD0] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-1 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? <>
-                    <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border-4 border-black border-t-transparent animate-spin mr-2" />
-                    <span className="text-xs sm:text-base">PROCESSING...</span>
-                  </> : <>
-                    <DollarSign size={20} className="sm:w-6 sm:h-6" />
-                    <span className="text-xs sm:text-base">DEPOSIT USDC</span>
-                  </>}
-              </button>
-            </div>
-          </div>
-        </div>}
-
-      {showWithdrawModal && <div onClick={() => setShowWithdrawModal(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-md bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative">
-            <button onClick={() => setShowWithdrawModal(false)} className="absolute top-4 right-4 text-white bg-black hover:bg-gray-800 p-3 rounded-full transition-all z-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1">
-              <X size={24} />
-            </button>
-            <h2 className="mono-font text-2xl sm:text-3xl text-black mb-4 sm:mb-6">
-              WITHDRAW FUNDS
-            </h2>
-            <div className="space-y-4">
-              <div className="bg-[#B4E5FF] hand-drawn p-3 border-2 border-black mb-4">
-                <p className="text-xs text-black mono-font">
-                  AVAILABLE BALANCE: ${Math.max(0, totalDeposited - totalSent - totalWithdrawn).toFixed(2)} USDC
-                </p>
-              </div>
-              <div>
-                <label className="block text-xs sm:text-sm text-black mb-2 mono-font">
-                  AMOUNT (USDC)
-                </label>
-                <input type="number" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} placeholder="0.00" className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gray-100 border-4 border-black hand-drawn focus:ring-4 focus:ring-purple-300 focus:border-black placeholder-gray-400 text-black mono-font text-lg sm:text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" />
-              </div>
-              <button onClick={handleWithdrawFunds} disabled={loading || !withdrawAmount} className="w-full flex items-center justify-center space-x-2 py-3 sm:py-4 hand-drawn mono-font text-sm sm:text-base transition-all bg-red-400 hover:bg-red-500 text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? <>
-                    <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border-4 border-black border-t-transparent animate-spin mr-2" />
-                    <span className="text-xs sm:text-base">PROCESSING...</span>
-                  </> : <>
-                    <DollarSign size={20} className="sm:w-6 sm:h-6" />
-                    <span className="text-xs sm:text-base">WITHDRAW USDC</span>
-                  </>}
-              </button>
-            </div>
-          </div>
-        </div>}
-
-      {showAchievementsModal && <div onClick={() => setShowAchievementsModal(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-2xl bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => setShowAchievementsModal(false)} className="absolute top-4 right-4 text-white bg-black hover:bg-gray-800 p-3 rounded-full transition-all z-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1">
-              <X size={24} />
-            </button>
-            <div className="flex items-center mb-6">
-              <Trophy size={32} className="text-black mr-3" />
-              <h2 className="mono-font text-2xl sm:text-3xl text-black">
-                ACHIEVEMENTS
-              </h2>
-            </div>
-            <p className="text-sm text-black mono-font opacity-70 mb-6">
-              UNLOCK ALL {ACHIEVEMENTS.length} ACHIEVEMENTS!
+          {/* Card 1 */}
+          <div style={{
+            background: 'white',
+            border: '1px solid #1a1a1a',
+            padding: '20px',
+            marginTop: '20px',
+            position: 'relative',
+            transform: 'rotate(1.5deg)',
+            boxShadow: '5px 5px 0px #ff4500'
+          }}>
+            <div style={{
+              width: '100%',
+              height: '200px',
+              background: 'repeating-conic-gradient(#1a1a1a 0% 25%, transparent 0% 50%) 50% / 2px 2px',
+              opacity: '0.2',
+              marginBottom: '15px'
+            }} />
+            <p style={{ margin: '0 0 15px 0', lineHeight: '1.6' }}>
+              // ARTIFACT_01: Non-custodial payments via X. Post "@bot_wassy send $5 to @friend"
+              and the blockchain handles the rest. No banks. No intermediaries. Pure delegation.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {ACHIEVEMENTS.map(achievement => {
-            const isUnlocked = userAchievements.some(a => a.achievementId === achievement.id);
-            return <div key={achievement.id} className={`hand-drawn p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${isUnlocked ? 'bg-[#FFE5B4]' : 'bg-gray-200 opacity-60'}`}>
-                    <div className="flex items-start space-x-3">
-                      <div className="text-4xl">{achievement.icon}</div>
-                      <div className="flex-1">
-                        <h3 className="mono-font text-lg text-black mb-1">
-                          {achievement.name}
-                        </h3>
-                        <p className="mono-font text-xs text-black opacity-70">
-                          {achievement.description}
-                        </p>
-                        {isUnlocked && <div className="mt-2 flex items-center space-x-2">
-                            <div className="px-2 py-1 bg-green-400 hand-drawn border-2 border-black">
-                              <span className="mono-font text-xs text-black">✓ UNLOCKED</span>
-                            </div>
-                          </div>}
-                      </div>
-                    </div>
-                  </div>;
-          })}
-            </div>
-          </div>
-        </div>}
-
-      {showLeaderboardModal && <div onClick={() => setShowLeaderboardModal(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-3xl bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => setShowLeaderboardModal(false)} className="absolute top-4 right-4 text-white bg-black hover:bg-gray-800 p-3 rounded-full transition-all z-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1">
-              <X size={24} />
-            </button>
-            <div className="flex items-center mb-4">
-              <span className="text-4xl mr-3">🏆</span>
-              <h2 className="mono-font text-2xl sm:text-3xl text-black">
-                LEADERBOARD
-              </h2>
-            </div>
-            
-            <div className="bg-[#FFE5B4] hand-drawn p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-6">
-              <div className="flex items-center justify-center space-x-2 mb-2">
-                <span className="text-2xl">🏆</span>
-                <p className="text-sm sm:text-base text-black mono-font text-center">
-                  POINTS = DEPOSITS + CLAIMS + SENT
-                </p>
-              </div>
-              <p className="text-xs text-black mono-font text-center opacity-70">
-                🚀 COMPETE FOR THE TOP SPOT - KEEP EARNING POINTS!
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {(() => {
-            let sortedUsers = [...allUsers].map(user => ({
-              ...user,
-              totalPoints: user.totalDeposited + user.totalClaimed + user.totalSent
-            }));
-            sortedUsers.sort((a, b) => b.totalPoints - a.totalPoints);
-            if (sortedUsers.length === 0) {
-              return <div className="text-center py-8">
-                      <p className="text-black mono-font">No data yet - be the first!</p>
-                    </div>;
-            }
-            return sortedUsers.map((user, index) => {
-              const isCurrentUser = user.wallet === userWallet;
-              const medalEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
-              return <div key={user.wallet} className={`hand-drawn p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${isCurrentUser ? 'bg-[#FFE5B4] ring-4 ring-purple-500' : index < 3 ? 'bg-[#E5B4FF]' : 'bg-white'}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-black text-white mono-font text-lg border-2 border-white flex-shrink-0">
-                            {medalEmoji || `#${index + 1}`}
-                          </div>
-                          {user.profileImage ? <img src={user.profileImage} alt={user.xHandle} className="w-12 h-12 rounded-full border-3 border-black flex-shrink-0" /> : <div className="w-12 h-12 rounded-full bg-[#E5B4FF] border-3 border-black flex-shrink-0" />}
-                          <div className="flex-1 min-w-0">
-                            <p className="mono-font text-lg text-black truncate">
-                              {user.xHandle !== 'Not connected' ? `@${user.xHandle}` : `${user.wallet.substring(0, 8)}...`}
-                            </p>
-                            {isCurrentUser && <p className="mono-font text-xs text-purple-600">YOU</p>}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="mono-font text-2xl text-black">
-                            {user.totalPoints.toFixed(0)}
-                          </p>
-                          <p className="mono-font text-xs text-black opacity-70">
-                            POINTS
-                          </p>
-                        </div>
-                      </div>
-                    </div>;
-            });
-          })()}
-            </div>
-
-            {allUsers.length === 0 && <div className="mt-6 bg-gray-100 hand-drawn p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
-                <p className="text-sm text-black mono-font">
-                  🚀 Be the first to make it on the leaderboard!
-                </p>
-              </div>}
-          </div>
-        </div>}
-
-      {showClaimSuccessModal && <div onClick={() => setShowClaimSuccessModal(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-md bg-[#B4FFE5] hand-drawn border-4 border-black p-6 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative">
-            <button onClick={() => setShowClaimSuccessModal(false)} className="absolute top-4 right-4 text-white bg-black hover:bg-gray-800 p-3 rounded-full transition-all z-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1">
-              <X size={24} />
-            </button>
-            <div className="text-center mb-6">
-              <div className="text-6xl mb-4 animate-bounce">🎉</div>
-              <h2 className="mono-font text-3xl sm:text-4xl text-black mb-3">
-                CLAIM SUCCESSFUL!
-              </h2>
-              <p className="mono-font text-2xl text-black mb-2">
-                ${successClaimData?.amount.toFixed(2)} USDC
-              </p>
-              {successClaimData?.sender && <p className="mono-font text-sm text-black opacity-70">
-                  FROM @{successClaimData.sender}
-                </p>}
-            </div>
-            <button onClick={() => {
-          const amount = successClaimData?.amount.toFixed(2);
-          const sender = successClaimData?.sender ? `@${successClaimData.sender}` : 'someone';
-          const text = `Just claimed ${amount} USDC from ${sender} using @bot_wassy! 💸\n\nTurn your X posts into payments:\nhttps://dev.fun/p/699840f631c97306a0c4`;
-          const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-          openLink(url);
-          setShowClaimSuccessModal(false);
-        }} className="w-full flex items-center justify-center space-x-2 py-4 hand-drawn mono-font text-base transition-all bg-[#B4E5FF] hover:bg-[#9FD0EA] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-1 active:translate-y-1">
-              <Share2 size={24} />
-              <span>SHARE ON X</span>
-            </button>
-            <button onClick={() => setShowClaimSuccessModal(false)} className="w-full mt-3 py-3 hand-drawn mono-font text-sm transition-all bg-white hover:bg-gray-100 text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 active:translate-y-1">
-              CLOSE
+            <button
+              onClick={login}
+              style={{
+                background: '#1a1a1a',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                fontFamily: "'Courier Prime', monospace",
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                fontSize: '14px',
+                transition: '0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#ff4500'}
+              onMouseOut={(e) => e.target.style.background = '#1a1a1a'}
+            >
+              Login with X
             </button>
           </div>
-        </div>}
 
-      {showInfoModal && <div onClick={() => setShowInfoModal(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-2xl bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => setShowInfoModal(false)} className="absolute top-4 right-4 text-white bg-black hover:bg-gray-800 p-3 rounded-full transition-all z-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1">
-              <X size={24} />
-            </button>
-            <div className="flex items-center mb-6">
-              <Info size={32} className="text-black mr-3" />
-              <h2 className="mono-font text-2xl sm:text-3xl text-black">
-                HOW WASSY PAY WORKS
-              </h2>
-            </div>
-            <div className="space-y-6">
-              <div className="bg-[#B4FFE5] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-3">
-                  <span className="text-3xl mr-3">1️⃣</span>
-                  <h3 className="mono-font text-xl text-black">CONNECT YOUR WALLET</h3>
-                </div>
-                <p className="mono-font text-sm text-black opacity-80">
-                  Connect your Solana wallet using the wallet button in the sidebar. This is your personal payment account.
-                </p>
-              </div>
-              <div className="bg-[#B4E5FF] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-3">
-                  <span className="text-3xl mr-3">2️⃣</span>
-                  <h3 className="mono-font text-xl text-black">LINK YOUR X ACCOUNT</h3>
-                </div>
-                <p className="mono-font text-sm text-black opacity-80">
-                  Click your profile icon and connect your X (Twitter) account. This lets you send and receive payments through posts!
-                </p>
-              </div>
-              <div className="bg-[#FFE5B4] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-3">
-                  <span className="text-3xl mr-3">3️⃣</span>
-                  <h3 className="mono-font text-xl text-black">FUND YOUR BALANCE</h3>
-                </div>
-                <p className="mono-font text-sm text-black opacity-80 mb-3">
-                  Deposit USDC to your vault balance. This money is available to send via X posts.
-                </p>
-                <div className="bg-white hand-drawn p-3 border-2 border-black">
-                  <p className="mono-font text-xs text-black">
-                    💡 TIP: Your available balance = deposits - sent - withdrawn
-                  </p>
-                </div>
-              </div>
-              <div className="bg-[#E5B4FF] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-3">
-                  <span className="text-3xl mr-3">4️⃣</span>
-                  <h3 className="mono-font text-xl text-black">SEND PAYMENTS VIA X</h3>
-                </div>
-                <p className="mono-font text-sm text-black opacity-80 mb-3">
-                  Simply post on X:
-                </p>
-                <div className="bg-black text-white hand-drawn p-3 border-2 border-black mono-font text-sm mb-3">
-                  @BOT_WASSY SEND @USERNAME $5
-                </div>
-                <p className="mono-font text-xs text-black opacity-70 mb-3">
-                  The bot will process your payment automatically!
-                </p>
-              </div>
-              <div className="bg-[#FFB4E5] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-3">
-                  <span className="text-3xl mr-3">5️⃣</span>
-                  <h3 className="mono-font text-xl text-black">CLAIM YOUR PAYMENTS</h3>
-                </div>
-                <p className="mono-font text-sm text-black opacity-80 mb-3">
-                  When someone sends you money via X posts, you'll see pending claims. Click "CHECK FOR PAYMENTS" to scan for new payments, then click "CLAIM" to receive the USDC in your vault!
-                </p>
-                <div className="bg-white hand-drawn p-3 border-2 border-black">
-                  <p className="mono-font text-xs text-black">
-                    ⚡ AUTO-SCAN: The app checks for new payments every 5 minutes
-                  </p>
-                </div>
-              </div>
-              <div className="bg-red-200 hand-drawn p-4 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-3">
-                  <span className="text-3xl mr-3">6️⃣</span>
-                  <h3 className="mono-font text-xl text-black">WITHDRAW ANYTIME</h3>
-                </div>
-                <p className="mono-font text-sm text-black opacity-80">
-                  Click the "WITHDRAW" button to transfer USDC from your vault back to your wallet. You can only withdraw your available balance.
-                </p>
-              </div>
-              <div className="bg-[#FFE5B4] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-3">
-                  <Trophy size={24} className="text-black mr-2" />
-                  <h3 className="mono-font text-xl text-black">UNLOCK ACHIEVEMENTS</h3>
-                </div>
-                <p className="mono-font text-sm text-black opacity-80">
-                  Complete actions like making your first claim, depositing funds, or sending payments to unlock achievements. Track your progress in the achievements menu!
-                </p>
-              </div>
-            </div>
-            <div className="mt-6 bg-red-100 hand-drawn p-4 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <div className="flex items-center mb-3">
-                <span className="text-3xl mr-3">⚠️</span>
-                <h3 className="mono-font text-xl text-black">IMPORTANT DISCLAIMERS</h3>
-              </div>
-              <div className="space-y-3 text-left">
-                <div className="bg-white hand-drawn p-3 border-2 border-black">
-                  <p className="mono-font text-sm text-black">
-                    ⚡ User is fully responsible for correctness of recipient handle
-                  </p>
-                </div>
-                <div className="bg-white hand-drawn p-3 border-2 border-black">
-                  <p className="mono-font text-sm text-black">
-                    🔧 WASSY Pay is an indexing + execution tool, not a custodian
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 bg-gray-100 hand-drawn p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
-              <p className="mono-font text-sm text-black mb-2">
-                🚀 READY TO START?
-              </p>
-              <p className="mono-font text-xs text-black opacity-70">
-                Connect your wallet and X account to begin sending money through posts!
-              </p>
-            </div>
+          {/* Card 2 */}
+          <div style={{
+            background: 'white',
+            border: '1px solid #1a1a1a',
+            padding: '20px',
+            marginTop: '20px',
+            position: 'relative',
+            transform: 'rotate(-1deg)',
+            boxShadow: '5px 5px 0px #ff4500'
+          }}>
+            <p style={{ margin: '0', lineHeight: '1.6' }}>
+              // ARTIFACT_02: Privy creates your Solana wallet. You authorize once.
+              Payments execute automatically. The friction is removed, but the control remains yours.
+            </p>
           </div>
-        </div>}
+        </div>
+      </div>
+    );
+  }
 
-      {showProfileModal && <div onClick={() => setShowProfileModal(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-md bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => setShowProfileModal(false)} className="absolute top-4 right-4 text-white bg-black hover:bg-gray-800 p-3 rounded-full transition-all z-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1">
-              <X size={24} />
+  // Main dashboard
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#e8e6e1',
+      backgroundImage: 'radial-gradient(#1a1a1a 0.5px, transparent 0.5px)',
+      backgroundSize: '20px 20px',
+      padding: '20px',
+      fontFamily: "'Courier Prime', monospace"
+    }}>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Work+Sans:wght@900&display=swap');
+        `}
+      </style>
+
+      {/* Canvas */}
+      <div style={{
+        maxWidth: '1000px',
+        margin: 'auto',
+        border: '2px solid #1a1a1a',
+        padding: '30px',
+        boxShadow: '15px 15px 0px #1a1a1a',
+        background: '#e8e6e1',
+        position: 'relative'
+      }}>
+        {/* Tape mark */}
+        <div style={{
+          position: 'absolute',
+          width: '100px',
+          height: '30px',
+          background: 'rgba(220, 210, 160, 0.4)',
+          top: '-15px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          borderLeft: '2px solid rgba(0,0,0,0.1)',
+          borderRight: '2px solid rgba(0,0,0,0.1)'
+        }} />
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
+          <h1 style={{
+            fontFamily: "'Work Sans', sans-serif",
+            fontSize: 'clamp(2rem, 6vw, 3rem)',
+            textTransform: 'uppercase',
+            lineHeight: '0.8',
+            letterSpacing: '-2px',
+            margin: '0',
+            color: '#1a1a1a'
+          }}>
+            WASSY<br />PAY
+          </h1>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '12px', opacity: '0.6' }}>LOGGED IN AS</div>
+            <div style={{ fontWeight: 'bold', fontSize: '16px' }}>@{xUsername}</div>
+            <button
+              onClick={logout}
+              style={{
+                background: 'transparent',
+                color: '#1a1a1a',
+                border: '1px solid #1a1a1a',
+                padding: '5px 10px',
+                fontFamily: "'Courier Prime', monospace",
+                cursor: 'pointer',
+                fontSize: '12px',
+                marginTop: '5px'
+              }}
+            >
+              LOGOUT
             </button>
-            <h2 className="mono-font text-2xl sm:text-3xl text-black mb-4 sm:mb-6">
-              YOUR PROFILE
-            </h2>
-            <div className="space-y-4">
-              <div className="bg-gray-100 hand-drawn p-3 sm:p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-2">
-                  <Wallet size={16} className="text-black mr-2 sm:w-5 sm:h-5" />
-                  <p className="mono-font text-xs sm:text-sm text-black">
-                    WALLET ADDRESS
-                  </p>
+          </div>
+        </div>
+
+        {/* Wallet Card */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #1a1a1a',
+          padding: '20px',
+          marginBottom: '20px',
+          transform: 'rotate(0.5deg)',
+          boxShadow: '5px 5px 0px #ff4500'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
+            // WALLET_STATUS
+          </div>
+
+          {solanaWallet ? (
+            <>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', opacity: '0.6', marginBottom: '5px' }}>BALANCE</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: "'Work Sans', sans-serif" }}>
+                  ${walletBalance.toFixed(2)}
                 </div>
-                <p className="text-sm text-black break-all font-mono">
-                  {userWallet?.substring(0, 8)}...{userWallet?.substring(userWallet.length - 8)}
-                </p>
+                <div style={{ fontSize: '12px', opacity: '0.6' }}>{walletBalance.toFixed(6)} USDC</div>
               </div>
 
-              {/* Privy Wallet Section */}
-              {privyWallet && privyAuthenticated && (
-                <div className="bg-[#E5B4FF] hand-drawn p-3 sm:p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="flex items-center mb-2">
-                    <Wallet size={16} className="text-black mr-2 sm:w-5 sm:h-5" />
-                    <p className="mono-font text-xs sm:text-sm text-black">
-                      PRIVY WALLET (NON-CUSTODIAL)
-                    </p>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', opacity: '0.6', marginBottom: '5px' }}>ADDRESS</div>
+                <div style={{ fontSize: '10px', wordBreak: 'break-all', fontFamily: 'monospace' }}>
+                  {solanaWallet.address}
+                </div>
+              </div>
+
+              {/* Authorization Section */}
+              {isDelegated ? (
+                <div style={{
+                  background: '#d4edda',
+                  border: '1px solid #28a745',
+                  padding: '15px',
+                  marginBottom: '15px'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>✓ AUTHORIZED</div>
+                  <div style={{ fontSize: '12px' }}>
+                    Vault can move up to ${delegationAmount} USDC
                   </div>
-                  <p className="text-sm text-black break-all font-mono mb-3">
-                    {privyWallet.address?.substring(0, 8)}...{privyWallet.address?.substring(privyWallet.address.length - 8)}
-                  </p>
+                </div>
+              ) : (
+                <>
+                  <div style={{
+                    background: '#fff3cd',
+                    border: '1px solid #ffc107',
+                    padding: '15px',
+                    marginBottom: '15px'
+                  }}>
+                    <div style={{ fontSize: '12px' }}>
+                      ⚠ Authorization required before making payments
+                    </div>
+                  </div>
 
-                  {/* Authorization Status */}
-                  {isDelegationAuthorized ? (
-                    <div className="bg-green-200 hand-drawn p-3 border-3 border-black">
-                      <p className="mono-font text-xs text-black">
-                        ✅ AUTHORIZED FOR PAYMENTS
-                      </p>
-                      <p className="mono-font text-xs text-black mt-1 opacity-70">
-                        Allowance: ${delegationAllowance} USDC
-                      </p>
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                      AUTHORIZATION AMOUNT (USDC)
+                    </label>
+                    <input
+                      type="number"
+                      value={delegationAmount}
+                      onChange={(e) => setDelegationAmount(parseFloat(e.target.value) || 0)}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #1a1a1a',
+                        fontFamily: "'Courier Prime', monospace",
+                        fontSize: '14px'
+                      }}
+                      placeholder="1000"
+                    />
+                    <div style={{ fontSize: '10px', opacity: '0.6', marginTop: '5px' }}>
+                      Maximum amount vault can move from your wallet
                     </div>
-                  ) : (
-                    <div>
-                      <div className="bg-yellow-200 hand-drawn p-3 border-3 border-black mb-3">
-                        <p className="mono-font text-xs text-black">
-                          ⚠️ NOT AUTHORIZED YET
-                        </p>
-                        <p className="mono-font text-xs text-black mt-1 opacity-70">
-                          Authorize Wassy Bot to send payments via X posts
-                        </p>
-                      </div>
-                      <button
-                        onClick={handleAuthorizeDelegation}
-                        disabled={isAuthorizingDelegation}
-                        className="w-full flex items-center justify-center space-x-2 py-3 hand-drawn mono-font transition-all bg-[#B4FFE5] hover:bg-[#9FE5D0] text-black border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isAuthorizingDelegation ? (
-                          <>
-                            <div className="h-5 w-5 rounded-full border-3 border-black border-t-transparent animate-spin" />
-                            <span>AUTHORIZING...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Send size={20} />
-                            <span>AUTHORIZE WASSY BOT</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
+                  </div>
+
+                  <button
+                    onClick={handleAuthorizeDelegation}
+                    disabled={isAuthorizing || walletBalance === 0}
+                    style={{
+                      background: '#1a1a1a',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 20px',
+                      fontFamily: "'Courier Prime', monospace",
+                      fontWeight: 'bold',
+                      cursor: isAuthorizing || walletBalance === 0 ? 'not-allowed' : 'pointer',
+                      textTransform: 'uppercase',
+                      width: '100%',
+                      fontSize: '14px',
+                      opacity: isAuthorizing || walletBalance === 0 ? 0.5 : 1
+                    }}
+                  >
+                    {isAuthorizing ? '⏳ AUTHORIZING...' : '🔐 AUTHORIZE VAULT'}
+                  </button>
+                </>
+              )}
+
+              <a
+                href={`https://solscan.io/account/${solanaWallet.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  background: 'transparent',
+                  border: '1px solid #1a1a1a',
+                  color: '#1a1a1a',
+                  padding: '12px 20px',
+                  fontFamily: "'Courier Prime', monospace",
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  marginTop: '15px',
+                  textDecoration: 'none',
+                  fontSize: '14px'
+                }}
+              >
+                💰 FUND WALLET
+              </a>
+
+              {error && (
+                <div style={{
+                  background: '#f8d7da',
+                  border: '1px solid #dc3545',
+                  padding: '10px',
+                  marginTop: '15px',
+                  fontSize: '12px'
+                }}>
+                  {error}
                 </div>
               )}
 
-              <div className="bg-gray-100 hand-drawn p-3 sm:p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <div className="flex items-center mb-2">
-                  <DollarSign size={16} className="text-black mr-2 sm:w-5 sm:h-5" />
-                  <p className="mono-font text-xs sm:text-sm text-black">
-                    CURRENT BALANCE
-                  </p>
-                </div>
-                <p className="mono-font text-3xl sm:text-4xl text-black">
-                  ${Math.max(0, totalDeposited - totalSent - totalWithdrawn).toFixed(2)}
-                </p>
-                <p className="mono-font text-xs text-black mt-2 opacity-70">
-                  READY TO SEND VIA POSTS
-                </p>
-                {totalDeposited - totalSent - totalWithdrawn < -0.01 && <div className="mt-3 p-2 sm:p-3 bg-red-200 border-2 border-black hand-drawn">
-                    <p className="mono-font text-xs text-black">
-                      ⚠️ You have ${Math.abs(totalDeposited - totalSent - totalWithdrawn).toFixed(2)} in pending payments. Fund your balance to cover this payment!
-                    </p>
-                  </div>}
-              </div>
-
-              {xHandle ? <div>
-                  <div className="bg-[#B4FFE5] hand-drawn p-3 sm:p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <div className="flex items-center mb-3">
-                      {profileImage ? <img src={profileImage} alt={xHandle} className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-4 border-black mr-3" /> : <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-black flex items-center justify-center mr-3 border-4 border-black">
-                          <X size={24} className="text-white sm:w-8 sm:h-8" />
-                        </div>}
-                      <div>
-                        <p className="mono-font text-xs text-black mb-1">
-                          CONNECTED X ACCOUNT
-                        </p>
-                        <p className="mono-font text-xl sm:text-2xl text-black break-all">
-                          @{xHandle}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="mono-font text-sm text-black">
-                      YOU CAN NOW RECEIVE PAYMENTS VIA POSTS!
-                    </p>
-                  </div>
-                  <div className="mt-4 bg-[#B4E5FF] hand-drawn p-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
-                    <p className="mono-font text-xs text-black">
-                      Connected to @WASSY_BOT — payments via posts enabled!
-                    </p>
-                  </div>
-                </div> : <div>
-                  <div className="bg-red-100 hand-drawn p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4">
-                    <div className="flex items-center mb-2">
-                      <X size={20} className="text-black mr-2" />
-                      <p className="mono-font text-sm text-black">
-                        X ACCOUNT NOT CONNECTED
-                      </p>
-                    </div>
-                    <p className="mono-font text-sm text-black">
-                      CONNECT YOUR X ACCOUNT TO RECEIVE PAYMENTS THROUGH POSTS
-                    </p>
-                  </div>
-                  <button onClick={async () => {
-              try {
-                setIsConnectingTwitter(true);
-                setStatus({
-                  message: "Opening X login...",
-                  type: "loading"
-                });
-                const twitterLoginUrl = `https://oauth.dev.fun/twitter/login/699840f631c97306a0c4/${userWallet}`;
-                openLink(twitterLoginUrl);
-                setShowProfileModal(false);
-                setStatus({
-                  message: "Complete X login and return to this page",
-                  type: "success"
-                });
-              } catch (error) {
-                console.error(error);
-                setStatus({
-                  message: "Failed to open X login",
-                  type: "error"
-                });
-              } finally {
-                setIsConnectingTwitter(false);
-              }
-            }} disabled={isConnectingTwitter} className="w-full flex items-center justify-center space-x-2 py-4 hand-drawn mono-font transition-all bg-[#B4E5FF] hover:bg-[#9FD0EA] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-1 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isConnectingTwitter ? <>
-                        <div className="h-6 w-6 rounded-full border-4 border-black border-t-transparent animate-spin mr-2" />
-                        <span>OPENING...</span>
-                      </> : <>
-                        <X size={24} />
-                        <span>CONNECT X ACCOUNT</span>
-                      </>}
-                  </button>
-                </div>}
-
-              {claimHistory.length > 0 && <div className="mt-4 sm:mt-6">
-                  <div className="bg-[#E5B4FF] hand-drawn p-3 sm:p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <div className="flex items-center mb-4">
-                      <Clock size={20} className="text-black mr-2 sm:mr-3 sm:w-6 sm:h-6" />
-                      <h3 className="mono-font text-lg sm:text-xl text-black">
-                        CLAIM HISTORY
-                      </h3>
-                    </div>
-                    <p className="mono-font text-xs sm:text-sm text-black opacity-70 mb-4">
-                      YOUR SUCCESSFULLY CLAIMED PAYMENTS
-                    </p>
-                    <div className="space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
-                      {claimHistory.map((claim, index) => <div key={claim.id || index} className="bg-white hand-drawn p-3 sm:p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                          <div className="flex items-start justify-between flex-wrap sm:flex-nowrap gap-2">
-                            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 mb-2 sm:mb-0">
-                              {claim.senderImage ? <img src={claim.senderImage} alt={claim.senderHandle || 'Sender'} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-black flex-shrink-0" /> : <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-300 border-2 border-black flex items-center justify-center flex-shrink-0">
-                                  <DollarSign size={16} className="text-black" />
-                                </div>}
-                              <div className="flex-1 min-w-0">
-                                <p className="mono-font text-base sm:text-lg text-black">
-                                  ${claim.amount.toFixed(2)} USDC
-                                </p>
-                                <p className="mono-font text-xs text-black opacity-70 truncate">
-                                  FROM: {claim.senderHandle ? `@${claim.senderHandle}` : `${claim.senderWallet.substring(0, 8)}...`}
-                                </p>
-                                {claim.tweetId && claim.tweetId.length > 10 && <p className="mono-font text-xs text-black opacity-50">
-                                    VIA POST: {claim.tweetId.substring(0, 12)}...
-                                  </p>}
-                              </div>
-                            </div>
-                            <div className="text-right flex flex-col items-end gap-2">
-                              <div className="flex items-center space-x-2 px-3 py-1 bg-green-400 hand-drawn border-2 border-black">
-                                <span className="mono-font text-xs text-black">✓ CLAIMED</span>
-                              </div>
-                              <button onClick={() => shareClaimOnX(claim)} className="flex items-center space-x-1 px-3 py-1 bg-[#B4E5FF] hover:bg-[#9FD0EA] hand-drawn border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1 transition-all">
-                                <Share2 size={14} />
-                                <span className="mono-font text-xs text-black">SHARE</span>
-                              </button>
-                              {claim.createdAt && <p className="mono-font text-xs text-black opacity-50">
-                                  {new Date(claim.createdAt).toLocaleDateString()}
-                                </p>}
-                            </div>
-                          </div>
-                        </div>)}
-                    </div>
-                  </div>
-                </div>}
-            </div>
-          </div>
-        </div>}
-
-      {showVaultModal && <div onClick={() => setShowVaultModal(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div onClick={e => e.stopPropagation()} className="w-full max-w-md bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => setShowVaultModal(false)} className="absolute top-4 right-4 text-white bg-black hover:bg-gray-800 p-3 rounded-full transition-all z-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1">
-              <X size={24} />
-            </button>
-            <div className="flex items-center mb-4 sm:mb-6">
-              <Wallet size={24} className="text-black mr-3 sm:w-8 sm:h-8" />
-              <h2 className="mono-font text-2xl sm:text-3xl text-black">
-                WASSY PAY VAULT
-              </h2>
-            </div>
-            <div className="bg-[#B4E5FF] hand-drawn p-4 sm:p-6 border-4 border-black mb-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <p className="mono-font text-xs sm:text-sm text-black mb-2">
-                    TOTAL VAULT BALANCE
-                  </p>
-                  <p className="mono-font text-3xl sm:text-4xl text-black">
-                    ${vaultBalance.toFixed(2)}
-                  </p>
-                  <p className="mono-font text-xs text-black mt-1 opacity-70">
-                    USDC IN WASSY PAY VAULT
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>}
-
-      <div className="w-full max-w-2xl bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10 mt-6 mb-6">
-        <div className="bg-[#FFB4E5] hand-drawn p-4 sm:p-6 border-4 border-black mb-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-          <div className="flex items-center mb-4">
-            <Coins size={20} className="text-black mr-2 sm:mr-3 sm:w-6 sm:h-6" />
-            <h3 className="mono-font text-lg sm:text-xl text-black">
-              CHECK FOR PAYMENTS
-            </h3>
-          </div>
-          <p className="mono-font text-xs sm:text-sm text-black opacity-70 mb-4">
-            SCAN FOR PENDING PAYMENTS FROM @BOT_WASSY POSTS AND ON-CHAIN TRANSFERS
-          </p>
-          <button onClick={handleCheckForPayments} disabled={isCheckingPayments || !xHandle} className="w-full flex items-center justify-center space-x-2 py-3 sm:py-4 hand-drawn mono-font text-sm sm:text-base transition-all bg-[#E5B4FF] hover:bg-[#D09FEA] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-1 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
-            {isCheckingPayments ? <>
-                <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border-4 border-black border-t-transparent animate-spin mr-2" />
-                <span className="text-xs sm:text-base">SCANNING...</span>
-              </> : <>
-                <Coins size={20} className="sm:w-6 sm:h-6" />
-                <span className="text-xs sm:text-base">CHECK FOR PAYMENTS</span>
-              </>}
-          </button>
-          {!xHandle && <p className="mono-font text-xs text-black text-center mt-3 opacity-70">
-              Connect X account to check for payments
-            </p>}
-        </div>
-
-        <div className="bg-[#FFE5B4] hand-drawn p-4 sm:p-6 border-4 border-black mb-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative">
-          <div className="absolute -top-3 -right-3 bg-purple-500 text-white px-3 py-1 hand-drawn border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] animate-bounce hidden sm:block">
-            <p className="mono-font text-xs whitespace-nowrap">💡 Fund to send via X!</p>
-          </div>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <p className="mono-font text-xs sm:text-sm text-black">
-                  YOUR AVAILABLE BALANCE
-                </p>
-                <div className="sm:hidden bg-purple-500 text-white px-2 py-1 hand-drawn border-2 border-black mono-font text-xs">
-                  💡 FUND TO SEND!
-                </div>
-              </div>
-              <p className="mono-font text-3xl sm:text-4xl text-black">
-                ${Math.max(0, totalDeposited - totalSent - totalWithdrawn).toFixed(2)}
-              </p>
-              <p className="mono-font text-xs text-black mt-1 opacity-70">
-                READY TO SEND VIA POSTS
-              </p>
-              {totalDeposited - totalSent - totalWithdrawn < -0.01 && <div className="mt-3 p-3 bg-red-200 border-2 border-black hand-drawn">
-                  <p className="mono-font text-xs text-black">
-                    ⚠️ PENDING PAYMENT DETECTED: You sent ${Math.abs(totalDeposited - totalSent - totalWithdrawn).toFixed(2)} via X posts. Fund your balance to cover this payment!
-                  </p>
-                </div>}
-              <div className="mt-3 pt-3 border-t-2 border-black/20">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="mono-font text-black opacity-70">TOTAL DEPOSITED:</span>
-                  <span className="mono-font text-black">${totalDeposited.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="mono-font text-black opacity-70">TOTAL SENT:</span>
-                  <span className="mono-font text-black">-${totalSent.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="mono-font text-black opacity-70">TOTAL WITHDRAWN:</span>
-                  <span className="mono-font text-black">-${totalWithdrawn.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="mono-font text-black opacity-70">TOTAL CLAIMED:</span>
-                  <span className="mono-font text-black">${totalClaimed.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-xs pt-1 border-t border-black/20">
-                  <span className="mono-font text-black">AVAILABLE BALANCE:</span>
-                  <span className="mono-font text-black">${Math.max(0, totalDeposited - totalSent - totalWithdrawn).toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button onClick={() => setShowPaymentModal(true)} className="flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#B4FFE5] hover:bg-[#9FEAD0] text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-1 active:translate-y-1 transition-all mono-font text-sm sm:text-base">
-                <DollarSign size={18} className="sm:w-5 sm:h-5" />
-                <span className="text-xs sm:text-base">FUND</span>
-              </button>
-              <button onClick={() => setShowWithdrawModal(true)} disabled={Math.max(0, totalDeposited - totalSent - totalWithdrawn) <= 0} className="flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-400 hover:bg-red-500 text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 active:translate-y-1 transition-all mono-font text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed">
-                <DollarSign size={18} className="sm:w-5 sm:h-5" />
-                <span className="text-xs sm:text-base">WITHDRAW</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {backendClaims.length > 0 && <div className="bg-[#B4FFE5] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-6">
-            <div className="flex items-center mb-4">
-              <Coins size={20} className="text-black mr-2 sm:mr-3 sm:w-6 sm:h-6" />
-              <h3 className="mono-font text-lg sm:text-xl text-black">
-                X POST CLAIMS
-              </h3>
-            </div>
-            <p className="mono-font text-xs sm:text-sm text-black opacity-70 mb-4">
-              PAYMENTS DETECTED FROM @BOT_WASSY POSTS
-            </p>
-            {xHandle && <div className="bg-[#B4E5FF] hand-drawn p-3 border-2 border-black mb-3">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <p className="mono-font text-xs text-black">
-                    ✓ Backend monitoring: Auto-scans @{xHandle} mentions
-                  </p>
-                  <div className="flex items-center space-x-2 bg-purple-500 text-white px-3 py-1 hand-drawn border-2 border-black">
-                    <Clock size={14} />
-                    <span className="mono-font text-xs">Next scan: {nextFetchCountdown}</span>
-                  </div>
-                </div>
-              </div>}
-            <div className="space-y-3">
-              {backendClaims.filter(claim => {
-            const isAlreadyClaimed = allPaymentClaims.some(pc => pc.status === 'completed' && String(pc.paymentId) === String(claim.tweet_id));
-            const isManuallyHidden = manuallyHiddenClaims.includes(claim.tweet_id);
-            return !isAlreadyClaimed && !isManuallyHidden;
-          }).map(claim => {
-            const canActuallyClaim = claim.canClaim;
-            console.log(`🎯 Rendering unclaimed claim ${claim.tweet_id}: canClaim=${claim.canClaim}`);
-            return <div key={claim.tweet_id} className={`flex items-center justify-between flex-wrap sm:flex-nowrap gap-2 hand-drawn p-3 sm:p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${!canActuallyClaim ? 'bg-gray-200 opacity-60' : 'bg-white'}`}>
-                    <div className="flex-1 min-w-0">
-                      <p className={`mono-font text-base sm:text-lg ${!canActuallyClaim ? 'text-gray-600' : 'text-black'}`}>
-                        ${parseFloat(claim.amount).toFixed(2)} USDC
-                      </p>
-                      <p className={`mono-font text-xs opacity-70 truncate ${!canActuallyClaim ? 'text-gray-600' : 'text-black'}`}>
-                        FROM: @{claim.sender}
-                      </p>
-                      <p className={`mono-font text-xs opacity-50 truncate ${!canActuallyClaim ? 'text-gray-600' : 'text-black'}`}>
-                        TWEET ID: {claim.tweet_id.substring(0, 12)}...
-                      </p>
-                      {claim.reason && <p className="mono-font text-xs mt-1 text-red-600">
-                          ⚠️ {claim.reason}
-                        </p>}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        {!canActuallyClaim ? <>
-                            <div className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-red-400 text-black hand-drawn border-4 border-black mono-font text-xs sm:text-sm">
-                              <span>⚠️ CANNOT CLAIM</span>
-                            </div>
-                            <button onClick={() => handleMarkAsClaimed(claim.tweet_id)} className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-gray-400 hover:bg-gray-500 text-black hand-drawn border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1 transition-all mono-font text-xs sm:text-sm">
-                              <span>HIDE</span>
-                            </button>
-                          </> : <>
-                            <button onClick={() => handleClaimBackendPayment(claim)} disabled={loading} className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-[#B4FFE5] hover:bg-[#9FEAD0] text-black hand-drawn border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-1 active:translate-y-1 transition-all mono-font text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                              <DollarSign size={16} className="sm:w-[18px] sm:h-[18px]" />
-                              <span>CLAIM</span>
-                            </button>
-                            <button onClick={() => handleMarkAsClaimed(claim.tweet_id)} className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-gray-400 hover:bg-gray-500 text-black hand-drawn border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 active:translate-y-1 transition-all mono-font text-xs sm:text-sm">
-                              <span>HIDE</span>
-                            </button>
-                          </>}
-                      </div>
-                      {claimErrors[claim.tweet_id] && <div className="bg-red-100 border-2 border-red-500 hand-drawn p-2 mono-font text-xs text-red-700">
-                          ⚠️ {claimErrors[claim.tweet_id]}
-                        </div>}
-                    </div>
-                  </div>;
-          })}
-            </div>
-          </div>}
-
-        {pendingClaims.length > 0 && <div className="bg-[#E5B4FF] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-6">
-            <div className="flex items-center mb-4">
-              <Coins size={20} className="text-black mr-2 sm:mr-3 sm:w-6 sm:h-6" />
-              <h3 className="mono-font text-lg sm:text-xl text-black">
-                ON-CHAIN CLAIMS
-              </h3>
-            </div>
-            <p className="mono-font text-xs sm:text-sm text-black opacity-70 mb-4">
-              DIRECT BLOCKCHAIN PAYMENTS
-            </p>
-            {xHandle && <div className="bg-[#B4E5FF] hand-drawn p-3 border-2 border-black mb-3">
-                <p className="mono-font text-xs text-black">
-                  ✓ Real-time check: Monitoring payments sent to @{xHandle}
-                </p>
-              </div>}
-            <div className="space-y-3">
-              {pendingClaims.map(payment => {
-            const isAlreadyClaimed = allPaymentClaims.some(pc => pc.paymentId === payment.id && pc.status === 'completed');
-            return <div key={payment.id} className={`flex items-center justify-between flex-wrap sm:flex-nowrap gap-2 hand-drawn p-3 sm:p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${isAlreadyClaimed ? 'bg-gray-200 opacity-60' : 'bg-white'}`} style={isAlreadyClaimed ? {
-              pointerEvents: 'none'
-            } : {}}>
-                    <div className="flex-1 min-w-0">
-                      <p className={`mono-font text-base sm:text-lg ${isAlreadyClaimed ? 'text-gray-600' : 'text-black'}`}>
-                        ${payment.amount.toFixed(2)} USDC
-                      </p>
-                      <p className={`mono-font text-xs opacity-70 truncate ${isAlreadyClaimed ? 'text-gray-600' : 'text-black'}`}>
-                        FROM: {payment.fromUser?.substring(0, 8)}...
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {isAlreadyClaimed ? <div className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-green-400 text-black hand-drawn border-4 border-black mono-font text-xs sm:text-sm" style={{
-                  pointerEvents: 'none'
+              {success && (
+                <div style={{
+                  background: '#d4edda',
+                  border: '1px solid #28a745',
+                  padding: '10px',
+                  marginTop: '15px',
+                  fontSize: '12px'
                 }}>
-                          <span>✓ CLAIMED</span>
-                        </div> : <button onClick={() => handleClaimPayment(payment.id, payment.amount)} disabled={loading} className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-[#B4FFE5] hover:bg-[#9FEAD0] text-black hand-drawn border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 active:translate-y-1 transition-all mono-font text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                          <DollarSign size={16} className="sm:w-[18px] sm:h-[18px]" />
-                          <span>CLAIM</span>
-                        </button>}
-                      {claimErrors[payment.id] && <div className="bg-red-100 border-2 border-red-500 hand-drawn p-2 mono-font text-xs text-red-700">
-                          ⚠️ {claimErrors[payment.id]}
-                        </div>}
+                  {success}
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{
+              background: '#fff3cd',
+              border: '1px solid #ffc107',
+              padding: '15px'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>⏳ CREATING WALLET...</div>
+              <div style={{ fontSize: '12px' }}>
+                Privy is setting up your embedded Solana wallet. This may take a few moments.
+              </div>
+              <div style={{ fontSize: '10px', marginTop: '10px', opacity: '0.6' }}>
+                Debug: {wallets.length} wallet(s) detected
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* How to Pay */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #1a1a1a',
+          padding: '20px',
+          marginBottom: '20px',
+          transform: 'rotate(-0.5deg)',
+          boxShadow: '5px 5px 0px #ff4500'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
+            // HOW_TO_PAY
+          </div>
+          <div style={{
+            background: '#f5f5f5',
+            padding: '15px',
+            border: '1px solid #1a1a1a',
+            marginBottom: '15px',
+            fontFamily: 'monospace'
+          }}>
+            @bot_wassy send 5 to @friend
+          </div>
+          <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+            Payments processed every 10 minutes. Both sender and recipient must be registered.
+          </div>
+        </div>
+
+        {/* Payment History */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #1a1a1a',
+          padding: '20px',
+          transform: 'rotate(0.5deg)',
+          boxShadow: '5px 5px 0px #ff4500'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
+            // PAYMENT_HISTORY
+          </div>
+
+          {payments.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', opacity: '0.5' }}>
+              <div style={{ fontSize: '48px', marginBottom: '10px' }}>$</div>
+              <div>No payments yet</div>
+              <div style={{ fontSize: '12px', marginTop: '5px' }}>
+                Make your first payment by posting on X
+              </div>
+            </div>
+          ) : (
+            <div>
+              {payments.map((payment, idx) => (
+                <div
+                  key={payment.id}
+                  style={{
+                    background: '#f5f5f5',
+                    border: '1px solid #1a1a1a',
+                    padding: '15px',
+                    marginBottom: '10px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                        {payment.sender_username === xUsername ? (
+                          <span style={{ color: '#dc3545' }}>→ SENT</span>
+                        ) : (
+                          <span style={{ color: '#28a745' }}>← RECEIVED</span>
+                        )}
+                        <span style={{ marginLeft: '10px' }}>${payment.amount}</span>
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: '0.7' }}>
+                        {payment.sender_username === xUsername ? (
+                          <>To: @{payment.recipient_username}</>
+                        ) : (
+                          <>From: @{payment.sender_username}</>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '10px', opacity: '0.5', marginTop: '5px' }}>
+                        {new Date(payment.created_at).toLocaleString()}
+                      </div>
                     </div>
-                  </div>;
-          })}
-            </div>
-          </div>}
-
-        <div className="bg-red-100 hand-drawn p-4 sm:p-5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4">
-          <div className="flex items-center mb-4">
-            <Send size={20} className="text-black mr-2 sm:mr-3 sm:w-6 sm:h-6" />
-            <h3 className="mono-font text-lg sm:text-xl text-black">
-              HOW TO SEND
-            </h3>
-          </div>
-          <p className="mono-font text-sm sm:text-lg text-black leading-relaxed mb-2 break-all">
-            POST: @BOT_WASSY SEND @USERNAME $5
-          </p>
-          <p className="mono-font text-xs sm:text-sm text-black opacity-70">
-            BOT WILL PROCESS PAYMENT
-          </p>
-        </div>
-
-        {recentPayments.length > 0 && <div className="bg-[#E5B4FF] hand-drawn p-4 sm:p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center mb-4">
-              <Clock size={20} className="text-black mr-2 sm:mr-3 sm:w-6 sm:h-6" />
-              <h3 className="mono-font text-lg sm:text-xl text-black">
-                RECENT PAYMENTS
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {recentPayments.map(payment => <div key={payment.id} className="flex items-center justify-between bg-white hand-drawn p-3 sm:p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="flex items-center">
-                    <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full mr-2 sm:mr-3 ${payment.status === 'completed' ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span className="mono-font text-sm sm:text-base text-black">
-                      {payment.fromUser === userWallet ? 'SENT' : 'RECEIVED'}
-                    </span>
+                    <div>
+                      {payment.status === 'completed' && <span style={{ color: '#28a745' }}>✓</span>}
+                      {payment.status === 'pending' && <span style={{ color: '#ffc107' }}>⏳</span>}
+                      {payment.status === 'failed' && <span style={{ color: '#dc3545' }}>✗</span>}
+                    </div>
                   </div>
-                  <span className="mono-font text-lg sm:text-xl text-black">
-                    ${payment.amount}
-                  </span>
-                </div>)}
-            </div>
-          </div>}
-      </div>
 
-      {showAdminDashboard && isAdmin && <div ref={adminDashboardRef} className="w-full max-w-6xl bg-[#FFFEF9] hand-drawn border-4 border-black p-4 sm:p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10 mt-6 mb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <h2 className="mono-font text-2xl sm:text-3xl text-black">ADMIN DASHBOARD</h2>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-              <button onClick={handleSyncDatabases} disabled={isSyncingDatabase} className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-[#B4E5FF] hover:bg-[#9FD0EA] text-black hand-drawn border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-1 active:translate-y-1 transition-all mono-font text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                {isSyncingDatabase ? 'SYNCING...' : 'SYNC DATABASES'}
-              </button>
-              <div className="mono-font text-xs sm:text-sm text-black">
-                TOTAL USERS: {allUsers.length}
-              </div>
-            </div>
-          </div>
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <div className="inline-block min-w-full align-middle">
-              <table className="w-full border-4 border-black mono-font text-xs sm:text-sm">
-                <thead>
-                  <tr className="bg-[#E5B4FF] border-b-4 border-black">
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">User</th>
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">X Handle</th>
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">Balance</th>
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">Deposited</th>
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">Sent</th>
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">Claimed</th>
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">Pending</th>
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">Confirmed</th>
-                    <th className="p-2 sm:p-4 text-left text-black border-r-4 border-black whitespace-nowrap">Total Claims</th>
-                    <th className="p-2 sm:p-4 text-left text-black whitespace-nowrap">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allUsers.map((user, index) => <>
-                      <tr key={user.wallet} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b-2 border-black`}>
-                        <td className="p-2 sm:p-4 border-r-2 border-black">
-                          <div className="flex items-center space-x-1 sm:space-x-2">
-                            {user.profileImage ? <img src={user.profileImage} alt={user.xHandle} className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-black flex-shrink-0" /> : <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-300 border-2 border-black flex-shrink-0" />}
-                            <span className="text-xs text-black font-mono truncate max-w-[80px] sm:max-w-none">
-                              {user.wallet.substring(0, 6)}...{user.wallet.substring(user.wallet.length - 4)}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-2 sm:p-4 text-black border-r-2 border-black whitespace-nowrap">
-                          <span className="truncate max-w-[100px] sm:max-w-none block">
-                            {user.xHandle !== 'Not connected' ? `@${user.xHandle}` : user.xHandle}
-                          </span>
-                        </td>
-                        <td className="p-2 sm:p-4 text-black border-r-2 border-black whitespace-nowrap">
-                          ${user.balance.toFixed(2)}
-                        </td>
-                        <td className="p-2 sm:p-4 text-black border-r-2 border-black whitespace-nowrap">
-                          ${user.totalDeposited.toFixed(2)}
-                        </td>
-                        <td className="p-2 sm:p-4 text-black border-r-2 border-black whitespace-nowrap">
-                          ${user.totalSent.toFixed(2)}
-                        </td>
-                        <td className="p-2 sm:p-4 text-black border-r-2 border-black whitespace-nowrap">
-                          ${user.totalClaimed.toFixed(2)}
-                        </td>
-                        <td className="p-2 sm:p-4 text-black border-r-2 border-black whitespace-nowrap">
-                          {user.pendingClaims}
-                        </td>
-                        <td className="p-2 sm:p-4 text-black border-r-2 border-black whitespace-nowrap">
-                          {user.confirmedClaims}
-                        </td>
-                        <td className="p-2 sm:p-4 text-black border-r-2 border-black whitespace-nowrap">
-                          {user.claimsMade}
-                        </td>
-                        <td className="p-2 sm:p-4 whitespace-nowrap">
-                          <button onClick={() => handleViewUserClaims(user.wallet)} className={`px-2 sm:px-3 py-1 ${expandedUserClaims === user.wallet ? 'bg-red-400 hover:bg-red-500' : 'bg-[#B4E5FF] hover:bg-[#9FD0EA]'} text-black hand-drawn border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 active:translate-y-1 transition-all mono-font text-xs`}>
-                            {expandedUserClaims === user.wallet ? 'HIDE' : 'VIEW CLAIMS'}
-                          </button>
-                        </td>
-                      </tr>
-                      {expandedUserClaims === user.wallet && <tr key={`${user.wallet}-claims`}>
-                          <td colSpan="10" className="p-4 bg-[#E5B4FF] border-b-4 border-black">
-                            <div className="bg-white hand-drawn p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                              <h4 className="mono-font text-lg text-black mb-4">
-                                Claim Details for {user.xHandle !== 'Not connected' ? `@${user.xHandle}` : user.wallet.substring(0, 8) + '...'}
-                              </h4>
-                              {userClaimDetails.length > 0 ? <div className="space-y-3 max-h-96 overflow-y-auto">
-                                  {userClaimDetails.map(claim => <div key={claim.claimId} className="bg-[#B4FFE5] hand-drawn p-4 border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                                      <div className="flex flex-wrap items-start justify-between gap-3">
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center space-x-2 mb-2">
-                                            {claim.senderImage ? <img src={claim.senderImage} alt={claim.senderHandle || 'Sender'} className="w-10 h-10 rounded-full border-2 border-black" /> : <div className="w-10 h-10 rounded-full bg-purple-300 border-2 border-black flex items-center justify-center">
-                                                <DollarSign size={20} className="text-black" />
-                                              </div>}
-                                            <div>
-                                              <p className="mono-font text-xl text-black">
-                                                ${claim.amount.toFixed(2)} USDC
-                                              </p>
-                                              <p className="mono-font text-xs text-black opacity-70">
-                                                FROM: {claim.senderHandle ? `@${claim.senderHandle}` : `${claim.senderWallet.substring(0, 8)}...`}
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div className="space-y-1 mt-3 text-xs">
-                                            <p className="mono-font text-black">
-                                              <span className="opacity-70">Tweet ID:</span> {claim.tweetId}
-                                            </p>
-                                            <p className="mono-font text-black">
-                                              <span className="opacity-70">Payment ID:</span> {claim.paymentId}
-                                            </p>
-                                            <p className="mono-font text-black">
-                                              <span className="opacity-70">Claim ID:</span> {claim.claimId}
-                                            </p>
-                                            <p className="mono-font text-black">
-                                              <span className="opacity-70">Claimed At:</span> {new Date(claim.createdAt).toLocaleString()}
-                                            </p>
-                                            <p className="mono-font text-black">
-                                              <span className="opacity-70">Status:</span> {claim.status}
-                                            </p>
-                                          </div>
-                                        </div>
-                                        <div className="flex items-center space-x-2 px-3 py-1 bg-green-400 hand-drawn border-2 border-black">
-                                          <span className="mono-font text-xs text-black">✓ CLAIMED</span>
-                                        </div>
-                                      </div>
-                                    </div>)}
-                                </div> : <p className="mono-font text-black text-center py-4">No claims found for this user</p>}
-                            </div>
-                          </td>
-                        </tr>}
-                    </>)}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          {allUsers.length === 0 && <div className="text-center py-8">
-              <p className="mono-font text-black">No users found</p>
-            </div>}
-        </div>}
+                  {payment.tx_signature && (
+                    <a
+                      href={`https://solscan.io/tx/${payment.tx_signature}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontSize: '10px',
+                        color: '#1a1a1a',
+                        textDecoration: 'underline',
+                        display: 'block',
+                        marginTop: '5px'
+                      }}
+                    >
+                      View transaction →
+                    </a>
+                  )}
 
-      <div className="mt-8 mb-20 md:mb-8 text-center z-10 relative px-4">
-        <p className="mono-font text-black text-sm sm:text-lg mb-4">© WASSY PAY — SEND MONEY THROUGH POSTS</p>
-        <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6">
-          <a href="https://x.com/bot_wassy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto text-black hover:text-gray-800 transition-colors flex items-center justify-center bg-white border-4 border-black hand-drawn px-4 sm:px-6 py-2 sm:py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-1 active:translate-y-1">
-            <X size={18} className="mr-2 sm:w-5 sm:h-5" />
-            <span className="mono-font text-sm sm:text-base">FOLLOW</span>
-          </a>
-          <a href="https://github.com/kasperwtrcolor/wassypay" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto text-black hover:text-gray-800 transition-colors flex items-center justify-center bg-white border-4 border-black hand-drawn px-4 sm:px-6 py-2 sm:py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 active:translate-y-1">
-            <Github size={18} className="mr-2 sm:w-5 sm:h-5" />
-            <span className="mono-font text-sm sm:text-base">DOCS</span>
-          </a>
+                  {payment.tweet_url && (
+                    <a
+                      href={payment.tweet_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontSize: '10px',
+                        color: '#1a1a1a',
+                        textDecoration: 'underline',
+                        display: 'block',
+                        marginTop: '5px'
+                      }}
+                    >
+                      View tweet →
+                    </a>
+                  )}
+
+                  {payment.error_message && (
+                    <div style={{
+                      fontSize: '10px',
+                      color: '#dc3545',
+                      marginTop: '10px',
+                      padding: '5px',
+                      background: '#f8d7da',
+                      border: '1px solid #dc3545'
+                    }}>
+                      Error: {payment.error_message}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 }
-function LandingPage({
-  onEnterApp,
-  scrollY
-}) {
-  const [activeSection, setActiveSection] = useState(0);
-  const sectionsRef = useRef([]);
-  const [hoveredBenefit, setHoveredBenefit] = useState(null);
-  const scrollToSection = index => {
-    sectionsRef.current[index]?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  };
-  const navItems = [{
-    label: 'HOME',
-    index: 0
-  }, {
-    label: 'HOW IT WORKS',
-    index: 1
-  }, {
-    label: 'THE FLOW',
-    index: 2
-  }, {
-    label: 'COMING SOON',
-    index: 3
-  }, {
-    label: 'FAQ',
-    index: 4
-  }, {
-    label: 'GET STARTED',
-    index: 5
-  }];
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY + window.innerHeight / 2;
-      sectionsRef.current.forEach((section, index) => {
-        if (section) {
-          const {
-            offsetTop,
-            offsetHeight
-          } = section;
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(index);
-          }
-        }
-      });
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  const benefits = [{
-    title: "POST. SEND. DONE.",
-    description: "Type @BOT_WASSY SEND @friend $5. That's it. Money moves.",
-    color: "bg-[#FFE5B4]",
-    image: "https://cdn.dev.fun/asset/699840f631c97306a0c4/POST SEND DONE_d67b93aa.png"
-  }, {
-    title: "VAULT SECURED",
-    description: "Your funds sit in a Solana vault. Bot can't touch them. Only you can.",
-    color: "bg-[#B4E5FF]",
-    image: "https://cdn.dev.fun/asset/699840f631c97306a0c4/VAULT SECURED_e30c801c.png"
-  }, {
-    title: "BOT HANDLES IT",
-    description: "No forms. No clicks. Bot sees your post. Bot moves money. You're done.",
-    color: "bg-[#E5B4FF]",
-    image: "https://cdn.dev.fun/asset/699840f631c97306a0c4/BOT HANDLES IT_e544f74c.png"
-  }, {
-    title: "CLAIM INSTANTLY",
-    description: "Someone sent you money? Click claim. USDC hits your wallet. Simple.",
-    color: "bg-[#B4FFE5]",
-    image: "https://cdn.dev.fun/asset/699840f631c97306a0c4/CLAIM INSTANTLY_ab185103.png"
-  }];
-  const comingSoon = [{
-    title: "MULTI-CHAIN",
-    description: "ETH. POLYGON. BASE."
-  }, {
-    title: "AUTO-REPEAT",
-    description: "SEND WEEKLY. MONTHLY."
-  }];
-  const faqs = [{
-    q: "HOW DOES IT WORK?",
-    a: "CONNECT WALLET. CONNECT X. FUND BALANCE. POST @BOT_WASSY SEND @USER $5. BOT DOES THE REST."
-  }, {
-    q: "IS IT SAFE?",
-    a: "YES. SOLANA BLOCKCHAIN. YOUR VAULT. YOUR KEYS. BOT JUST WATCHES AND EXECUTES."
-  }, {
-    q: "WHAT ARE THE FEES?",
-    a: "ZERO PLATFORM FEES. ONLY SOLANA NETWORK FEE. USUALLY UNDER $0.01."
-  }, {
-    q: "CAN I WITHDRAW?",
-    a: "YES. ANYTIME. ONE CLICK. FUNDS GO TO YOUR WALLET."
-  }];
-  return <div className="min-h-screen bg-[#FFFEF9]">
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FFFEF9] border-b-4 border-black shadow-[0_4px_0px_0px_rgba(0,0,0,1)]">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="headline-font text-2xl text-black">WASSY PAY</div>
-            <div className="hidden md:flex items-center space-x-2">
-              {navItems.map(item => <button key={item.index} onClick={() => scrollToSection(item.index)} className={`px-4 py-2 mono-font text-xs border-3 border-black hand-drawn transition-all transform hover:scale-105 active:translate-y-1 ${activeSection === item.index ? 'bg-[#B4FFE5] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]' : 'bg-white hover:bg-[#FFE5B4] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'}`}>
-                  {item.label}
-                </button>)}
-            </div>
-            <button onClick={onEnterApp} className="px-6 py-2 bg-black text-white mono-font text-xs border-3 border-black hand-drawn transform hover:scale-105 active:translate-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-              LAUNCH APP
-            </button>
-          </div>
-          <div className="md:hidden mt-3 flex flex-wrap gap-2">
-            {navItems.map(item => <button key={item.index} onClick={() => scrollToSection(item.index)} className={`px-3 py-1 mono-font text-xs border-2 border-black hand-drawn transition-all ${activeSection === item.index ? 'bg-[#B4FFE5]' : 'bg-white hover:bg-[#FFE5B4]'}`}>
-                {item.label}
-              </button>)}
-          </div>
-        </div>
-      </nav>
 
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Space+Mono:wght@400;700&display=swap');
-        
-        @keyframes wiggle {
-          0%, 100% { transform: rotate(-2deg); }
-          50% { transform: rotate(2deg); }
-        }
-        @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(-50px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(50px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse-border {
-          0%, 100% { border-width: 4px; }
-          50% { border-width: 6px; }
-        }
-        .animate-wiggle {
-          animation: wiggle 0.5s ease-in-out;
-        }
-        .animate-slide-in-left {
-          animation: slideInLeft 0.8s ease-out forwards;
-        }
-        .animate-slide-in-right {
-          animation: slideInRight 0.8s ease-out forwards;
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
-        .animate-pulse-border {
-          animation: pulse-border 2s ease-in-out infinite;
-        }
-        .hand-drawn {
-          border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
-        }
-        .grid-texture {
-          background-image: 
-            linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-          background-size: 24px 24px;
-        }
-        .headline-font {
-          font-family: 'Space Grotesk', sans-serif;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-        }
-        .mono-font {
-          font-family: 'Space Mono', monospace;
-          font-weight: 700;
-          letter-spacing: 0.02em;
-        }
-      `}</style>
-
-      <section ref={el => sectionsRef.current[0] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 pt-24 sm:pt-8 relative overflow-hidden grid-texture">
-        <div className="text-center z-10 max-w-4xl mx-auto">
-          <h1 className="headline-font text-6xl sm:text-9xl md:text-[12rem] text-black mb-4 sm:mb-6 animate-fade-in-up leading-none">
-            WASSY<br />PAY
-          </h1>
-          
-          <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
-            <p className="mono-font text-base sm:text-2xl text-black mb-2 sm:mb-3 animate-fade-in-up" style={{
-            animationDelay: '0.2s'
-          }}>
-              POST. SEND. DONE.
-            </p>
-            <p className="mono-font text-xs sm:text-base text-black opacity-70 animate-fade-in-up" style={{
-            animationDelay: '0.3s'
-          }}>
-              TURN X INTO YOUR PAYMENT PORTAL.<br />
-              NO WALLET ADDRESSES. NO COMPLEXITY.<br />
-              JUST POST @BOT_WASSY SEND @USER $5.
-            </p>
-          </div>
-          
-          <button onClick={onEnterApp} className="group relative px-8 sm:px-16 py-4 sm:py-7 bg-[#B4FFE5] hover:bg-[#9FEAD0] text-black border-4 sm:border-5 border-black hand-drawn transform hover:scale-105 hover:rotate-1 active:translate-y-1 transition-all mono-font text-base sm:text-2xl animate-fade-in-up shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]" style={{
-          animationDelay: '0.4s'
-        }}>
-            <span className="flex items-center space-x-2 sm:space-x-3">
-              <span>LAUNCH APP</span>
-              <ArrowRight size={20} className="sm:w-7 sm:h-7 group-hover:translate-x-2 transition-transform" />
-            </span>
-          </button>
+// Root App component with Privy Provider
+export default function App() {
+  if (!PRIVY_APP_ID) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#dc3545',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        fontFamily: "'Courier Prime', monospace",
+        color: 'white'
+      }}>
+        <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+          <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>⚠️ CONFIGURATION ERROR</h1>
+          <p>VITE_PRIVY_APP_ID environment variable is not set.</p>
+          <p style={{ fontSize: '12px', marginTop: '10px' }}>Check your .env.local file.</p>
         </div>
+      </div>
+    );
+  }
 
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronDown size={48} className="text-black opacity-30" />
-        </div>
-      </section>
-
-      <section ref={el => sectionsRef.current[1] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 py-16 sm:py-8 grid-texture">
-        <div className="inline-block mb-8 sm:mb-12 px-6 py-2 bg-[#FFE5B4] border-4 border-black hand-drawn">
-          <p className="mono-font text-sm text-black">HOW IT WORKS</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-5xl w-full">
-          {benefits.map((benefit, index) => <div key={index} className={`${benefit.color} p-3 sm:p-4 border-4 sm:border-5 border-black hand-drawn transform hover:scale-105 hover:-rotate-1 transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] ${activeSection >= 1 ? 'animate-fade-in-up' : 'opacity-0'}`} style={{
-          animationDelay: `${index * 0.15}s`
-        }} onMouseEnter={() => setHoveredBenefit(index)} onMouseLeave={() => setHoveredBenefit(null)}>
-              <div className={`${hoveredBenefit === index ? 'animate-wiggle' : ''}`}>
-                <img src={benefit.image} alt={benefit.title} className="w-full h-auto object-contain border-3 sm:border-4 border-black hand-drawn" />
-              </div>
-            </div>)}
-        </div>
-      </section>
-
-      <section ref={el => sectionsRef.current[2] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 py-16 sm:py-8 grid-texture">
-        <div className="inline-block mb-8 sm:mb-12 px-6 py-2 bg-[#E5B4FF] border-4 border-black hand-drawn">
-          <p className="mono-font text-sm text-black">THE FLOW</p>
-        </div>
-        
-        <div className="max-w-6xl w-full relative pb-32 sm:pb-0">
-          <div className={`relative ${activeSection >= 2 ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <div className="bg-white p-3 sm:p-4 border-4 sm:border-5 border-black hand-drawn shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mx-auto max-w-4xl">
-              <img src="https://cdn.dev.fun/asset/699840f631c97306a0c4/wassypay flow_962fc993.png" alt="Wassy Pay Flow Diagram" className="w-full h-auto object-contain" />
-            </div>
-
-            <div className={`static md:absolute md:-top-8 md:-left-12 lg:-left-20 w-full sm:w-56 md:w-64 mt-4 md:mt-0 ${activeSection >= 2 ? 'animate-fade-in-up md:animate-slide-in-left' : 'opacity-0'}`} style={{
-            animationDelay: '0.2s'
-          }}>
-              <div className="bg-[#B4E5FF] p-4 sm:p-6 border-4 border-black hand-drawn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:-rotate-2 transition-all">
-                <div className="flex items-center mb-3">
-                  <div className="w-10 h-10 bg-black flex items-center justify-center text-white mono-font text-lg border-3 border-black mr-3 hand-drawn">
-                    1
-                  </div>
-                  <h3 className="mono-font text-lg text-black">YOU</h3>
-                </div>
-                <div className="space-y-2 mono-font text-xs text-black">
-                  <p>→ CONNECT WALLET</p>
-                  <p>→ CONNECT X ACCOUNT</p>
-                  <p>→ FUND YOUR VAULT</p>
-                  <p>→ POST: @BOT_WASSY SEND @FRIEND $5</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`static md:absolute md:-top-8 md:-right-12 lg:-right-20 w-full sm:w-56 md:w-64 mt-4 md:mt-0 ${activeSection >= 2 ? 'animate-fade-in-up md:animate-slide-in-right' : 'opacity-0'}`} style={{
-            animationDelay: '0.3s'
-          }}>
-              <div className="bg-[#FFE5B4] p-4 sm:p-6 border-4 border-black hand-drawn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-2 transition-all">
-                <div className="flex items-center mb-3">
-                  <div className="w-10 h-10 bg-black flex items-center justify-center text-white mono-font text-lg border-3 border-black mr-3 hand-drawn">
-                    2
-                  </div>
-                  <h3 className="mono-font text-lg text-black">BOT</h3>
-                </div>
-                <div className="space-y-2 mono-font text-xs text-black">
-                  <p>→ SEES YOUR POST</p>
-                  <p>→ CHECKS YOUR BALANCE</p>
-                  <p>→ MOVES FUNDS TO VAULT</p>
-                  <p>→ CONFIRMS WITH REPLY</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`static md:absolute md:-bottom-8 md:left-1/2 md:transform md:-translate-x-1/2 w-full sm:w-56 md:w-64 mt-4 md:mt-0 ${activeSection >= 2 ? 'animate-fade-in-up' : 'opacity-0'}`} style={{
-            animationDelay: '0.5s'
-          }}>
-              <div className="bg-[#B4FFE5] p-4 sm:p-6 border-4 border-black hand-drawn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 transition-all">
-                <div className="flex items-center mb-3">
-                  <div className="w-10 h-10 bg-black flex items-center justify-center text-white mono-font text-lg border-3 border-black mr-3 hand-drawn">
-                    3
-                  </div>
-                  <h3 className="mono-font text-lg text-black">FRIEND</h3>
-                </div>
-                <div className="space-y-2 mono-font text-xs text-black">
-                  <p>→ OPENS WASSY PAY</p>
-                  <p>→ SEES PENDING CLAIM</p>
-                  <p>→ CLICKS CLAIM</p>
-                  <p>→ USDC IN WALLET. DONE.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section ref={el => sectionsRef.current[3] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 py-16 sm:py-8 grid-texture">
-        <div className="inline-block mb-8 sm:mb-12 px-6 py-2 bg-[#FFE5B4] border-4 border-black hand-drawn">
-          <p className="mono-font text-sm text-black">COMING SOON</p>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl w-full">
-          {comingSoon.map((feature, index) => <div key={index} className={`bg-[#FFFEF9] p-4 sm:p-6 border-4 border-black hand-drawn transform hover:scale-105 hover:rotate-1 transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${activeSection >= 3 ? 'animate-fade-in-up' : 'opacity-0'}`} style={{
-          animationDelay: `${index * 0.1}s`
-        }}>
-              <h3 className="mono-font text-base sm:text-lg text-black mb-2">
-                {feature.title}
-              </h3>
-              <p className="mono-font text-xs sm:text-sm text-black opacity-70">
-                {feature.description}
-              </p>
-            </div>)}
-        </div>
-      </section>
-
-      <section ref={el => sectionsRef.current[4] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 py-16 sm:py-8 grid-texture">
-        <div className="inline-block mb-8 sm:mb-12 px-6 py-2 bg-[#E5B4FF] border-4 border-black hand-drawn">
-          <p className="mono-font text-sm text-black">QUESTIONS</p>
-        </div>
-        
-        <div className="max-w-3xl w-full space-y-4 sm:space-y-5">
-          {faqs.map((faq, index) => <div key={index} className={`bg-[#FFFEF9] p-4 sm:p-6 border-4 border-black hand-drawn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${activeSection >= 4 ? 'animate-fade-in-up' : 'opacity-0'}`} style={{
-          animationDelay: `${index * 0.1}s`
-        }}>
-              <h3 className="mono-font text-base sm:text-lg text-black mb-2 sm:mb-3">
-                {faq.q}
-              </h3>
-              <p className="mono-font text-xs sm:text-sm text-black opacity-80 leading-relaxed">
-                {faq.a}
-              </p>
-            </div>)}
-        </div>
-      </section>
-
-      <section ref={el => sectionsRef.current[5] = el} className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 py-16 sm:py-8 bg-[#B4FFE5] grid-texture relative overflow-hidden">
-        <div className="text-center max-w-4xl z-10">
-          <div className="inline-block mb-8 px-6 py-2 bg-black text-white border-4 border-black hand-drawn">
-            <p className="mono-font text-sm">READY?</p>
-          </div>
-          
-          <h2 className="headline-font text-5xl sm:text-8xl text-black mb-4 sm:mb-6 leading-none">
-            START<br />SENDING
-          </h2>
-          
-          <p className="mono-font text-sm sm:text-xl text-black mb-8 sm:mb-12 max-w-2xl mx-auto">
-            NO SETUP. NO LEARNING CURVE.<br />
-            JUST CONNECT AND POST.
-          </p>
-          
-          <button onClick={onEnterApp} className="group px-10 sm:px-14 py-5 sm:py-7 bg-black hover:bg-gray-900 text-white border-4 sm:border-5 border-black hand-drawn transform hover:scale-105 hover:-rotate-1 active:translate-y-1 transition-all mono-font text-lg sm:text-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[14px_14px_0px_0px_rgba(0,0,0,1)]">
-            <span className="flex items-center space-x-2 sm:space-x-3">
-              <span>LAUNCH NOW</span>
-              <ArrowRight size={24} className="sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
-            </span>
-          </button>
-
-          <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-6">
-            <a href="https://x.com/bot_wassy" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-black hover:text-gray-800 transition-colors mono-font bg-white px-5 sm:px-6 py-2 sm:py-3 border-3 sm:border-4 border-black hand-drawn transform hover:scale-105 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm sm:text-base">
-              <X size={20} className="sm:w-6 sm:h-6" />
-              <span>FOLLOW</span>
-            </a>
-            <a href="https://github.com/kasperwtrcolor/wassypay" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-black hover:text-gray-800 transition-colors mono-font bg-white px-5 sm:px-6 py-2 sm:py-3 border-3 sm:border-4 border-black hand-drawn transform hover:scale-105 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm sm:text-base">
-              <Github size={20} className="sm:w-6 sm:h-6" />
-              <span>DOCS</span>
-            </a>
-          </div>
-        </div>
-      </section>
-    </div>;
-}
-export default function AppWithProvider() {
   return (
     <PrivyProvider
       appId={PRIVY_APP_ID}
       config={{
-        loginMethods: ['wallet', 'email', 'google', 'twitter'],
+        loginMethods: ['twitter'],
         appearance: {
           theme: 'light',
-          accentColor: '#B4E5FF',
+          accentColor: '#1a1a1a',
+          logo: 'https://wassypay.fun/wassy-logo.png'
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
-          requireUserPasswordOnCreate: false,
+          requireUserPasswordOnCreate: false
         },
-        supportedChains: [
-          {
-            id: 101, // Solana Mainnet
-            name: 'Solana',
-            network: 'mainnet-beta',
-            nativeCurrency: {
-              name: 'SOL',
-              symbol: 'SOL',
-              decimals: 9,
-            },
-            rpcUrls: {
-              default: {
-                http: ['https://rpc.dev.fun/699840f631c97306a0c4'],
-              },
-            },
+        defaultChain: {
+          id: 1399811149,
+          name: 'Solana',
+          network: 'mainnet-beta',
+          nativeCurrency: {
+            name: 'SOL',
+            symbol: 'SOL',
+            decimals: 9
           },
-        ],
+          rpcUrls: {
+            default: { http: [SOLANA_RPC] },
+            public: { http: [SOLANA_RPC] }
+          }
+        }
       }}
     >
-      <DevappProvider
-        rpcEndpoint="https://rpc.dev.fun/699840f631c97306a0c4"
-        devbaseEndpoint="https://devbase.dev.fun"
-        appId="699840f631c97306a0c4"
-      >
-        <App />
-      </DevappProvider>
+      <WassyPayApp />
     </PrivyProvider>
   );
 }
