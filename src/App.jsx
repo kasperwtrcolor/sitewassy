@@ -715,20 +715,6 @@ export default function App() {
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
           requireUserPasswordOnCreate: false
-        },
-        defaultChain: {
-          id: 1399811149,
-          name: 'Solana',
-          network: 'mainnet-beta',
-          nativeCurrency: {
-            name: 'SOL',
-            symbol: 'SOL',
-            decimals: 9
-          },
-          rpcUrls: {
-            default: { http: [SOLANA_RPC] },
-            public: { http: [SOLANA_RPC] }
-          }
         }
       }}
     >
