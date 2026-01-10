@@ -1,11 +1,12 @@
+/* Fonts must be imported first */
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Work+Sans:wght@900&display=swap");
+
 /* Tailwind layers */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* WASSY global styles (moved out of <style jsx global>) */
-
-@import url("https://fonts.googleapis.com/css2?family=Fredoka+One&family=Luckiest+Guy&family=Rubik+Mono+One&family=Press+Start+2P&family=Bungee&display=swap");
 
 :root {
   --primary-bg: #ffffff;
