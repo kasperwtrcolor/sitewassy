@@ -209,11 +209,6 @@ function WassyPayApp() {
         padding: '40px 20px',
         fontFamily: "'Courier Prime', monospace"
       }}>
-        <style>
-          {`
-            @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Work+Sans:wght@900&display=swap');
-          `}
-        </style>
         <div style={{
           maxWidth: '800px',
           margin: 'auto',
@@ -322,12 +317,6 @@ function WassyPayApp() {
       padding: '20px',
       fontFamily: "'Courier Prime', monospace"
     }}>
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Work+Sans:wght@900&display=swap');
-        `}
-      </style>
-
       {/* Canvas */}
       <div style={{
         maxWidth: '1000px',
