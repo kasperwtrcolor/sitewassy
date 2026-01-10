@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { Wallet, Send, DollarSign, ExternalLink, CheckCircle, XCircle, Clock, LogOut } from 'lucide-react';
 
 const API = import.meta.env.VITE_API_URL || "https://wassy-pay-backend.onrender.com";
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
@@ -12,10 +11,21 @@ const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || "https://rpc.dev.fun/69984
 
 function WassyPayApp() {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  const { wallets } = useWallets();
+  const { wallets, ready: walletsReady } = useWallets();
 
-  // Get Solana wallet from Privy
-  const solanaWallet = wallets.find(w => w.walletClientType === 'privy' && w.chainType === 'solana');
+  // Get Solana wallet from Privy - try multiple detection methods
+  const solanaWallet = wallets?.find(w =>
+    (w.walletClientType === 'privy' || w.connectorType === 'embedded') &&
+    (w.chainType === 'solana' || w.address?.length > 32)
+  ) || wallets?.find(w => w.address?.length > 32);
+
+  // Debug: Log all wallets
+  useEffect(() => {
+    if (walletsReady && wallets.length > 0) {
+      console.log('🔍 Available wallets:', wallets);
+      console.log('🎯 Selected Solana wallet:', solanaWallet);
+    }
+  }, [wallets, walletsReady, solanaWallet]);
 
   // State
   const [walletBalance, setWalletBalance] = useState(0);
@@ -23,7 +33,6 @@ function WassyPayApp() {
   const [delegationAmount, setDelegationAmount] = useState(1000);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -52,7 +61,7 @@ function WassyPayApp() {
     };
 
     fetchBalance();
-    const interval = setInterval(fetchBalance, 15000); // Refresh every 15s
+    const interval = setInterval(fetchBalance, 15000);
     return () => clearInterval(interval);
   }, [solanaWallet?.address]);
 
@@ -102,7 +111,7 @@ function WassyPayApp() {
     };
 
     fetchPayments();
-    const interval = setInterval(fetchPayments, 30000); // Refresh every 30s
+    const interval = setInterval(fetchPayments, 30000);
     return () => clearInterval(interval);
   }, [xUsername]);
 
@@ -129,13 +138,13 @@ function WassyPayApp() {
       // Check if token account exists
       const accountInfo = await connection.getAccountInfo(userATA);
       if (!accountInfo) {
-        setError('USDC token account not found. Please fund your wallet with USDC first.');
+        setError('Fund your wallet with USDC first.');
         setIsAuthorizing(false);
         return;
       }
 
       // Create approve instruction
-      const amountLamports = Math.floor(delegationAmount * 1_000_000); // USDC has 6 decimals
+      const amountLamports = Math.floor(delegationAmount * 1_000_000);
       const approveIx = createApproveInstruction(
         userATA,
         vaultPubkey,
@@ -170,27 +179,21 @@ function WassyPayApp() {
       });
 
       setIsDelegated(true);
-      setSuccess(`✅ Successfully authorized ${delegationAmount} USDC delegation!`);
-
-      // Store in localStorage
-      localStorage.setItem(`delegation_${solanaWallet.address}`, JSON.stringify({
-        amount: delegationAmount,
-        timestamp: Date.now()
-      }));
+      setSuccess(`Authorized ${delegationAmount} USDC!`);
 
     } catch (err) {
       console.error('Authorization error:', err);
-      setError(`Failed to authorize: ${err.message}`);
+      setError(`Failed: ${err.message}`);
     } finally {
       setIsAuthorizing(false);
     }
   };
 
   // Loading state
-  if (!ready) {
+  if (!ready || !walletsReady) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading Wassy Pay...</div>
+      <div style={{ minHeight: '100vh', background: '#e8e6e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Courier Prime', monospace" }}>
+        <div style={{ fontSize: '20px', color: '#1a1a1a' }}>⏳ Loading...</div>
       </div>
     );
   }
@@ -198,58 +201,111 @@ function WassyPayApp() {
   // Login screen
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center p-4">
-        <div className="max-w-2xl w-full">
-          <div className="text-center mb-12">
-            <h1 className="text-6xl font-bold text-white mb-4">💸 Wassy Pay</h1>
-            <p className="text-2xl text-purple-200 mb-8">
-              Pay anyone on X with USDC
+      <div style={{
+        minHeight: '100vh',
+        background: '#e8e6e1',
+        backgroundImage: 'radial-gradient(#1a1a1a 0.5px, transparent 0.5px)',
+        backgroundSize: '20px 20px',
+        padding: '40px 20px',
+        fontFamily: "'Courier Prime', monospace"
+      }}>
+        <style>
+          {`
+            @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Work+Sans:wght@900&display=swap');
+          `}
+        </style>
+        <div style={{
+          maxWidth: '800px',
+          margin: 'auto',
+          position: 'relative',
+          border: '2px solid #1a1a1a',
+          padding: '40px',
+          boxShadow: '15px 15px 0px #1a1a1a',
+          background: '#e8e6e1'
+        }}>
+          {/* Tape mark */}
+          <div style={{
+            position: 'absolute',
+            width: '100px',
+            height: '30px',
+            background: 'rgba(220, 210, 160, 0.4)',
+            top: '-15px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            borderLeft: '2px solid rgba(0,0,0,0.1)',
+            borderRight: '2px solid rgba(0,0,0,0.1)'
+          }} />
+
+          {/* Header */}
+          <h1 style={{
+            fontFamily: "'Work Sans', sans-serif",
+            fontSize: 'clamp(3rem, 10vw, 5rem)',
+            textTransform: 'uppercase',
+            lineHeight: '0.8',
+            letterSpacing: '-4px',
+            marginBottom: '40px',
+            transform: 'rotate(-1deg)',
+            color: '#1a1a1a'
+          }}>
+            WASSY<br />PAY<br />V2
+          </h1>
+
+          {/* Card 1 */}
+          <div style={{
+            background: 'white',
+            border: '1px solid #1a1a1a',
+            padding: '20px',
+            marginTop: '20px',
+            position: 'relative',
+            transform: 'rotate(1.5deg)',
+            boxShadow: '5px 5px 0px #ff4500'
+          }}>
+            <div style={{
+              width: '100%',
+              height: '200px',
+              background: 'repeating-conic-gradient(#1a1a1a 0% 25%, transparent 0% 50%) 50% / 2px 2px',
+              opacity: '0.2',
+              marginBottom: '15px'
+            }} />
+            <p style={{ margin: '0 0 15px 0', lineHeight: '1.6' }}>
+              // ARTIFACT_01: Non-custodial payments via X. Post "@bot_wassy send $5 to @friend"
+              and the blockchain handles the rest. No banks. No intermediaries. Pure delegation.
             </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-6">How It Works</h2>
-            <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0 text-white font-bold">1</div>
-                <div>
-                  <p className="text-white font-semibold">Login with X</p>
-                  <p className="text-purple-200 text-sm">Connect your X account via Privy</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0 text-white font-bold">2</div>
-                <div>
-                  <p className="text-white font-semibold">Get Your Wallet</p>
-                  <p className="text-purple-200 text-sm">Solana wallet auto-created for you</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0 text-white font-bold">3</div>
-                <div>
-                  <p className="text-white font-semibold">Fund & Authorize</p>
-                  <p className="text-purple-200 text-sm">Add USDC and authorize Wassy vault</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0 text-white font-bold">4</div>
-                <div>
-                  <p className="text-white font-semibold">Post & Pay</p>
-                  <p className="text-purple-200 text-sm">Tweet "@wassypay send 5 to @friend"</p>
-                </div>
-              </div>
-            </div>
-
             <button
               onClick={login}
-              className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105"
+              style={{
+                background: '#1a1a1a',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                fontFamily: "'Courier Prime', monospace",
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                fontSize: '14px',
+                transition: '0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#ff4500'}
+              onMouseOut={(e) => e.target.style.background = '#1a1a1a'}
             >
-              🐦 Login with X
+              Login with X
             </button>
           </div>
 
-          <div className="text-center mt-8 text-purple-200">
-            <p className="text-sm">Non-custodial • Powered by Privy • Built on Solana</p>
+          {/* Card 2 */}
+          <div style={{
+            background: 'white',
+            border: '1px solid #1a1a1a',
+            padding: '20px',
+            marginTop: '20px',
+            position: 'relative',
+            transform: 'rotate(-1deg)',
+            boxShadow: '5px 5px 0px #ff4500'
+          }}>
+            <p style={{ margin: '0', lineHeight: '1.6' }}>
+              // ARTIFACT_02: Privy creates your Solana wallet. You authorize once.
+              Payments execute automatically. The friction is removed, but the control remains yours.
+            </p>
           </div>
         </div>
       </div>
@@ -258,228 +314,376 @@ function WassyPayApp() {
 
   // Main dashboard
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
-      {/* Header */}
-      <div className="bg-white/10 backdrop-blur-lg border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white">💸 Wassy Pay</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-white">
-              <p className="text-sm text-purple-200">Logged in as</p>
-              <p className="font-semibold">@{xUsername}</p>
-            </div>
+    <div style={{
+      minHeight: '100vh',
+      background: '#e8e6e1',
+      backgroundImage: 'radial-gradient(#1a1a1a 0.5px, transparent 0.5px)',
+      backgroundSize: '20px 20px',
+      padding: '20px',
+      fontFamily: "'Courier Prime', monospace"
+    }}>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Work+Sans:wght@900&display=swap');
+        `}
+      </style>
+
+      {/* Canvas */}
+      <div style={{
+        maxWidth: '1000px',
+        margin: 'auto',
+        border: '2px solid #1a1a1a',
+        padding: '30px',
+        boxShadow: '15px 15px 0px #1a1a1a',
+        background: '#e8e6e1',
+        position: 'relative'
+      }}>
+        {/* Tape mark */}
+        <div style={{
+          position: 'absolute',
+          width: '100px',
+          height: '30px',
+          background: 'rgba(220, 210, 160, 0.4)',
+          top: '-15px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          borderLeft: '2px solid rgba(0,0,0,0.1)',
+          borderRight: '2px solid rgba(0,0,0,0.1)'
+        }} />
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
+          <h1 style={{
+            fontFamily: "'Work Sans', sans-serif",
+            fontSize: 'clamp(2rem, 6vw, 3rem)',
+            textTransform: 'uppercase',
+            lineHeight: '0.8',
+            letterSpacing: '-2px',
+            margin: '0',
+            color: '#1a1a1a'
+          }}>
+            WASSY<br />PAY
+          </h1>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '12px', opacity: '0.6' }}>LOGGED IN AS</div>
+            <div style={{ fontWeight: 'bold', fontSize: '16px' }}>@{xUsername}</div>
             <button
               onClick={logout}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              title="Logout"
+              style={{
+                background: 'transparent',
+                color: '#1a1a1a',
+                border: '1px solid #1a1a1a',
+                padding: '5px 10px',
+                fontFamily: "'Courier Prime', monospace",
+                cursor: 'pointer',
+                fontSize: '12px',
+                marginTop: '5px'
+              }}
             >
-              <LogOut className="w-5 h-5 text-white" />
+              LOGOUT
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Wallet Card */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <div className="flex items-center gap-2 mb-4">
-                <Wallet className="w-6 h-6 text-purple-300" />
-                <h2 className="text-xl font-bold text-white">Your Wallet</h2>
+        {/* Wallet Card */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #1a1a1a',
+          padding: '20px',
+          marginBottom: '20px',
+          transform: 'rotate(0.5deg)',
+          boxShadow: '5px 5px 0px #ff4500'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
+            // WALLET_STATUS
+          </div>
+
+          {solanaWallet ? (
+            <>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', opacity: '0.6', marginBottom: '5px' }}>BALANCE</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: "'Work Sans', sans-serif" }}>
+                  ${walletBalance.toFixed(2)}
+                </div>
+                <div style={{ fontSize: '12px', opacity: '0.6' }}>{walletBalance.toFixed(6)} USDC</div>
               </div>
 
-              {solanaWallet ? (
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '12px', opacity: '0.6', marginBottom: '5px' }}>ADDRESS</div>
+                <div style={{ fontSize: '10px', wordBreak: 'break-all', fontFamily: 'monospace' }}>
+                  {solanaWallet.address}
+                </div>
+              </div>
+
+              {/* Authorization Section */}
+              {isDelegated ? (
+                <div style={{
+                  background: '#d4edda',
+                  border: '1px solid #28a745',
+                  padding: '15px',
+                  marginBottom: '15px'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>✓ AUTHORIZED</div>
+                  <div style={{ fontSize: '12px' }}>
+                    Vault can move up to ${delegationAmount} USDC
+                  </div>
+                </div>
+              ) : (
                 <>
-                  <div className="mb-4">
-                    <p className="text-sm text-purple-200 mb-1">Balance</p>
-                    <p className="text-3xl font-bold text-white">${walletBalance.toFixed(2)}</p>
-                    <p className="text-sm text-purple-300">{walletBalance.toFixed(6)} USDC</p>
+                  <div style={{
+                    background: '#fff3cd',
+                    border: '1px solid #ffc107',
+                    padding: '15px',
+                    marginBottom: '15px'
+                  }}>
+                    <div style={{ fontSize: '12px' }}>
+                      ⚠ Authorization required before making payments
+                    </div>
                   </div>
 
-                  <div className="mb-4">
-                    <p className="text-sm text-purple-200 mb-1">Address</p>
-                    <p className="text-xs text-white font-mono break-all">{solanaWallet.address}</p>
+                  <div style={{ marginBottom: '15px' }}>
+                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                      AUTHORIZATION AMOUNT (USDC)
+                    </label>
+                    <input
+                      type="number"
+                      value={delegationAmount}
+                      onChange={(e) => setDelegationAmount(parseFloat(e.target.value) || 0)}
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        border: '1px solid #1a1a1a',
+                        fontFamily: "'Courier Prime', monospace",
+                        fontSize: '14px'
+                      }}
+                      placeholder="1000"
+                    />
+                    <div style={{ fontSize: '10px', opacity: '0.6', marginTop: '5px' }}>
+                      Maximum amount vault can move from your wallet
+                    </div>
                   </div>
 
-                  {/* Authorization Section */}
-                  <div className="border-t border-white/20 pt-4 mt-4">
-                    {isDelegated ? (
-                      <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="w-5 h-5 text-green-300" />
-                          <p className="text-green-300 font-semibold">Authorized</p>
-                        </div>
-                        <p className="text-sm text-green-200">
-                          Wassy vault can move up to ${delegationAmount} USDC from your wallet
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4 mb-4">
-                          <p className="text-yellow-300 text-sm">
-                            ⚠️ You must authorize the Wassy vault before making payments
-                          </p>
-                        </div>
-
-                        <div className="mb-4">
-                          <label className="text-sm text-purple-200 mb-2 block">
-                            Authorization Amount (USDC)
-                          </label>
-                          <input
-                            type="number"
-                            value={delegationAmount}
-                            onChange={(e) => setDelegationAmount(parseFloat(e.target.value) || 0)}
-                            className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
-                            placeholder="1000"
-                          />
-                          <p className="text-xs text-purple-300 mt-1">
-                            Maximum amount Wassy can move from your wallet
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={handleAuthorizeDelegation}
-                          disabled={isAuthorizing || walletBalance === 0}
-                          className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl transition-all"
-                        >
-                          {isAuthorizing ? '⏳ Authorizing...' : '🔐 Authorize Wassy Vault'}
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Fund Wallet Button */}
-                  <a
-                    href={`https://solscan.io/account/${solanaWallet.address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-center bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold py-3 px-4 rounded-xl transition-all mt-4"
+                  <button
+                    onClick={handleAuthorizeDelegation}
+                    disabled={isAuthorizing || walletBalance === 0}
+                    style={{
+                      background: '#1a1a1a',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 20px',
+                      fontFamily: "'Courier Prime', monospace",
+                      fontWeight: 'bold',
+                      cursor: isAuthorizing || walletBalance === 0 ? 'not-allowed' : 'pointer',
+                      textTransform: 'uppercase',
+                      width: '100%',
+                      fontSize: '14px',
+                      opacity: isAuthorizing || walletBalance === 0 ? 0.5 : 1
+                    }}
                   >
-                    💰 Fund Wallet
-                  </a>
-
-                  {error && (
-                    <div className="mt-4 bg-red-500/20 border border-red-500/50 rounded-lg p-3">
-                      <p className="text-red-300 text-sm">{error}</p>
-                    </div>
-                  )}
-
-                  {success && (
-                    <div className="mt-4 bg-green-500/20 border border-green-500/50 rounded-lg p-3">
-                      <p className="text-green-300 text-sm">{success}</p>
-                    </div>
-                  )}
+                    {isAuthorizing ? '⏳ AUTHORIZING...' : '🔐 AUTHORIZE VAULT'}
+                  </button>
                 </>
-              ) : (
-                <p className="text-purple-300">No wallet found</p>
               )}
-            </div>
 
-            {/* How to Pay */}
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mt-6">
-              <h3 className="text-lg font-bold text-white mb-4">💬 How to Pay</h3>
-              <div className="bg-white/5 rounded-lg p-4 mb-4">
-                <p className="text-purple-200 text-sm mb-2">Post on X:</p>
-                <code className="text-white text-sm">@wassypay send 5 to @friend</code>
+              <a
+                href={`https://solscan.io/account/${solanaWallet.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  textAlign: 'center',
+                  background: 'transparent',
+                  border: '1px solid #1a1a1a',
+                  color: '#1a1a1a',
+                  padding: '12px 20px',
+                  fontFamily: "'Courier Prime', monospace",
+                  fontWeight: 'bold',
+                  textTransform: 'uppercase',
+                  marginTop: '15px',
+                  textDecoration: 'none',
+                  fontSize: '14px'
+                }}
+              >
+                💰 FUND WALLET
+              </a>
+
+              {error && (
+                <div style={{
+                  background: '#f8d7da',
+                  border: '1px solid #dc3545',
+                  padding: '10px',
+                  marginTop: '15px',
+                  fontSize: '12px'
+                }}>
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div style={{
+                  background: '#d4edda',
+                  border: '1px solid #28a745',
+                  padding: '10px',
+                  marginTop: '15px',
+                  fontSize: '12px'
+                }}>
+                  {success}
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{
+              background: '#fff3cd',
+              border: '1px solid #ffc107',
+              padding: '15px'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>⏳ CREATING WALLET...</div>
+              <div style={{ fontSize: '12px' }}>
+                Privy is setting up your embedded Solana wallet. This may take a few moments.
               </div>
-              <p className="text-purple-300 text-sm">
-                Payments are processed every 5-10 minutes. Both sender and recipient must be registered on Wassy Pay.
-              </p>
+              <div style={{ fontSize: '10px', marginTop: '10px', opacity: '0.6' }}>
+                Debug: {wallets.length} wallet(s) detected
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* How to Pay */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #1a1a1a',
+          padding: '20px',
+          marginBottom: '20px',
+          transform: 'rotate(-0.5deg)',
+          boxShadow: '5px 5px 0px #ff4500'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
+            // HOW_TO_PAY
+          </div>
+          <div style={{
+            background: '#f5f5f5',
+            padding: '15px',
+            border: '1px solid #1a1a1a',
+            marginBottom: '15px',
+            fontFamily: 'monospace'
+          }}>
+            @bot_wassy send 5 to @friend
+          </div>
+          <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+            Payments processed every 10 minutes. Both sender and recipient must be registered.
+          </div>
+        </div>
+
+        {/* Payment History */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #1a1a1a',
+          padding: '20px',
+          transform: 'rotate(0.5deg)',
+          boxShadow: '5px 5px 0px #ff4500'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
+            // PAYMENT_HISTORY
           </div>
 
-          {/* Payment History */}
-          <div className="lg:col-span-2">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-              <div className="flex items-center gap-2 mb-6">
-                <Send className="w-6 h-6 text-purple-300" />
-                <h2 className="text-xl font-bold text-white">Payment History</h2>
+          {payments.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', opacity: '0.5' }}>
+              <div style={{ fontSize: '48px', marginBottom: '10px' }}>$</div>
+              <div>No payments yet</div>
+              <div style={{ fontSize: '12px', marginTop: '5px' }}>
+                Make your first payment by posting on X
               </div>
-
-              {payments.length === 0 ? (
-                <div className="text-center py-12">
-                  <DollarSign className="w-16 h-16 text-purple-400 mx-auto mb-4 opacity-50" />
-                  <p className="text-purple-300">No payments yet</p>
-                  <p className="text-sm text-purple-400 mt-2">
-                    Make your first payment by posting on X!
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {payments.map((payment) => (
-                    <div
-                      key={payment.id}
-                      className="bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            {payment.sender_username === xUsername ? (
-                              <span className="text-red-400 font-semibold">→ Sent</span>
-                            ) : (
-                              <span className="text-green-400 font-semibold">← Received</span>
-                            )}
-                            <span className="text-white font-bold">${payment.amount}</span>
-                          </div>
-                          <p className="text-purple-200 text-sm">
-                            {payment.sender_username === xUsername ? (
-                              <>To: @{payment.recipient_username}</>
-                            ) : (
-                              <>From: @{payment.sender_username}</>
-                            )}
-                          </p>
-                          <p className="text-purple-400 text-xs mt-1">
-                            {new Date(payment.created_at).toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {payment.status === 'completed' && (
-                            <CheckCircle className="w-5 h-5 text-green-400" />
-                          )}
-                          {payment.status === 'pending' && (
-                            <Clock className="w-5 h-5 text-yellow-400" />
-                          )}
-                          {payment.status === 'failed' && (
-                            <XCircle className="w-5 h-5 text-red-400" />
-                          )}
-                        </div>
+            </div>
+          ) : (
+            <div>
+              {payments.map((payment, idx) => (
+                <div
+                  key={payment.id}
+                  style={{
+                    background: '#f5f5f5',
+                    border: '1px solid #1a1a1a',
+                    padding: '15px',
+                    marginBottom: '10px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                        {payment.sender_username === xUsername ? (
+                          <span style={{ color: '#dc3545' }}>→ SENT</span>
+                        ) : (
+                          <span style={{ color: '#28a745' }}>← RECEIVED</span>
+                        )}
+                        <span style={{ marginLeft: '10px' }}>${payment.amount}</span>
                       </div>
-
-                      {payment.tx_signature && (
-                        <a
-                          href={`https://solscan.io/tx/${payment.tx_signature}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-purple-300 hover:text-purple-200 text-xs flex items-center gap-1 mt-2"
-                        >
-                          View transaction <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-
-                      {payment.tweet_url && (
-                        <a
-                          href={payment.tweet_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-purple-300 hover:text-purple-200 text-xs flex items-center gap-1 mt-1"
-                        >
-                          View tweet <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-
-                      {payment.error_message && (
-                        <p className="text-red-400 text-xs mt-2">Error: {payment.error_message}</p>
-                      )}
+                      <div style={{ fontSize: '12px', opacity: '0.7' }}>
+                        {payment.sender_username === xUsername ? (
+                          <>To: @{payment.recipient_username}</>
+                        ) : (
+                          <>From: @{payment.sender_username}</>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '10px', opacity: '0.5', marginTop: '5px' }}>
+                        {new Date(payment.created_at).toLocaleString()}
+                      </div>
                     </div>
-                  ))}
+                    <div>
+                      {payment.status === 'completed' && <span style={{ color: '#28a745' }}>✓</span>}
+                      {payment.status === 'pending' && <span style={{ color: '#ffc107' }}>⏳</span>}
+                      {payment.status === 'failed' && <span style={{ color: '#dc3545' }}>✗</span>}
+                    </div>
+                  </div>
+
+                  {payment.tx_signature && (
+                    <a
+                      href={`https://solscan.io/tx/${payment.tx_signature}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontSize: '10px',
+                        color: '#1a1a1a',
+                        textDecoration: 'underline',
+                        display: 'block',
+                        marginTop: '5px'
+                      }}
+                    >
+                      View transaction →
+                    </a>
+                  )}
+
+                  {payment.tweet_url && (
+                    <a
+                      href={payment.tweet_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontSize: '10px',
+                        color: '#1a1a1a',
+                        textDecoration: 'underline',
+                        display: 'block',
+                        marginTop: '5px'
+                      }}
+                    >
+                      View tweet →
+                    </a>
+                  )}
+
+                  {payment.error_message && (
+                    <div style={{
+                      fontSize: '10px',
+                      color: '#dc3545',
+                      marginTop: '10px',
+                      padding: '5px',
+                      background: '#f8d7da',
+                      border: '1px solid #dc3545'
+                    }}>
+                      Error: {payment.error_message}
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -490,11 +694,20 @@ function WassyPayApp() {
 export default function App() {
   if (!PRIVY_APP_ID) {
     return (
-      <div className="min-h-screen bg-red-900 flex items-center justify-center p-4">
-        <div className="text-white text-center">
-          <h1 className="text-2xl font-bold mb-4">⚠️ Configuration Error</h1>
+      <div style={{
+        minHeight: '100vh',
+        background: '#dc3545',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        fontFamily: "'Courier Prime', monospace",
+        color: 'white'
+      }}>
+        <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+          <h1 style={{ fontSize: '24px', marginBottom: '20px' }}>⚠️ CONFIGURATION ERROR</h1>
           <p>VITE_PRIVY_APP_ID environment variable is not set.</p>
-          <p className="text-sm mt-2">Please check your .env.local file.</p>
+          <p style={{ fontSize: '12px', marginTop: '10px' }}>Check your .env.local file.</p>
         </div>
       </div>
     );
@@ -506,27 +719,28 @@ export default function App() {
       config={{
         loginMethods: ['twitter'],
         appearance: {
-          theme: 'dark',
-          accentColor: '#8B5CF6',
+          theme: 'light',
+          accentColor: '#1a1a1a',
           logo: 'https://wassypay.fun/wassy-logo.png'
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
           requireUserPasswordOnCreate: false
         },
-        supportedChains: [{
-          id: 1399811149, // Solana mainnet
+        defaultChain: {
+          id: 1399811149,
           name: 'Solana',
-          network: 'mainnet',
+          network: 'mainnet-beta',
           nativeCurrency: {
             name: 'SOL',
             symbol: 'SOL',
             decimals: 9
           },
           rpcUrls: {
-            default: { http: [SOLANA_RPC] }
+            default: { http: [SOLANA_RPC] },
+            public: { http: [SOLANA_RPC] }
           }
-        }]
+        }
       }}
     >
       <WassyPayApp />
