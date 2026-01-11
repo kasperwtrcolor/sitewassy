@@ -27,14 +27,34 @@ function WassyPayApp() {
     }
   }, [wallets, walletsReady, solanaWallet]);
 
+  // Admin wallet
+  const ADMIN_WALLET = '6SxLVfFovSjR2LAFcJ5wfT6RFjc8GxsscRekGnLq8BMe';
+  const isAdmin = solanaWallet?.address === ADMIN_WALLET;
+
   // State
   const [walletBalance, setWalletBalance] = useState(0);
   const [isDelegated, setIsDelegated] = useState(false);
   const [delegationAmount, setDelegationAmount] = useState(1000);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [payments, setPayments] = useState([]);
+  const [pendingClaims, setPendingClaims] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [userStats, setUserStats] = useState({ deposited: 0, claimed: 0, sent: 0 });
+  const [achievements, setAchievements] = useState([]);
+
+  // Achievements definitions
+  const ACHIEVEMENTS = [
+    { id: 'first_payment', name: 'First Blood', desc: 'Send your first payment', icon: '🎯' },
+    { id: 'first_claim', name: 'Claim Master', desc: 'Claim your first payment', icon: '💎' },
+    { id: 'authorized', name: 'Trusted', desc: 'Authorize the vault', icon: '🔐' },
+    { id: 'big_spender', name: 'Big Spender', desc: 'Send over $100', icon: '💸' },
+    { id: 'collector', name: 'Collector', desc: 'Claim over $100', icon: '🏆' }
+  ];
 
   // Get X username from Privy
   const xUsername = user?.twitter?.username || '';
@@ -94,7 +114,65 @@ function WassyPayApp() {
     registerUser();
   }, [authenticated, xUsername, solanaWallet?.address]);
 
-  // Fetch payment history
+  // Fetch pending claims
+  const fetchPendingClaims = async () => {
+    if (!xUsername) return;
+
+    try {
+      const response = await fetch(`${API}/api/claims?handle=${xUsername}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPendingClaims(data.claims || []);
+        console.log(`📥 Found ${data.claims?.length || 0} pending claims for @${xUsername}`);
+      }
+    } catch (err) {
+      console.error('Error fetching pending claims:', err);
+    }
+  };
+
+  // Check for payments manually
+  const handleCheckForPayments = async () => {
+    setError('');
+    setSuccess('');
+    await fetchPendingClaims();
+    setSuccess(`Checked for payments! Found ${pendingClaims.length} pending claims.`);
+  };
+
+  // Claim a payment
+  const handleClaimPayment = async (claim) => {
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await fetch(`${API}/api/claim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tweet_id: claim.tweet_id,
+          wallet: solanaWallet.address,
+          username: xUsername
+        })
+      });
+
+      if (response.ok) {
+        setSuccess(`Successfully claimed $${claim.amount} from @${claim.sender}!`);
+        await fetchPendingClaims();
+        // Update achievements
+        const newAchievements = [...achievements];
+        if (!newAchievements.includes('first_claim')) {
+          newAchievements.push('first_claim');
+          setAchievements(newAchievements);
+        }
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to claim payment');
+      }
+    } catch (err) {
+      setError(`Error claiming payment: ${err.message}`);
+    }
+  };
+
+  // Fetch payment history and stats
   useEffect(() => {
     if (!xUsername) return;
 
@@ -104,6 +182,30 @@ function WassyPayApp() {
         if (response.ok) {
           const data = await response.json();
           setPayments(data.payments || []);
+
+          // Calculate stats
+          const stats = (data.payments || []).reduce((acc, p) => {
+            if (p.sender_username === xUsername) {
+              acc.sent += parseFloat(p.amount) || 0;
+            } else {
+              acc.claimed += parseFloat(p.amount) || 0;
+            }
+            return acc;
+          }, { deposited: delegationAmount, claimed: 0, sent: 0 });
+          setUserStats(stats);
+
+          // Update achievements
+          const newAchievements = [...achievements];
+          if (stats.sent > 0 && !newAchievements.includes('first_payment')) {
+            newAchievements.push('first_payment');
+          }
+          if (stats.sent > 100 && !newAchievements.includes('big_spender')) {
+            newAchievements.push('big_spender');
+          }
+          if (stats.claimed > 100 && !newAchievements.includes('collector')) {
+            newAchievements.push('collector');
+          }
+          setAchievements(newAchievements);
         }
       } catch (err) {
         console.error('Error fetching payments:', err);
@@ -111,7 +213,11 @@ function WassyPayApp() {
     };
 
     fetchPayments();
-    const interval = setInterval(fetchPayments, 30000);
+    fetchPendingClaims();
+    const interval = setInterval(() => {
+      fetchPayments();
+      fetchPendingClaims();
+    }, 30000);
     return () => clearInterval(interval);
   }, [xUsername]);
 
@@ -181,6 +287,13 @@ function WassyPayApp() {
       setIsDelegated(true);
       setSuccess(`Authorized ${delegationAmount} USDC!`);
 
+      // Update achievements
+      const newAchievements = [...achievements];
+      if (!newAchievements.includes('authorized')) {
+        newAchievements.push('authorized');
+        setAchievements(newAchievements);
+      }
+
     } catch (err) {
       console.error('Authorization error:', err);
       setError(`Failed: ${err.message}`);
@@ -188,6 +301,27 @@ function WassyPayApp() {
       setIsAuthorizing(false);
     }
   };
+
+  // Fetch all users (admin only)
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const fetchAllUsers = async () => {
+      try {
+        const response = await fetch(`${API}/api/admin/users`);
+        if (response.ok) {
+          const data = await response.json();
+          setAllUsers(data.users || []);
+        }
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    };
+
+    fetchAllUsers();
+    const interval = setInterval(fetchAllUsers, 30000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
 
   // Loading state
   if (!ready || !walletsReady) {
@@ -263,7 +397,7 @@ function WassyPayApp() {
               marginBottom: '15px'
             }} />
             <p style={{ margin: '0 0 15px 0', lineHeight: '1.6' }}>
-              // ARTIFACT_01: Non-custodial payments via X. Post "@bot_wassy send $5 to @friend"
+              // ARTIFACT_01: Non-custodial payments via X. Post "@BOT_WASSY SEND @FRIEND $5"
               and the blockchain handles the rest. No banks. No intermediaries. Pure delegation.
             </p>
             <button
@@ -537,6 +671,208 @@ function WassyPayApp() {
           )}
         </div>
 
+        {/* Stats & Actions Row */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleCheckForPayments}
+            style={{
+              flex: 1,
+              background: '#ff4500',
+              color: 'white',
+              border: '1px solid #1a1a1a',
+              padding: '12px 20px',
+              fontFamily: "'Courier Prime', monospace",
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              fontSize: '12px',
+              minWidth: '150px'
+            }}
+          >
+            🔍 CHECK FOR PAYMENTS
+          </button>
+          <button
+            onClick={() => setShowLeaderboard(true)}
+            style={{
+              flex: 1,
+              background: '#1a1a1a',
+              color: 'white',
+              border: '1px solid #1a1a1a',
+              padding: '12px 20px',
+              fontFamily: "'Courier Prime', monospace",
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              fontSize: '12px',
+              minWidth: '150px'
+            }}
+          >
+            🏆 LEADERBOARD
+          </button>
+          <button
+            onClick={() => setShowAchievements(true)}
+            style={{
+              flex: 1,
+              background: '#1a1a1a',
+              color: 'white',
+              border: '1px solid #1a1a1a',
+              padding: '12px 20px',
+              fontFamily: "'Courier Prime', monospace",
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              fontSize: '12px',
+              minWidth: '150px',
+              position: 'relative'
+            }}
+          >
+            ⭐ ACHIEVEMENTS
+            {achievements.length > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: '-5px',
+                right: '-5px',
+                background: '#ff4500',
+                color: 'white',
+                borderRadius: '50%',
+                width: '20px',
+                height: '20px',
+                fontSize: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {achievements.length}
+              </span>
+            )}
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setShowAdminPanel(true)}
+              style={{
+                flex: 1,
+                background: '#dc3545',
+                color: 'white',
+                border: '1px solid #1a1a1a',
+                padding: '12px 20px',
+                fontFamily: "'Courier Prime', monospace",
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                fontSize: '12px',
+                minWidth: '150px'
+              }}
+            >
+              👑 ADMIN
+            </button>
+          )}
+        </div>
+
+        {/* User Stats Card */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #1a1a1a',
+          padding: '20px',
+          marginBottom: '20px',
+          transform: 'rotate(0.3deg)',
+          boxShadow: '5px 5px 0px #ff4500'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
+            // YOUR_STATS
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '15px' }}>
+            <div>
+              <div style={{ fontSize: '10px', opacity: '0.6' }}>DEPOSITED</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: "'Work Sans', sans-serif" }}>
+                ${userStats.deposited.toFixed(2)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '10px', opacity: '0.6' }}>SENT</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: "'Work Sans', sans-serif", color: '#dc3545' }}>
+                ${userStats.sent.toFixed(2)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '10px', opacity: '0.6' }}>CLAIMED</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: "'Work Sans', sans-serif", color: '#28a745' }}>
+                ${userStats.claimed.toFixed(2)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '10px', opacity: '0.6' }}>POINTS</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: "'Work Sans', sans-serif", color: '#ff4500' }}>
+                {(userStats.deposited + userStats.sent + userStats.claimed).toFixed(0)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pending Claims */}
+        {pendingClaims.length > 0 && (
+          <div style={{
+            background: 'white',
+            border: '2px solid #ff4500',
+            padding: '20px',
+            marginBottom: '20px',
+            transform: 'rotate(-0.3deg)',
+            boxShadow: '8px 8px 0px #ff4500'
+          }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase', color: '#ff4500' }}>
+              💸 PENDING CLAIMS ({pendingClaims.length})
+            </div>
+            {pendingClaims.map((claim) => (
+              <div key={claim.tweet_id} style={{
+                background: '#fff3cd',
+                border: '1px solid #ffc107',
+                padding: '15px',
+                marginBottom: '10px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '5px' }}>
+                      ${claim.amount}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: '0.7' }}>
+                      From: @{claim.sender}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleClaimPayment(claim)}
+                    style={{
+                      background: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      padding: '8px 16px',
+                      fontFamily: "'Courier Prime', monospace",
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      textTransform: 'uppercase',
+                      fontSize: '12px'
+                    }}
+                  >
+                    💰 CLAIM
+                  </button>
+                </div>
+                {claim.tweet_id && (
+                  <a
+                    href={`https://twitter.com/i/status/${claim.tweet_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: '10px',
+                      color: '#1a1a1a',
+                      textDecoration: 'underline'
+                    }}
+                  >
+                    View tweet →
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* How to Pay */}
         <div style={{
           background: 'white',
@@ -556,10 +892,10 @@ function WassyPayApp() {
             marginBottom: '15px',
             fontFamily: 'monospace'
           }}>
-            @bot_wassy send 5 to @friend
+            @BOT_WASSY SEND @FRIEND $5
           </div>
           <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
-            Payments processed every 10 minutes. Both sender and recipient must be registered.
+            Post on X: "@BOT_WASSY SEND @USERNAME $AMOUNT" - Payments processed every 10 minutes.
           </div>
         </div>
 
@@ -674,6 +1010,286 @@ function WassyPayApp() {
             </div>
           )}
         </div>
+
+        {/* Leaderboard Modal */}
+        {showLeaderboard && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 1000
+          }} onClick={() => setShowLeaderboard(false)}>
+            <div style={{
+              background: '#e8e6e1',
+              border: '2px solid #1a1a1a',
+              padding: '30px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              boxShadow: '15px 15px 0px #1a1a1a',
+              fontFamily: "'Courier Prime', monospace"
+            }} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{
+                fontFamily: "'Work Sans', sans-serif",
+                fontSize: '2rem',
+                textTransform: 'uppercase',
+                marginBottom: '20px',
+                color: '#1a1a1a'
+              }}>🏆 LEADERBOARD</h2>
+              <p style={{ fontSize: '12px', marginBottom: '20px', opacity: '0.7' }}>
+                Points = Deposited + Sent + Claimed
+              </p>
+              {allUsers.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', opacity: '0.5' }}>
+                  <div>No users yet</div>
+                </div>
+              ) : (
+                <div>
+                  {allUsers
+                    .map((u) => ({
+                      ...u,
+                      points: (u.total_deposited || 0) + (u.total_sent || 0) + (u.total_claimed || 0)
+                    }))
+                    .sort((a, b) => b.points - a.points)
+                    .map((u, idx) => (
+                      <div key={u.wallet_address} style={{
+                        background: idx === 0 ? '#ffd700' : idx === 1 ? '#c0c0c0' : idx === 2 ? '#cd7f32' : 'white',
+                        border: '1px solid #1a1a1a',
+                        padding: '15px',
+                        marginBottom: '10px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <div>
+                          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                            #{idx + 1} @{u.x_username}
+                          </div>
+                          <div style={{ fontSize: '10px', opacity: '0.7' }}>
+                            Deposited: ${(u.total_deposited || 0).toFixed(2)} |
+                            Sent: ${(u.total_sent || 0).toFixed(2)} |
+                            Claimed: ${(u.total_claimed || 0).toFixed(2)}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                          {u.points.toFixed(0)}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+              <button
+                onClick={() => setShowLeaderboard(false)}
+                style={{
+                  background: '#1a1a1a',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  fontFamily: "'Courier Prime', monospace",
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  marginTop: '20px',
+                  width: '100%'
+                }}
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Achievements Modal */}
+        {showAchievements && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 1000
+          }} onClick={() => setShowAchievements(false)}>
+            <div style={{
+              background: '#e8e6e1',
+              border: '2px solid #1a1a1a',
+              padding: '30px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              boxShadow: '15px 15px 0px #1a1a1a',
+              fontFamily: "'Courier Prime', monospace"
+            }} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{
+                fontFamily: "'Work Sans', sans-serif",
+                fontSize: '2rem',
+                textTransform: 'uppercase',
+                marginBottom: '20px',
+                color: '#1a1a1a'
+              }}>⭐ ACHIEVEMENTS</h2>
+              <div style={{ display: 'grid', gap: '15px' }}>
+                {ACHIEVEMENTS.map((ach) => {
+                  const unlocked = achievements.includes(ach.id);
+                  return (
+                    <div key={ach.id} style={{
+                      background: unlocked ? '#d4edda' : '#f5f5f5',
+                      border: `2px solid ${unlocked ? '#28a745' : '#1a1a1a'}`,
+                      padding: '15px',
+                      opacity: unlocked ? 1 : 0.5
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ fontSize: '40px' }}>{ach.icon}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                            {ach.name}
+                          </div>
+                          <div style={{ fontSize: '12px' }}>{ach.desc}</div>
+                          {unlocked && (
+                            <div style={{ fontSize: '10px', color: '#28a745', marginTop: '5px', fontWeight: 'bold' }}>
+                              ✓ UNLOCKED
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setShowAchievements(false)}
+                style={{
+                  background: '#1a1a1a',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  fontFamily: "'Courier Prime', monospace",
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  marginTop: '20px',
+                  width: '100%'
+                }}
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Panel Modal */}
+        {showAdminPanel && isAdmin && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            zIndex: 1000
+          }} onClick={() => setShowAdminPanel(false)}>
+            <div style={{
+              background: '#e8e6e1',
+              border: '2px solid #dc3545',
+              padding: '30px',
+              maxWidth: '900px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              boxShadow: '15px 15px 0px #dc3545',
+              fontFamily: "'Courier Prime', monospace"
+            }} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{
+                fontFamily: "'Work Sans', sans-serif",
+                fontSize: '2rem',
+                textTransform: 'uppercase',
+                marginBottom: '20px',
+                color: '#dc3545'
+              }}>👑 ADMIN DASHBOARD</h2>
+              {allUsers.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', opacity: '0.5' }}>
+                  <div>No users yet</div>
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{
+                    width: '100%',
+                    border: '1px solid #1a1a1a',
+                    borderCollapse: 'collapse',
+                    fontSize: '12px',
+                    background: 'white'
+                  }}>
+                    <thead>
+                      <tr style={{ background: '#1a1a1a', color: 'white' }}>
+                        <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'left' }}>USERNAME</th>
+                        <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'left' }}>WALLET</th>
+                        <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right' }}>DEPOSITED</th>
+                        <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right' }}>SENT</th>
+                        <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right' }}>CLAIMED</th>
+                        <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right' }}>POINTS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allUsers.map((u) => (
+                        <tr key={u.wallet_address} style={{ borderBottom: '1px solid #1a1a1a' }}>
+                          <td style={{ border: '1px solid #1a1a1a', padding: '10px' }}>@{u.x_username}</td>
+                          <td style={{ border: '1px solid #1a1a1a', padding: '10px', fontFamily: 'monospace', fontSize: '10px' }}>
+                            {u.wallet_address?.substring(0, 4)}...{u.wallet_address?.substring(u.wallet_address.length - 4)}
+                          </td>
+                          <td style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>
+                            ${(u.total_deposited || 0).toFixed(2)}
+                          </td>
+                          <td style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right', color: '#dc3545' }}>
+                            ${(u.total_sent || 0).toFixed(2)}
+                          </td>
+                          <td style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right', color: '#28a745' }}>
+                            ${(u.total_claimed || 0).toFixed(2)}
+                          </td>
+                          <td style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right', fontWeight: 'bold', fontSize: '14px' }}>
+                            {((u.total_deposited || 0) + (u.total_sent || 0) + (u.total_claimed || 0)).toFixed(0)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <button
+                onClick={() => setShowAdminPanel(false)}
+                style={{
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  fontFamily: "'Courier Prime', monospace",
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  marginTop: '20px',
+                  width: '100%'
+                }}
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
