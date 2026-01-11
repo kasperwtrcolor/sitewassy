@@ -366,18 +366,25 @@ function WassyPayApp() {
           }} />
 
           {/* Header */}
-          <h1 style={{
-            fontFamily: "'Work Sans', sans-serif",
-            fontSize: 'clamp(3rem, 10vw, 5rem)',
-            textTransform: 'uppercase',
-            lineHeight: '0.8',
-            letterSpacing: '-4px',
-            marginBottom: '40px',
-            transform: 'rotate(-1deg)',
-            color: '#1a1a1a'
-          }}>
-            WASSY<br />PAY<br />V2
-          </h1>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <img
+              src="https://i.imgur.com/ZQXqN0L.png"
+              alt="Wassy Pay"
+              style={{ width: '100px', height: '100px', objectFit: 'contain', marginBottom: '20px' }}
+            />
+            <h1 style={{
+              fontFamily: "'Work Sans', sans-serif",
+              fontSize: 'clamp(3rem, 10vw, 5rem)',
+              textTransform: 'uppercase',
+              lineHeight: '0.8',
+              letterSpacing: '-4px',
+              transform: 'rotate(-1deg)',
+              color: '#1a1a1a',
+              margin: '0'
+            }}>
+              WASSY<br />PAY<br />V2
+            </h1>
+          </div>
 
           {/* Card 1 */}
           <div style={{
@@ -412,10 +419,13 @@ function WassyPayApp() {
                 cursor: 'pointer',
                 textTransform: 'uppercase',
                 fontSize: '14px',
-                transition: '0.2s'
+                transition: 'all 0.1s'
               }}
               onMouseOver={(e) => e.target.style.background = '#ff4500'}
               onMouseOut={(e) => e.target.style.background = '#1a1a1a'}
+              onMouseDown={(e) => e.target.style.transform = 'scale(0.97)'}
+              onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
             >
               Login with X
             </button>
@@ -476,17 +486,24 @@ function WassyPayApp() {
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
-          <h1 style={{
-            fontFamily: "'Work Sans', sans-serif",
-            fontSize: 'clamp(2rem, 6vw, 3rem)',
-            textTransform: 'uppercase',
-            lineHeight: '0.8',
-            letterSpacing: '-2px',
-            margin: '0',
-            color: '#1a1a1a'
-          }}>
-            WASSY<br />PAY
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <img
+              src="https://i.imgur.com/ZQXqN0L.png"
+              alt="Wassy Pay"
+              style={{ width: '60px', height: '60px', objectFit: 'contain' }}
+            />
+            <h1 style={{
+              fontFamily: "'Work Sans', sans-serif",
+              fontSize: 'clamp(2rem, 6vw, 3rem)',
+              textTransform: 'uppercase',
+              lineHeight: '0.8',
+              letterSpacing: '-2px',
+              margin: '0',
+              color: '#1a1a1a'
+            }}>
+              WASSY<br />PAY
+            </h1>
+          </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '12px', opacity: '0.6' }}>LOGGED IN AS</div>
             <div style={{ fontWeight: 'bold', fontSize: '16px' }}>@{xUsername}</div>
@@ -500,8 +517,12 @@ function WassyPayApp() {
                 fontFamily: "'Courier Prime', monospace",
                 cursor: 'pointer',
                 fontSize: '12px',
-                marginTop: '5px'
+                marginTop: '5px',
+                transition: 'all 0.1s'
               }}
+              onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
+              onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
             >
               LOGOUT
             </button>
@@ -600,11 +621,33 @@ function WassyPayApp() {
                       textTransform: 'uppercase',
                       width: '100%',
                       fontSize: '14px',
-                      opacity: isAuthorizing || walletBalance === 0 ? 0.5 : 1
+                      opacity: isAuthorizing || walletBalance === 0 ? 0.5 : 1,
+                      transition: 'all 0.1s'
                     }}
+                    onMouseDown={(e) => !isAuthorizing && walletBalance > 0 && (e.target.style.transform = 'scale(0.98)')}
+                    onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                   >
-                    {isAuthorizing ? '⏳ AUTHORIZING...' : '🔐 AUTHORIZE VAULT'}
+                    {isAuthorizing ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          width: '12px',
+                          height: '12px',
+                          border: '2px solid white',
+                          borderTopColor: 'transparent',
+                          borderRadius: '50%',
+                          animation: 'spin 0.6s linear infinite'
+                        }}></span>
+                        AUTHORIZING...
+                      </span>
+                    ) : '🔐 AUTHORIZE VAULT'}
                   </button>
+                  <style>{`
+                    @keyframes spin {
+                      to { transform: rotate(360deg); }
+                    }
+                  `}</style>
                 </>
               )}
 
@@ -686,8 +729,12 @@ function WassyPayApp() {
               cursor: 'pointer',
               textTransform: 'uppercase',
               fontSize: '12px',
-              minWidth: '150px'
+              minWidth: '150px',
+              transition: 'all 0.1s'
             }}
+            onMouseDown={(e) => e.target.style.transform = 'scale(0.97)'}
+            onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
           >
             🔍 CHECK FOR PAYMENTS
           </button>
@@ -704,8 +751,12 @@ function WassyPayApp() {
               cursor: 'pointer',
               textTransform: 'uppercase',
               fontSize: '12px',
-              minWidth: '150px'
+              minWidth: '150px',
+              transition: 'all 0.1s'
             }}
+            onMouseDown={(e) => e.target.style.transform = 'scale(0.97)'}
+            onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
           >
             🏆 LEADERBOARD
           </button>
@@ -723,8 +774,12 @@ function WassyPayApp() {
               textTransform: 'uppercase',
               fontSize: '12px',
               minWidth: '150px',
-              position: 'relative'
+              position: 'relative',
+              transition: 'all 0.1s'
             }}
+            onMouseDown={(e) => e.target.style.transform = 'scale(0.97)'}
+            onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
           >
             ⭐ ACHIEVEMENTS
             {achievements.length > 0 && (
@@ -760,8 +815,12 @@ function WassyPayApp() {
                 cursor: 'pointer',
                 textTransform: 'uppercase',
                 fontSize: '12px',
-                minWidth: '150px'
+                minWidth: '150px',
+                transition: 'all 0.1s'
               }}
+              onMouseDown={(e) => e.target.style.transform = 'scale(0.97)'}
+              onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
             >
               👑 ADMIN
             </button>
@@ -848,8 +907,12 @@ function WassyPayApp() {
                       fontWeight: 'bold',
                       cursor: 'pointer',
                       textTransform: 'uppercase',
-                      fontSize: '12px'
+                      fontSize: '12px',
+                      transition: 'all 0.1s'
                     }}
+                    onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
+                    onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                   >
                     💰 CLAIM
                   </button>
@@ -1009,6 +1072,51 @@ function WassyPayApp() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          background: 'white',
+          border: '1px solid #1a1a1a',
+          padding: '20px',
+          marginTop: '20px',
+          textAlign: 'center',
+          transform: 'rotate(-0.3deg)',
+          boxShadow: '5px 5px 0px #ff4500'
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
+            // FOLLOW_US
+          </div>
+          <a
+            href="https://twitter.com/bot_wassy"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: '#1a1a1a',
+              color: 'white',
+              padding: '10px 20px',
+              textDecoration: 'none',
+              fontFamily: "'Courier Prime', monospace",
+              fontWeight: 'bold',
+              fontSize: '14px',
+              border: 'none',
+              transition: 'all 0.1s'
+            }}
+            onMouseDown={(e) => e.target.style.transform = 'scale(0.97)'}
+            onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="white">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            @BOT_WASSY
+          </a>
+          <div style={{ fontSize: '10px', opacity: '0.5', marginTop: '15px' }}>
+            © 2026 Wassy Pay • Built on Solana
+          </div>
         </div>
 
         {/* Leaderboard Modal */}
@@ -1326,12 +1434,15 @@ export default function App() {
         appearance: {
           theme: 'light',
           accentColor: '#1a1a1a',
-          logo: 'https://wassypay.fun/wassy-logo.png'
+          logo: 'https://i.imgur.com/ZQXqN0L.png'
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
           requireUserPasswordOnCreate: false
-        }
+        },
+        // Mobile-friendly config
+        mobileOnlyLoginMethods: ['twitter'],
+        defaultChain: 'solana'
       }}
     >
       <WassyPayApp />
