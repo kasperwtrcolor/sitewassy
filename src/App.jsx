@@ -36,6 +36,7 @@ function WassyPayApp() {
   const [isDelegated, setIsDelegated] = useState(false);
   const [delegationAmount, setDelegationAmount] = useState(1000);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [payments, setPayments] = useState([]);
   const [pendingClaims, setPendingClaims] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
@@ -122,8 +123,15 @@ function WassyPayApp() {
       const response = await fetch(`${API}/api/claims?handle=${xUsername}`);
       if (response.ok) {
         const data = await response.json();
-        setPendingClaims(data.claims || []);
-        console.log(`📥 Found ${data.claims?.length || 0} pending claims for @${xUsername}`);
+
+        // Filter out already claimed payments
+        const unclaimedPayments = (data.claims || []).filter(claim => {
+          // Check if this claim has been completed
+          return claim.status !== 'completed' && claim.claimed_by === null;
+        });
+
+        setPendingClaims(unclaimedPayments);
+        console.log(`📥 Found ${unclaimedPayments.length} unclaimed payments for @${xUsername}`);
       }
     } catch (err) {
       console.error('Error fetching pending claims:', err);
@@ -142,8 +150,17 @@ function WassyPayApp() {
   const handleClaimPayment = async (claim) => {
     setError('');
     setSuccess('');
+    setLoading(true);
 
     try {
+      // Check if already claimed
+      if (claim.status === 'completed' || claim.claimed_by) {
+        setError('This payment has already been claimed!');
+        setLoading(false);
+        await fetchPendingClaims(); // Refresh the list
+        return;
+      }
+
       const response = await fetch(`${API}/api/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,20 +172,30 @@ function WassyPayApp() {
       });
 
       if (response.ok) {
+        const data = await response.json();
         setSuccess(`Successfully claimed $${claim.amount} from @${claim.sender}!`);
+
+        // Refresh pending claims to remove this one
         await fetchPendingClaims();
+
         // Update achievements
         const newAchievements = [...achievements];
         if (!newAchievements.includes('first_claim')) {
           newAchievements.push('first_claim');
           setAchievements(newAchievements);
         }
+
+        // Clear success message after 5 seconds
+        setTimeout(() => setSuccess(''), 5000);
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to claim payment');
+        setError(data.error || 'Failed to claim payment. It may have already been claimed.');
       }
     } catch (err) {
+      console.error('Claim error:', err);
       setError(`Error claiming payment: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -898,23 +925,38 @@ function WassyPayApp() {
                   </div>
                   <button
                     onClick={() => handleClaimPayment(claim)}
+                    disabled={loading}
                     style={{
-                      background: '#28a745',
+                      background: loading ? '#6c757d' : '#28a745',
                       color: 'white',
                       border: 'none',
                       padding: '8px 16px',
                       fontFamily: "'Courier Prime', monospace",
                       fontWeight: 'bold',
-                      cursor: 'pointer',
+                      cursor: loading ? 'not-allowed' : 'pointer',
                       textTransform: 'uppercase',
                       fontSize: '12px',
-                      transition: 'all 0.1s'
+                      transition: 'all 0.1s',
+                      opacity: loading ? 0.7 : 1
                     }}
-                    onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
+                    onMouseDown={(e) => !loading && (e.target.style.transform = 'scale(0.95)')}
                     onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
                     onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                   >
-                    💰 CLAIM
+                    {loading ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          width: '10px',
+                          height: '10px',
+                          border: '2px solid white',
+                          borderTopColor: 'transparent',
+                          borderRadius: '50%',
+                          animation: 'spin 0.6s linear infinite'
+                        }}></span>
+                        CLAIMING...
+                      </span>
+                    ) : '💰 CLAIM'}
                   </button>
                 </div>
                 {claim.tweet_id && (
@@ -1439,10 +1481,7 @@ export default function App() {
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
           requireUserPasswordOnCreate: false
-        },
-        // Mobile-friendly config
-        mobileOnlyLoginMethods: ['twitter'],
-        defaultChain: 'solana'
+        }
       }}
     >
       <WassyPayApp />
