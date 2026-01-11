@@ -10,7 +10,7 @@ const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybap
 const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || "https://rpc.dev.fun/699840f631c97306a0c4";
 
 function WassyPayApp() {
-  const { ready, authenticated, user, login, logout } = usePrivy();
+  const { ready, authenticated, user, login, logout, createWallet } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
 
   // Get Solana wallet from Privy - try multiple detection methods
@@ -26,6 +26,16 @@ function WassyPayApp() {
       console.log('🎯 Selected Solana wallet:', solanaWallet);
     }
   }, [wallets, walletsReady, solanaWallet]);
+
+  // Auto-create wallet if missing
+  useEffect(() => {
+    if (authenticated && walletsReady && wallets.length === 0 && createWallet) {
+      console.log('🔧 No wallets detected, attempting to create Solana wallet...');
+      createWallet()
+        .then(() => console.log('✅ Wallet creation initiated'))
+        .catch(err => console.error('❌ Failed to create wallet:', err));
+    }
+  }, [authenticated, walletsReady, wallets.length, createWallet]);
 
   // Admin wallet
   const ADMIN_WALLET = '6SxLVfFovSjR2LAFcJ5wfT6RFjc8GxsscRekGnLq8BMe';
@@ -731,12 +741,44 @@ function WassyPayApp() {
               padding: '15px'
             }}>
               <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>⏳ CREATING WALLET...</div>
-              <div style={{ fontSize: '12px' }}>
+              <div style={{ fontSize: '12px', marginBottom: '15px' }}>
                 Privy is setting up your embedded Solana wallet. This may take a few moments.
               </div>
-              <div style={{ fontSize: '10px', marginTop: '10px', opacity: '0.6' }}>
+              <div style={{ fontSize: '10px', marginBottom: '15px', opacity: '0.6' }}>
                 Debug: {wallets.length} wallet(s) detected
               </div>
+              {createWallet && (
+                <button
+                  onClick={async () => {
+                    try {
+                      console.log('🔘 Manual wallet creation triggered');
+                      await createWallet();
+                      console.log('✅ Manual wallet creation successful');
+                    } catch (err) {
+                      console.error('❌ Manual wallet creation failed:', err);
+                      setError(`Failed to create wallet: ${err.message}`);
+                    }
+                  }}
+                  style={{
+                    background: '#1a1a1a',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 20px',
+                    fontFamily: "'Courier Prime', monospace",
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    fontSize: '12px',
+                    width: '100%',
+                    transition: 'all 0.1s'
+                  }}
+                  onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
+                  onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  🔧 CREATE WALLET MANUALLY
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1479,8 +1521,9 @@ export default function App() {
           logo: 'https://i.imgur.com/ZQXqN0L.png'
         },
         embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-          requireUserPasswordOnCreate: false
+          createOnLogin: 'all-users',
+          requireUserPasswordOnCreate: false,
+          noPromptOnSignature: true
         }
       }}
     >
