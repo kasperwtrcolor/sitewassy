@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
+import { PrivyProvider, usePrivy, useWallets, useFundWallet } from '@privy-io/react-auth';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
@@ -10,14 +10,15 @@ const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybap
 const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || "https://rpc.dev.fun/699840f631c97306a0c4";
 
 function WassyPayApp() {
-  const { ready, authenticated, user, login, logout, createWallet } = usePrivy();
+  const { ready, authenticated, user, login, logout, createWallet, exportWallet } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
+  const { fundWallet } = useFundWallet();
 
-  // Get Solana wallet from Privy - try multiple detection methods
+  // Get Solana wallet from Privy - filter by chainType
   const solanaWallet = wallets?.find(w =>
-    (w.walletClientType === 'privy' || w.connectorType === 'embedded') &&
-    (w.chainType === 'solana' || w.address?.length > 32)
-  ) || wallets?.find(w => w.address?.length > 32);
+    w.chainType === 'solana' ||
+    (w.walletClientType === 'privy' && w.address && !w.address.startsWith('0x'))
+  );
 
   // Debug: Log all wallets
   useEffect(() => {
@@ -27,15 +28,15 @@ function WassyPayApp() {
     }
   }, [wallets, walletsReady, solanaWallet]);
 
-  // Auto-create wallet if missing
+  // Auto-create Solana wallet if missing
   useEffect(() => {
-    if (authenticated && walletsReady && wallets.length === 0 && createWallet) {
-      console.log('🔧 No wallets detected, attempting to create Solana wallet...');
-      createWallet()
-        .then(() => console.log('✅ Wallet creation initiated'))
-        .catch(err => console.error('❌ Failed to create wallet:', err));
+    if (authenticated && walletsReady && !solanaWallet && createWallet) {
+      console.log('🔧 No Solana wallet detected, attempting to create...');
+      createWallet({ chainType: 'solana' })
+        .then(() => console.log('✅ Solana wallet creation initiated'))
+        .catch(err => console.error('❌ Failed to create Solana wallet:', err));
     }
-  }, [authenticated, walletsReady, wallets.length, createWallet]);
+  }, [authenticated, walletsReady, solanaWallet, createWallet]);
 
   // Admin wallet
   const ADMIN_WALLET = '6SxLVfFovSjR2LAFcJ5wfT6RFjc8GxsscRekGnLq8BMe';
@@ -544,25 +545,50 @@ function WassyPayApp() {
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '12px', opacity: '0.6' }}>LOGGED IN AS</div>
             <div style={{ fontWeight: 'bold', fontSize: '16px' }}>@{xUsername}</div>
-            <button
-              onClick={logout}
-              style={{
-                background: 'transparent',
-                color: '#1a1a1a',
-                border: '1px solid #1a1a1a',
-                padding: '5px 10px',
-                fontFamily: "'Courier Prime', monospace",
-                cursor: 'pointer',
-                fontSize: '12px',
-                marginTop: '5px',
-                transition: 'all 0.1s'
-              }}
-              onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
-              onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
-              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-            >
-              LOGOUT
-            </button>
+            <div style={{ display: 'flex', gap: '5px', marginTop: '5px', justifyContent: 'flex-end' }}>
+              {solanaWallet && (
+                <button
+                  onClick={() => {
+                    if (exportWallet) {
+                      exportWallet();
+                    }
+                  }}
+                  style={{
+                    background: '#1a1a1a',
+                    color: 'white',
+                    border: '1px solid #1a1a1a',
+                    padding: '5px 10px',
+                    fontFamily: "'Courier Prime', monospace",
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    transition: 'all 0.1s'
+                  }}
+                  onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
+                  onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  👤 MANAGE WALLET
+                </button>
+              )}
+              <button
+                onClick={logout}
+                style={{
+                  background: 'transparent',
+                  color: '#1a1a1a',
+                  border: '1px solid #1a1a1a',
+                  padding: '5px 10px',
+                  fontFamily: "'Courier Prime', monospace",
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  transition: 'all 0.1s'
+                }}
+                onMouseDown={(e) => e.target.style.transform = 'scale(0.95)'}
+                onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+              >
+                LOGOUT
+              </button>
+            </div>
           </div>
         </div>
 
@@ -688,27 +714,55 @@ function WassyPayApp() {
                 </>
               )}
 
-              <a
-                href={`https://solscan.io/account/${solanaWallet.address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  textAlign: 'center',
-                  background: 'transparent',
-                  border: '1px solid #1a1a1a',
-                  color: '#1a1a1a',
-                  padding: '12px 20px',
-                  fontFamily: "'Courier Prime', monospace",
-                  fontWeight: 'bold',
-                  textTransform: 'uppercase',
-                  marginTop: '15px',
-                  textDecoration: 'none',
-                  fontSize: '14px'
-                }}
-              >
-                💰 FUND WALLET
-              </a>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                <button
+                  onClick={() => {
+                    if (solanaWallet) {
+                      fundWallet(solanaWallet.address, { chain: 'solana' });
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    background: '#28a745',
+                    border: 'none',
+                    color: 'white',
+                    padding: '12px 20px',
+                    fontFamily: "'Courier Prime', monospace",
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.1s'
+                  }}
+                  onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
+                  onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  💰 FUND WALLET
+                </button>
+                <a
+                  href={`https://solscan.io/account/${solanaWallet.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'transparent',
+                    border: '1px solid #1a1a1a',
+                    color: '#1a1a1a',
+                    padding: '12px 20px',
+                    fontFamily: "'Courier Prime', monospace",
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    textDecoration: 'none',
+                    fontSize: '14px'
+                  }}
+                >
+                  VIEW ON SOLSCAN
+                </a>
+              </div>
 
               {error && (
                 <div style={{
@@ -751,11 +805,11 @@ function WassyPayApp() {
                 <button
                   onClick={async () => {
                     try {
-                      console.log('🔘 Manual wallet creation triggered');
-                      await createWallet();
-                      console.log('✅ Manual wallet creation successful');
+                      console.log('🔘 Manual Solana wallet creation triggered');
+                      await createWallet({ chainType: 'solana' });
+                      console.log('✅ Solana wallet creation successful');
                     } catch (err) {
-                      console.error('❌ Manual wallet creation failed:', err);
+                      console.error('❌ Manual Solana wallet creation failed:', err);
                       setError(`Failed to create wallet: ${err.message}`);
                     }
                   }}
@@ -1520,6 +1574,8 @@ export default function App() {
           accentColor: '#1a1a1a',
           logo: 'https://i.imgur.com/ZQXqN0L.png'
         },
+        defaultChain: 'solana',
+        supportedChains: ['solana'],
         embeddedWallets: {
           createOnLogin: 'all-users',
           requireUserPasswordOnCreate: false,
