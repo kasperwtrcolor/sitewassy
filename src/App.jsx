@@ -14,19 +14,24 @@ function WassyPayApp() {
   const { wallets, ready: walletsReady } = useWallets();
   const { fundWallet } = useFundWallet();
 
-  // Get Solana wallet from Privy - filter by chainType
-  const solanaWallet = wallets?.find(w =>
-    w.chainType === 'solana' ||
-    (w.walletClientType === 'privy' && w.address && !w.address.startsWith('0x'))
-  );
+  // Get ONLY Solana wallets from Privy - strict chainType filtering
+  const allSolanaWallets = wallets?.filter(w => w.chainType === 'solana') || [];
+  // Prefer Privy embedded wallet, fallback to first Solana wallet
+  const solanaWallet = allSolanaWallets.find(w => w.walletClientType === 'privy') || allSolanaWallets[0] || null;
 
-  // Debug: Log all wallets
+  // Log wallet info (only in development)
   useEffect(() => {
-    if (walletsReady && wallets.length > 0) {
-      console.log('🔍 Available wallets:', wallets);
-      console.log('🎯 Selected Solana wallet:', solanaWallet);
+    if (walletsReady) {
+      const solanaCount = allSolanaWallets.length;
+      const ethCount = wallets?.filter(w => w.chainType === 'ethereum')?.length || 0;
+      if (solanaCount > 0) {
+        console.log(`✅ Solana wallet ready: ${solanaWallet?.address?.slice(0, 8)}...`);
+      }
+      if (ethCount > 0) {
+        console.warn(`⚠️ ${ethCount} Ethereum wallet(s) detected but ignored - disable in Privy dashboard`);
+      }
     }
-  }, [wallets, walletsReady, solanaWallet]);
+  }, [wallets, walletsReady, solanaWallet, allSolanaWallets]);
 
   // Auto-create Solana wallet if missing
   useEffect(() => {
@@ -797,9 +802,6 @@ function WassyPayApp() {
               <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>⏳ CREATING WALLET...</div>
               <div style={{ fontSize: '12px', marginBottom: '15px' }}>
                 Privy is setting up your embedded Solana wallet. This may take a few moments.
-              </div>
-              <div style={{ fontSize: '10px', marginBottom: '15px', opacity: '0.6' }}>
-                Debug: {wallets.length} wallet(s) detected
               </div>
               {createWallet && (
                 <button
@@ -1574,12 +1576,21 @@ export default function App() {
           accentColor: '#1a1a1a',
           logo: 'https://i.imgur.com/ZQXqN0L.png'
         },
-        // Solana embedded wallet configuration (v3.x format)
+        // Embedded wallet configuration - Solana ONLY
         embeddedWallets: {
+          // Enable Solana embedded wallet for all users
           solana: {
             createOnLogin: 'all-users'
+          },
+          // Explicitly disable Ethereum to prevent "3 wallets" issue
+          ethereum: {
+            createOnLogin: 'off'
           }
-        }
+        },
+        // Set Solana as default chain
+        defaultChain: 'solana',
+        // Only support Solana
+        supportedChains: ['solana']
       }}
     >
       <WassyPayApp />
