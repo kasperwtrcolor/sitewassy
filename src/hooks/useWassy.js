@@ -239,9 +239,13 @@ export function useWassy() {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = walletPubkey;
 
-            const provider = await solanaWallet.getProvider();
-            const signedTx = await provider.signAndSendTransaction(transaction);
-            await connection.confirmTransaction(signedTx);
+            // Privy v3: signAndSendTransaction is directly on wallet object
+            const signedTx = await solanaWallet.signAndSendTransaction(transaction);
+
+            // Wait for confirmation
+            if (signedTx?.signature) {
+                await connection.confirmTransaction(signedTx.signature);
+            }
 
             await fetch(`${API}/api/authorize`, {
                 method: 'POST',
@@ -249,7 +253,7 @@ export function useWassy() {
                 body: JSON.stringify({
                     wallet: solanaWallet.address,
                     amount: amount,
-                    signature: signedTx
+                    signature: signedTx?.signature || signedTx
                 })
             });
 
@@ -267,7 +271,7 @@ export function useWassy() {
         }
     };
 
-    // Fund wallet - copy address to clipboard and open Solscan
+    // Fund wallet - just copy address to clipboard (no Solscan redirect)
     const handleFundWallet = async () => {
         if (!solanaWallet?.address) {
             setError('No wallet found');
@@ -275,15 +279,13 @@ export function useWassy() {
         }
 
         try {
-            // Copy address to clipboard
             await navigator.clipboard.writeText(solanaWallet.address);
-            setSuccess('Wallet address copied! Send USDC to this address on Solana.');
-            // Open Solscan for reference
-            window.open(`https://solscan.io/account/${solanaWallet.address}`, '_blank');
+            setSuccess('✓ Address copied! Send USDC to this address on Solana.');
+            setTimeout(() => setSuccess(''), 5000);
         } catch (err) {
-            // Fallback if clipboard fails
-            window.open(`https://solscan.io/account/${solanaWallet.address}`, '_blank');
-            setSuccess('Send USDC to your wallet address shown on Solscan.');
+            // Fallback for browsers that don't support clipboard
+            setSuccess(`Send USDC to: ${solanaWallet.address.slice(0, 8)}...${solanaWallet.address.slice(-4)}`);
+            setTimeout(() => setSuccess(''), 8000);
         }
     };
 
