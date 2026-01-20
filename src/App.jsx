@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
+import { createSolanaRpc, createSolanaRpcSubscriptions } from '@solana/kit';
 import { PRIVY_APP_ID, SOLANA_RPC } from './constants';
 import { useWassy } from './hooks/useWassy';
 import './index.css';
@@ -298,13 +299,15 @@ export default function App() {
             createOnLogin: 'off'
           }
         },
-        // Solana RPC configuration required for signAndSendTransaction
-        solanaClusters: [
-          {
-            name: 'mainnet-beta',
-            rpcUrl: SOLANA_RPC
+        // Privy v3 Solana RPC configuration (required for signAndSendTransaction)
+        solana: {
+          rpcs: {
+            'solana:mainnet': {
+              rpc: createSolanaRpc(SOLANA_RPC),
+              rpcSubscriptions: createSolanaRpcSubscriptions(SOLANA_RPC.replace('https://', 'wss://'))
+            }
           }
-        ]
+        }
       }}
     >
       <WassyPayApp />
