@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
-import { PRIVY_APP_ID } from './constants';
+import { PRIVY_APP_ID, SOLANA_RPC } from './constants';
 import { useWassy } from './hooks/useWassy';
 import './index.css';
 
@@ -288,7 +288,14 @@ export default function App() {
           ethereum: {
             createOnLogin: 'off'
           }
-        }
+        },
+        // Solana RPC configuration required for signAndSendTransaction
+        solanaClusters: [
+          {
+            name: 'mainnet-beta',
+            rpcUrl: SOLANA_RPC
+          }
+        ]
       }}
     >
       <WassyPayApp />
