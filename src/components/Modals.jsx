@@ -1,4 +1,4 @@
-import { buttonStyle, dangerButtonStyle } from '../constants';
+import '../index.css';
 
 const modalOverlayStyle = {
     position: 'fixed',
@@ -6,24 +6,13 @@ const modalOverlayStyle = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0,0,0,0.7)',
+    background: 'rgba(0,0,0,0.9)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '20px',
-    zIndex: 1000
-};
-
-const modalContentStyle = {
-    background: '#e8e6e1',
-    border: '2px solid #1a1a1a',
-    padding: '30px',
-    maxWidth: '600px',
-    width: '100%',
-    maxHeight: '80vh',
-    overflow: 'auto',
-    boxShadow: '15px 15px 0px #1a1a1a',
-    fontFamily: "'Courier Prime', monospace"
+    zIndex: 1000,
+    backdropFilter: 'blur(4px)'
 };
 
 export function LeaderboardModal({ show, onClose, users }) {
@@ -38,46 +27,64 @@ export function LeaderboardModal({ show, onClose, users }) {
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div style={modalContentStyle} onClick={e => e.stopPropagation()}>
-                <h2 style={{
-                    fontFamily: "'Work Sans', sans-serif",
-                    fontSize: '2rem',
-                    textTransform: 'uppercase',
-                    marginBottom: '20px',
-                    color: '#1a1a1a'
-                }}>🏆 LEADERBOARD</h2>
+            <div className="plate animate-scale" style={{
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                padding: '30px',
+                position: 'relative'
+            }} onClick={e => e.stopPropagation()}>
+                <div className="screw tl"></div>
+                <div className="screw tr"></div>
 
-                <p style={{ fontSize: '12px', marginBottom: '20px', opacity: '0.7' }}>
-                    Points = Deposited + Sent + Claimed
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>🏆</span>
+                    <span className="engraved" style={{ fontSize: '0.9rem' }}>LEADERBOARD</span>
+                </div>
 
                 {sortedUsers.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '40px 20px', opacity: '0.5' }}>
-                        <div>No users yet</div>
+                    <div className="inset-panel" style={{ textAlign: 'center', padding: '40px' }}>
+                        <div style={{ color: '#666' }}>No users yet</div>
                     </div>
                 ) : (
                     <div>
-                        {sortedUsers.map((u, idx) => (
+                        {sortedUsers.slice(0, 10).map((u, idx) => (
                             <div key={u.wallet_address || idx} style={{
-                                background: idx === 0 ? '#ffd700' : idx === 1 ? '#c0c0c0' : idx === 2 ? '#cd7f32' : 'white',
-                                border: '1px solid #1a1a1a',
+                                background: idx === 0 ? 'rgba(212, 175, 55, 0.1)' :
+                                    idx === 1 ? 'rgba(192, 192, 192, 0.1)' :
+                                        idx === 2 ? 'rgba(205, 127, 50, 0.1)' : 'rgba(255,255,255,0.02)',
+                                border: `1px solid ${idx === 0 ? 'rgba(212, 175, 55, 0.3)' : 'rgba(255,255,255,0.05)'}`,
+                                borderRadius: '10px',
                                 padding: '15px',
                                 marginBottom: '10px',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center'
                             }}>
-                                <div>
-                                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-                                        #{idx + 1} @{u.x_username}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                    <div style={{
+                                        width: '30px',
+                                        height: '30px',
+                                        background: 'linear-gradient(145deg, #2a2a2a, #161616)',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontWeight: '700',
+                                        fontSize: '0.8rem',
+                                        color: idx < 3 ? '#d4af37' : '#666'
+                                    }}>
+                                        {idx + 1}
                                     </div>
-                                    <div style={{ fontSize: '10px', opacity: '0.7' }}>
-                                        Deposited: ${(u.total_deposited || 0).toFixed(2)} |
-                                        Sent: ${(u.total_sent || 0).toFixed(2)} |
-                                        Claimed: ${(u.total_claimed || 0).toFixed(2)}
+                                    <div>
+                                        <div style={{ fontWeight: '600' }}>@{u.x_username}</div>
+                                        <div className="mono" style={{ fontSize: '0.65rem', color: '#666' }}>
+                                            ${(u.total_deposited || 0).toFixed(0)} + ${(u.total_sent || 0).toFixed(0)} + ${(u.total_claimed || 0).toFixed(0)}
+                                        </div>
                                     </div>
                                 </div>
-                                <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                                <div className="mono" style={{ fontSize: '1.2rem', fontWeight: '700', color: '#d4af37' }}>
                                     {u.points.toFixed(0)}
                                 </div>
                             </div>
@@ -85,7 +92,7 @@ export function LeaderboardModal({ show, onClose, users }) {
                     </div>
                 )}
 
-                <button onClick={onClose} style={{ ...buttonStyle, width: '100%', marginTop: '20px' }}>
+                <button onClick={onClose} className="btn" style={{ width: '100%', marginTop: '20px' }}>
                     CLOSE
                 </button>
             </div>
@@ -98,43 +105,50 @@ export function AchievementsModal({ show, onClose, achievements, unlockedIds }) 
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div style={modalContentStyle} onClick={e => e.stopPropagation()}>
-                <h2 style={{
-                    fontFamily: "'Work Sans', sans-serif",
-                    fontSize: '2rem',
-                    textTransform: 'uppercase',
-                    marginBottom: '20px',
-                    color: '#1a1a1a'
-                }}>⭐ ACHIEVEMENTS</h2>
+            <div className="plate animate-scale" style={{
+                maxWidth: '500px',
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                padding: '30px',
+                position: 'relative'
+            }} onClick={e => e.stopPropagation()}>
+                <div className="screw tl"></div>
+                <div className="screw tr"></div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>⭐</span>
+                    <span className="engraved" style={{ fontSize: '0.9rem' }}>ACHIEVEMENTS</span>
+                </div>
 
                 <div style={{ display: 'grid', gap: '15px' }}>
                     {achievements.map((ach) => {
                         const unlocked = unlockedIds.includes(ach.id);
                         return (
                             <div key={ach.id} style={{
-                                background: unlocked ? '#d4edda' : '#f5f5f5',
-                                border: `2px solid ${unlocked ? '#28a745' : '#1a1a1a'}`,
+                                background: unlocked ? 'rgba(74, 222, 128, 0.1)' : 'rgba(255,255,255,0.02)',
+                                border: `1px solid ${unlocked ? 'rgba(74, 222, 128, 0.3)' : 'rgba(255,255,255,0.05)'}`,
+                                borderRadius: '12px',
                                 padding: '15px',
-                                opacity: unlocked ? 1 : 0.5
+                                opacity: unlocked ? 1 : 0.5,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '15px'
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                    <div style={{ fontSize: '40px' }}>{ach.icon}</div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{ach.name}</div>
-                                        <div style={{ fontSize: '12px' }}>{ach.desc}</div>
-                                        {unlocked && (
-                                            <div style={{ fontSize: '10px', color: '#28a745', marginTop: '5px', fontWeight: 'bold' }}>
-                                                ✓ UNLOCKED
-                                            </div>
-                                        )}
-                                    </div>
+                                <div style={{ fontSize: '2rem' }}>{ach.icon}</div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: '600', marginBottom: '4px' }}>{ach.name}</div>
+                                    <div style={{ fontSize: '0.8rem', color: '#666' }}>{ach.desc}</div>
                                 </div>
+                                {unlocked && (
+                                    <div style={{ color: '#4ade80', fontWeight: '700' }}>✓</div>
+                                )}
                             </div>
                         );
                     })}
                 </div>
 
-                <button onClick={onClose} style={{ ...buttonStyle, width: '100%', marginTop: '20px' }}>
+                <button onClick={onClose} className="btn" style={{ width: '100%', marginTop: '20px' }}>
                     CLOSE
                 </button>
             </div>
@@ -147,60 +161,55 @@ export function AdminModal({ show, onClose, users }) {
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div style={{
-                ...modalContentStyle,
+            <div className="plate animate-scale" style={{
                 maxWidth: '900px',
-                border: '2px solid #dc3545',
-                boxShadow: '15px 15px 0px #dc3545'
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                padding: '30px',
+                position: 'relative',
+                borderColor: 'rgba(239, 68, 68, 0.3)'
             }} onClick={e => e.stopPropagation()}>
-                <h2 style={{
-                    fontFamily: "'Work Sans', sans-serif",
-                    fontSize: '2rem',
-                    textTransform: 'uppercase',
-                    marginBottom: '20px',
-                    color: '#dc3545'
-                }}>👑 ADMIN DASHBOARD</h2>
+                <div className="screw tl"></div>
+                <div className="screw tr"></div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>👑</span>
+                    <span className="engraved" style={{ fontSize: '0.9rem', color: '#ef4444' }}>ADMIN DASHBOARD</span>
+                </div>
 
                 {users.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '40px 20px', opacity: '0.5' }}>
-                        <div>No users yet</div>
+                    <div className="inset-panel" style={{ textAlign: 'center', padding: '40px' }}>
+                        <div style={{ color: '#666' }}>No users yet</div>
                     </div>
                 ) : (
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{
                             width: '100%',
-                            border: '1px solid #1a1a1a',
                             borderCollapse: 'collapse',
-                            fontSize: '12px',
-                            background: 'white'
+                            fontSize: '0.75rem'
                         }}>
                             <thead>
-                                <tr style={{ background: '#1a1a1a', color: 'white' }}>
-                                    <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'left' }}>USERNAME</th>
-                                    <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'left' }}>WALLET</th>
-                                    <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right' }}>DEPOSITED</th>
-                                    <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right' }}>SENT</th>
-                                    <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right' }}>CLAIMED</th>
-                                    <th style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right' }}>POINTS</th>
+                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <th style={{ padding: '12px', textAlign: 'left', color: '#666' }}>USERNAME</th>
+                                    <th style={{ padding: '12px', textAlign: 'left', color: '#666' }}>WALLET</th>
+                                    <th style={{ padding: '12px', textAlign: 'right', color: '#666' }}>DEPOSITED</th>
+                                    <th style={{ padding: '12px', textAlign: 'right', color: '#666' }}>SENT</th>
+                                    <th style={{ padding: '12px', textAlign: 'right', color: '#666' }}>CLAIMED</th>
+                                    <th style={{ padding: '12px', textAlign: 'right', color: '#d4af37' }}>POINTS</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {users.map((u) => (
-                                    <tr key={u.wallet_address}>
-                                        <td style={{ border: '1px solid #1a1a1a', padding: '10px' }}>@{u.x_username}</td>
-                                        <td style={{ border: '1px solid #1a1a1a', padding: '10px', fontFamily: 'monospace', fontSize: '10px' }}>
-                                            {u.wallet_address?.substring(0, 4)}...{u.wallet_address?.substring(u.wallet_address.length - 4)}
+                                    <tr key={u.wallet_address} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                        <td style={{ padding: '12px' }}>@{u.x_username}</td>
+                                        <td className="mono" style={{ padding: '12px', fontSize: '0.65rem', color: '#666' }}>
+                                            {u.wallet_address?.substring(0, 6)}...{u.wallet_address?.substring(u.wallet_address.length - 4)}
                                         </td>
-                                        <td style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>
-                                            ${(u.total_deposited || 0).toFixed(2)}
-                                        </td>
-                                        <td style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right', color: '#dc3545' }}>
-                                            ${(u.total_sent || 0).toFixed(2)}
-                                        </td>
-                                        <td style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right', color: '#28a745' }}>
-                                            ${(u.total_claimed || 0).toFixed(2)}
-                                        </td>
-                                        <td style={{ border: '1px solid #1a1a1a', padding: '10px', textAlign: 'right', fontWeight: 'bold', fontSize: '14px' }}>
+                                        <td style={{ padding: '12px', textAlign: 'right' }}>${(u.total_deposited || 0).toFixed(2)}</td>
+                                        <td style={{ padding: '12px', textAlign: 'right', color: '#ef4444' }}>${(u.total_sent || 0).toFixed(2)}</td>
+                                        <td style={{ padding: '12px', textAlign: 'right', color: '#4ade80' }}>${(u.total_claimed || 0).toFixed(2)}</td>
+                                        <td style={{ padding: '12px', textAlign: 'right', fontWeight: '700', color: '#d4af37' }}>
                                             {((u.total_deposited || 0) + (u.total_sent || 0) + (u.total_claimed || 0)).toFixed(0)}
                                         </td>
                                     </tr>
@@ -210,7 +219,7 @@ export function AdminModal({ show, onClose, users }) {
                     </div>
                 )}
 
-                <button onClick={onClose} style={{ ...dangerButtonStyle, width: '100%', marginTop: '20px' }}>
+                <button onClick={onClose} className="btn btn-danger" style={{ width: '100%', marginTop: '20px' }}>
                     CLOSE
                 </button>
             </div>

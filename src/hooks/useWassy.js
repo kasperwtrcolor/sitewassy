@@ -267,10 +267,26 @@ export function useWassy() {
         }
     };
 
-    // Fund wallet via Privy
-    const handleFundWallet = () => {
-        if (solanaWallet) {
-            fundWallet(solanaWallet.address, { chain: 'solana' });
+    // Fund wallet via Privy - with error handling to prevent crash
+    const handleFundWallet = async () => {
+        if (!solanaWallet?.address) {
+            setError('No wallet found');
+            return;
+        }
+
+        try {
+            if (fundWallet) {
+                await fundWallet(solanaWallet.address, { cluster: 'mainnet-beta' });
+            } else {
+                // Fallback: open Solscan to show wallet address
+                window.open(`https://solscan.io/account/${solanaWallet.address}`, '_blank');
+                setSuccess('Fund your wallet by sending USDC to the address shown');
+            }
+        } catch (err) {
+            console.error('Fund wallet error:', err);
+            // Don't crash - just show a helpful message
+            window.open(`https://solscan.io/account/${solanaWallet.address}`, '_blank');
+            setSuccess('Fund your wallet by sending USDC to the address shown');
         }
     };
 

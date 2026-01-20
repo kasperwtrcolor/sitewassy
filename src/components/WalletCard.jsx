@@ -1,4 +1,4 @@
-import { cardStyle, buttonStyle, successButtonStyle, inputStyle, warningBoxStyle, successBoxStyle, errorBoxStyle } from '../constants';
+import '../index.css';
 
 export function WalletCard({
     solanaWallet,
@@ -15,14 +15,16 @@ export function WalletCard({
 }) {
     if (!solanaWallet) {
         return (
-            <div style={{ ...cardStyle, transform: 'rotate(0.5deg)' }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
-          // WALLET_STATUS
-                </div>
-                <div style={{ ...warningBoxStyle, textAlign: 'center' }}>
-                    <div style={{ fontSize: '24px', marginBottom: '10px' }}>⏳</div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>LOADING WALLET...</div>
-                    <div style={{ fontSize: '12px', opacity: '0.7' }}>
+            <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
+                <div className="screw tl"></div>
+                <div className="screw tr"></div>
+
+                <div className="engraved" style={{ marginBottom: '15px' }}>// WALLET_STATUS</div>
+
+                <div className="inset-panel" style={{ textAlign: 'center', padding: '40px' }}>
+                    <div className="status-light" style={{ marginBottom: '15px' }}></div>
+                    <div style={{ fontWeight: '600', marginBottom: '8px' }}>LOADING WALLET...</div>
+                    <div style={{ fontSize: '0.8rem', color: '#666' }}>
                         Your embedded Solana wallet is being loaded from Privy.
                     </div>
                 </div>
@@ -31,65 +33,85 @@ export function WalletCard({
     }
 
     return (
-        <div style={{ ...cardStyle, transform: 'rotate(0.5deg)' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
-        // WALLET_STATUS
-            </div>
+        <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
+            <div className="screw tl"></div>
+            <div className="screw tr"></div>
 
-            {/* Balance */}
-            <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '12px', opacity: '0.6', marginBottom: '5px' }}>BALANCE</div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: "'Work Sans', sans-serif" }}>
+            <div className="engraved" style={{ marginBottom: '20px' }}>// WALLET_STATUS</div>
+
+            {/* Balance Display */}
+            <div className="inset-panel" style={{ marginBottom: '20px' }}>
+                <div className="engraved" style={{ marginBottom: '8px', fontSize: '0.6rem' }}>BALANCE</div>
+                <div className="amount-display">
                     ${walletBalance.toFixed(2)}
+                    <span className="currency">USDC</span>
                 </div>
-                <div style={{ fontSize: '12px', opacity: '0.6' }}>{walletBalance.toFixed(6)} USDC</div>
+                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '5px' }} className="mono">
+                    {walletBalance.toFixed(6)} USDC
+                </div>
             </div>
 
             {/* Address */}
-            <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '12px', opacity: '0.6', marginBottom: '5px' }}>ADDRESS</div>
-                <div style={{ fontSize: '10px', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-                    {solanaWallet.address}
-                </div>
+            <div className="ledger-item">
+                <span className="label">WALLET ADDRESS</span>
+                <span className="value mono" style={{ fontSize: '0.7rem' }}>{solanaWallet.address}</span>
             </div>
 
             {/* Authorization Section */}
             {isDelegated ? (
-                <div style={{ ...successBoxStyle, marginBottom: '15px' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>✓ AUTHORIZED</div>
-                    <div style={{ fontSize: '12px' }}>
+                <div style={{
+                    background: 'rgba(74, 222, 128, 0.1)',
+                    border: '1px solid rgba(74, 222, 128, 0.3)',
+                    borderRadius: '12px',
+                    padding: '15px',
+                    marginBottom: '20px'
+                }}>
+                    <div style={{ fontWeight: '600', marginBottom: '5px', color: '#4ade80' }}>✓ AUTHORIZED</div>
+                    <div style={{ fontSize: '0.8rem', color: '#888' }}>
                         Vault can move up to ${delegationAmount} USDC
                     </div>
                 </div>
             ) : (
                 <>
-                    <div style={{ ...warningBoxStyle, marginBottom: '15px' }}>
-                        <div style={{ fontSize: '12px' }}>
+                    <div style={{
+                        background: 'rgba(245, 158, 11, 0.1)',
+                        border: '1px solid rgba(245, 158, 11, 0.3)',
+                        borderRadius: '12px',
+                        padding: '15px',
+                        marginBottom: '20px'
+                    }}>
+                        <div style={{ fontSize: '0.8rem', color: '#f59e0b' }}>
                             ⚠ Authorization required before making payments
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    <div style={{ marginBottom: '20px' }}>
+                        <label className="engraved" style={{ display: 'block', marginBottom: '8px', fontSize: '0.6rem' }}>
                             AUTHORIZATION AMOUNT (USDC)
                         </label>
                         <input
                             type="number"
                             value={delegationAmount}
                             onChange={(e) => setDelegationAmount(parseFloat(e.target.value) || 0)}
-                            style={inputStyle}
+                            style={{
+                                width: '100%',
+                                padding: '12px 15px',
+                                background: '#0a0a0a',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '8px',
+                                color: '#fff',
+                                fontFamily: "'JetBrains Mono', monospace",
+                                fontSize: '1rem'
+                            }}
                             placeholder="1000"
                         />
-                        <div style={{ fontSize: '10px', opacity: '0.6', marginTop: '5px' }}>
-                            Maximum amount vault can move from your wallet
-                        </div>
                     </div>
 
                     <button
                         onClick={() => onAuthorize(delegationAmount)}
                         disabled={isAuthorizing || walletBalance === 0}
+                        className="btn"
                         style={{
-                            ...buttonStyle,
                             width: '100%',
                             opacity: isAuthorizing || walletBalance === 0 ? 0.5 : 1,
                             cursor: isAuthorizing || walletBalance === 0 ? 'not-allowed' : 'pointer'
@@ -101,50 +123,56 @@ export function WalletCard({
             )}
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                <button
-                    onClick={onFundWallet}
-                    style={{ ...successButtonStyle, flex: 1 }}
-                >
-                    💰 FUND WALLET
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '20px' }}>
+                <button onClick={onFundWallet} className="btn btn-success">
+                    💰 FUND
                 </button>
                 <a
                     href={`https://solscan.io/account/${solanaWallet.address}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                        flex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'transparent',
-                        border: '1px solid #1a1a1a',
-                        color: '#1a1a1a',
-                        padding: '12px 20px',
-                        fontFamily: "'Courier Prime', monospace",
-                        fontWeight: 'bold',
-                        textTransform: 'uppercase',
-                        textDecoration: 'none',
-                        fontSize: '14px'
-                    }}
+                    className="btn"
+                    style={{ textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                    VIEW ON SOLSCAN
+                    SOLSCAN ↗
                 </a>
             </div>
 
             {/* Manage Wallet Button */}
             {onExportWallet && (
-                <button
-                    onClick={onExportWallet}
-                    style={{ ...buttonStyle, width: '100%', marginTop: '10px' }}
-                >
+                <button onClick={onExportWallet} className="btn" style={{ width: '100%', marginTop: '12px' }}>
                     👤 MANAGE WALLET
                 </button>
             )}
 
             {/* Error/Success Messages */}
-            {error && <div style={errorBoxStyle}>{error}</div>}
-            {success && <div style={successBoxStyle}>{success}</div>}
+            {error && (
+                <div style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginTop: '15px',
+                    fontSize: '0.8rem',
+                    color: '#ef4444'
+                }}>
+                    {error}
+                </div>
+            )}
+
+            {success && (
+                <div style={{
+                    background: 'rgba(74, 222, 128, 0.1)',
+                    border: '1px solid rgba(74, 222, 128, 0.3)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginTop: '15px',
+                    fontSize: '0.8rem',
+                    color: '#4ade80'
+                }}>
+                    {success}
+                </div>
+            )}
         </div>
     );
 }

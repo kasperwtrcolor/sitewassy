@@ -1,101 +1,246 @@
-import { buttonStyle } from '../constants';
+import '../index.css';
 
 export function LoginScreen({ onLogin }) {
     return (
         <div style={{
             minHeight: '100vh',
-            background: '#e8e6e1',
-            backgroundImage: 'radial-gradient(#1a1a1a 0.5px, transparent 0.5px)',
-            backgroundSize: '20px 20px',
+            background: '#0d0d0d',
+            backgroundImage: 'radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0d0d0d 100%)',
             padding: '40px 20px',
-            fontFamily: "'Courier Prime', monospace"
+            fontFamily: "'Space Grotesk', sans-serif",
+            overflow: 'hidden'
         }}>
-            <div style={{
-                maxWidth: '800px',
-                margin: 'auto',
-                position: 'relative',
-                border: '2px solid #1a1a1a',
-                padding: '40px',
-                boxShadow: '15px 15px 0px #1a1a1a',
-                background: '#e8e6e1'
-            }}>
-                {/* Tape mark */}
-                <div style={{
-                    position: 'absolute',
-                    width: '100px',
-                    height: '30px',
-                    background: 'rgba(220, 210, 160, 0.4)',
-                    top: '-15px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    borderLeft: '2px solid rgba(0,0,0,0.1)',
-                    borderRight: '2px solid rgba(0,0,0,0.1)'
-                }} />
+            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
-                {/* Header */}
-                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <img
-                        src="https://i.imgur.com/ZQXqN0L.png"
-                        alt="Wassy Pay"
-                        style={{ width: '100px', height: '100px', objectFit: 'contain', marginBottom: '20px' }}
-                    />
-                    <h1 style={{
-                        fontFamily: "'Work Sans', sans-serif",
-                        fontSize: 'clamp(3rem, 10vw, 5rem)',
-                        textTransform: 'uppercase',
-                        lineHeight: '0.8',
-                        letterSpacing: '-4px',
-                        transform: 'rotate(-1deg)',
-                        color: '#1a1a1a',
-                        margin: '0'
-                    }}>
-                        WASSY<br />PAY<br />V2
-                    </h1>
-                </div>
+                {/* Main Hero Plate */}
+                <div className="plate animate-fade-in" style={{ padding: '60px 40px', marginBottom: '40px', position: 'relative' }}>
+                    {/* Screws */}
+                    <div className="screw tl"></div>
+                    <div className="screw tr"></div>
+                    <div className="screw bl"></div>
+                    <div className="screw br"></div>
 
-                {/* Card 1 */}
-                <div style={{
-                    background: 'white',
-                    border: '1px solid #1a1a1a',
-                    padding: '20px',
-                    marginTop: '20px',
-                    position: 'relative',
-                    transform: 'rotate(1.5deg)',
-                    boxShadow: '5px 5px 0px #ff4500'
-                }}>
+                    {/* Background Label */}
                     <div style={{
-                        width: '100%',
-                        height: '200px',
-                        background: 'repeating-conic-gradient(#1a1a1a 0% 25%, transparent 0% 50%) 50% / 2px 2px',
-                        opacity: '0.2',
-                        marginBottom: '15px'
-                    }} />
-                    <p style={{ margin: '0 0 15px 0', lineHeight: '1.6' }}>
-            // ARTIFACT_01: Non-custodial payments via X. Post "@BOT_WASSY SEND @FRIEND $5"
-                        and the blockchain handles the rest. No banks. No intermediaries. Pure delegation.
-                    </p>
-                    <button
-                        onClick={onLogin}
-                        style={buttonStyle}
-                    >
-                        Login with X
-                    </button>
+                        position: 'absolute',
+                        bottom: '-50px',
+                        right: '-20px',
+                        fontSize: '12rem',
+                        fontWeight: '900',
+                        color: 'rgba(255,255,255,0.01)',
+                        pointerEvents: 'none',
+                        userSelect: 'none'
+                    }}>WASSY</div>
+
+                    {/* Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                        <div style={{
+                            fontWeight: 700,
+                            fontSize: '1.2rem',
+                            letterSpacing: '-0.02em',
+                            background: 'linear-gradient(180deg, #fff 0%, #888 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
+                            WASSY PAY // v2
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', fontSize: '10px', letterSpacing: '2px', color: '#31d7ff' }}>
+                            <span className="status-light" style={{ marginRight: '8px' }}></span>
+                            SOLANA_MAINNET
+                        </div>
+                    </div>
+
+                    {/* Hero Content */}
+                    <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                        <h1 className="animate-fade-in delay-1" style={{
+                            fontSize: 'clamp(2.5rem, 8vw, 5rem)',
+                            fontWeight: 700,
+                            lineHeight: 0.9,
+                            marginBottom: '20px',
+                            background: 'linear-gradient(180deg, #fff 0%, #666 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
+                            SOCIAL PAYMENTS<br />
+                            <span style={{ color: '#d4af37', WebkitTextFillColor: '#d4af37' }}>REIMAGINED</span>
+                        </h1>
+
+                        <p className="animate-fade-in delay-2" style={{
+                            color: '#888',
+                            fontSize: '1.1rem',
+                            maxWidth: '600px',
+                            margin: '0 auto 30px',
+                            lineHeight: 1.6
+                        }}>
+                            Send USDC to anyone on X with a simple post. No banks, no accounts, no friction.
+                            Just tag <span style={{ color: '#31d7ff' }}>@bot_wassy</span> and your payment flows through Solana.
+                        </p>
+
+                        {/* Command Preview */}
+                        <div className="animate-scale delay-3" style={{
+                            background: '#0a0a0a',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            borderRadius: '12px',
+                            padding: '20px 30px',
+                            display: 'inline-block',
+                            marginBottom: '30px',
+                            boxShadow: 'inset 4px 4px 8px rgba(0,0,0,0.6), inset -2px -2px 5px rgba(255,255,255,0.02)'
+                        }}>
+                            <span className="mono" style={{ fontSize: '1.1rem', color: '#888' }}>
+                                <span style={{ color: '#31d7ff' }}>@bot_wassy</span> send <span style={{ color: '#d4af37' }}>@friend</span> <span style={{ color: '#4ade80' }}>$100</span>
+                            </span>
+                        </div>
+
+                        <br />
+
+                        <button onClick={onLogin} className="btn btn-gold animate-fade-in delay-4" style={{ fontSize: '1rem', padding: '18px 48px' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '10px', verticalAlign: 'middle' }}>
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                            Login with X
+                        </button>
+                    </div>
                 </div>
 
-                {/* Card 2 */}
-                <div style={{
-                    background: 'white',
-                    border: '1px solid #1a1a1a',
-                    padding: '20px',
-                    marginTop: '20px',
-                    position: 'relative',
-                    transform: 'rotate(-1deg)',
-                    boxShadow: '5px 5px 0px #ff4500'
-                }}>
-                    <p style={{ margin: '0', lineHeight: '1.6' }}>
-            // ARTIFACT_02: Privy creates your Solana wallet. You authorize once.
-                        Payments execute automatically. The friction is removed, but the control remains yours.
-                    </p>
+                {/* How It Works Section */}
+                <div className="animate-fade-in delay-5" style={{ marginBottom: '40px' }}>
+                    <h2 className="engraved" style={{ textAlign: 'center', marginBottom: '30px', fontSize: '0.8rem' }}>
+            // HOW_IT_WORKS
+                    </h2>
+
+                    <div className="grid-2">
+                        {/* Left Column - Flow Steps */}
+                        <div>
+                            {/* Step 1: FUND */}
+                            <div className="flow-step animate-slide-left delay-1">
+                                <div className="step-number">1</div>
+                                <div className="step-content">
+                                    <h4 style={{ color: '#31d7ff' }}>💰 FUND</h4>
+                                    <p>Connect your X account and Solana wallet. Deposit USDC to start sending payments.</p>
+                                </div>
+                            </div>
+
+                            {/* Step 2: TAG */}
+                            <div className="flow-step animate-slide-left delay-2">
+                                <div className="step-number">2</div>
+                                <div className="step-content">
+                                    <h4 style={{ color: '#d4af37' }}>✍️ TAG</h4>
+                                    <p>Post on X: "@bot_wassy send @username $amount" — that's it. No apps, no forms.</p>
+                                </div>
+                            </div>
+
+                            {/* Step 3: CLAIM */}
+                            <div className="flow-step animate-slide-left delay-3">
+                                <div className="step-number">3</div>
+                                <div className="step-content">
+                                    <h4 style={{ color: '#4ade80' }}>🎯 CLAIM</h4>
+                                    <p>Recipient sees the payment, clicks claim, and USDC transfers instantly on Solana.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Column - Features */}
+                        <div className="plate animate-slide-right delay-2" style={{ padding: '30px' }}>
+                            <h3 className="engraved" style={{ marginBottom: '20px' }}>// PROTOCOL_FEATURES</h3>
+
+                            <div className="ledger-item">
+                                <span className="label">Settlement Layer</span>
+                                <span className="value highlight">Solana Mainnet</span>
+                            </div>
+
+                            <div className="ledger-item">
+                                <span className="label">Currency</span>
+                                <span className="value" style={{ color: '#d4af37' }}>USDC (SPL Token)</span>
+                            </div>
+
+                            <div className="ledger-item">
+                                <span className="label">Scan Interval</span>
+                                <span className="value">Every 30 minutes</span>
+                            </div>
+
+                            <div className="ledger-item">
+                                <span className="label">Security</span>
+                                <span className="value">Non-custodial delegation</span>
+                            </div>
+
+                            <div className="ledger-item">
+                                <span className="label">Spam Protection</span>
+                                <span className="value">Duplicate + RT filtering</span>
+                            </div>
+
+                            <div style={{
+                                marginTop: '20px',
+                                padding: '15px',
+                                background: 'rgba(49, 215, 255, 0.05)',
+                                borderRadius: '8px',
+                                border: '1px solid rgba(49, 215, 255, 0.1)'
+                            }}>
+                                <p className="mono" style={{ fontSize: '0.7rem', color: '#666', lineHeight: 1.6 }}>
+                                    Funds stay in YOUR wallet until claimed. You authorize a spending limit, and the protocol
+                                    handles transfers when payments are verified on X.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Architecture Visual */}
+                <div className="plate animate-fade-in" style={{ padding: '40px', textAlign: 'center' }}>
+                    <h3 className="engraved" style={{ marginBottom: '30px' }}>// ARCHITECTURE</h3>
+
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '20px',
+                        flexWrap: 'wrap'
+                    }}>
+                        {/* X Platform */}
+                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '120px' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '8px' }}>𝕏</div>
+                            <div className="engraved">X Post</div>
+                        </div>
+
+                        <div style={{ color: '#31d7ff', fontSize: '1.5rem' }}>→</div>
+
+                        {/* Backend */}
+                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '120px' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '8px' }}>⚙️</div>
+                            <div className="engraved">Scanner</div>
+                        </div>
+
+                        <div style={{ color: '#d4af37', fontSize: '1.5rem' }}>→</div>
+
+                        {/* Solana */}
+                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '120px' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '8px' }}>◎</div>
+                            <div className="engraved">Solana</div>
+                        </div>
+
+                        <div style={{ color: '#4ade80', fontSize: '1.5rem' }}>→</div>
+
+                        {/* USDC */}
+                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '120px' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '8px' }}>💵</div>
+                            <div className="engraved">USDC Sent</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#444' }}>
+                    <a
+                        href="https://twitter.com/bot_wassy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#31d7ff', textDecoration: 'none' }}
+                    >
+                        @bot_wassy
+                    </a>
+                    <span style={{ margin: '0 15px' }}>•</span>
+                    Built on Solana
+                    <span style={{ margin: '0 15px' }}>•</span>
+                    © 2026
                 </div>
             </div>
         </div>
@@ -106,13 +251,16 @@ export function LoadingScreen() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: '#e8e6e1',
+            background: '#0d0d0d',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontFamily: "'Courier Prime', monospace"
+            fontFamily: "'Space Grotesk', sans-serif"
         }}>
-            <div style={{ fontSize: '20px', color: '#1a1a1a' }}>⏳ Loading...</div>
+            <div className="animate-scale" style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '20px' }}>◎</div>
+                <div style={{ color: '#31d7ff', fontSize: '0.8rem', letterSpacing: '0.2em' }}>INITIALIZING...</div>
+            </div>
         </div>
     );
 }

@@ -1,114 +1,104 @@
-import { cardStyle } from '../constants';
+import '../index.css';
 
 export function PaymentHistory({ payments, xUsername }) {
     return (
-        <div style={{ ...cardStyle, transform: 'rotate(0.5deg)' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '15px', fontSize: '14px', textTransform: 'uppercase' }}>
-        // PAYMENT_HISTORY
-            </div>
+        <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
+            <div className="engraved" style={{ marginBottom: '20px' }}>// TRANSACTION_HISTORY</div>
 
             {payments.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', opacity: '0.5' }}>
-                    <div style={{ fontSize: '48px', marginBottom: '10px' }}>$</div>
-                    <div>No payments yet</div>
-                    <div style={{ fontSize: '12px', marginTop: '5px' }}>
+                <div className="inset-panel" style={{ textAlign: 'center', padding: '40px' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '15px', opacity: 0.3 }}>$</div>
+                    <div style={{ color: '#666' }}>No transactions yet</div>
+                    <div style={{ fontSize: '0.75rem', color: '#444', marginTop: '8px' }}>
                         Make your first payment by posting on X
                     </div>
                 </div>
             ) : (
-                <div>
-                    {payments.map((payment) => (
-                        <div
-                            key={payment.id || payment.tweet_id}
-                            style={{
-                                background: '#f5f5f5',
-                                border: '1px solid #1a1a1a',
-                                padding: '15px',
-                                marginBottom: '10px'
-                            }}
-                        >
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                marginBottom: '10px',
-                                flexWrap: 'wrap',
-                                gap: '10px'
-                            }}>
-                                <div>
-                                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-                                        {payment.sender_username?.toLowerCase() === xUsername?.toLowerCase() ? (
-                                            <span style={{ color: '#dc3545' }}>→ SENT</span>
-                                        ) : (
-                                            <span style={{ color: '#28a745' }}>← RECEIVED</span>
-                                        )}
-                                        <span style={{ marginLeft: '10px' }}>${payment.amount}</span>
-                                    </div>
-                                    <div style={{ fontSize: '12px', opacity: '0.7' }}>
-                                        {payment.sender_username?.toLowerCase() === xUsername?.toLowerCase() ? (
-                                            <>To: @{payment.recipient_username}</>
-                                        ) : (
-                                            <>From: @{payment.sender_username}</>
-                                        )}
-                                    </div>
-                                    <div style={{ fontSize: '10px', opacity: '0.5', marginTop: '5px' }}>
-                                        {new Date(payment.created_at).toLocaleString()}
-                                    </div>
-                                </div>
-                                <div>
-                                    {payment.status === 'completed' && <span style={{ color: '#28a745' }}>✓</span>}
-                                    {payment.status === 'pending' && <span style={{ color: '#ffc107' }}>⏳</span>}
-                                    {payment.status === 'failed' && <span style={{ color: '#dc3545' }}>✗</span>}
-                                </div>
-                            </div>
-
-                            {payment.tx_signature && (
-                                <a
-                                    href={`https://solscan.io/tx/${payment.tx_signature}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                        fontSize: '10px',
-                                        color: '#1a1a1a',
-                                        textDecoration: 'underline',
-                                        display: 'block',
-                                        marginTop: '5px'
-                                    }}
-                                >
-                                    View transaction →
-                                </a>
-                            )}
-
-                            {payment.tweet_url && (
-                                <a
-                                    href={payment.tweet_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                        fontSize: '10px',
-                                        color: '#1a1a1a',
-                                        textDecoration: 'underline',
-                                        display: 'block',
-                                        marginTop: '5px'
-                                    }}
-                                >
-                                    View tweet →
-                                </a>
-                            )}
-
-                            {payment.error_message && (
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    {payments.map((payment) => {
+                        const isSent = payment.sender_username?.toLowerCase() === xUsername?.toLowerCase();
+                        return (
+                            <div
+                                key={payment.id || payment.tweet_id}
+                                style={{
+                                    background: 'rgba(255,255,255,0.02)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    borderRadius: '12px',
+                                    padding: '15px',
+                                    marginBottom: '10px'
+                                }}
+                            >
                                 <div style={{
-                                    fontSize: '10px',
-                                    color: '#dc3545',
-                                    marginTop: '10px',
-                                    padding: '5px',
-                                    background: '#f8d7da',
-                                    border: '1px solid #dc3545'
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                    gap: '10px'
                                 }}>
-                                    Error: {payment.error_message}
+                                    <div>
+                                        <div style={{
+                                            fontWeight: '600',
+                                            marginBottom: '5px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px'
+                                        }}>
+                                            <span style={{
+                                                color: isSent ? '#ef4444' : '#4ade80',
+                                                fontSize: '0.7rem',
+                                                padding: '3px 8px',
+                                                background: isSent ? 'rgba(239,68,68,0.1)' : 'rgba(74,222,128,0.1)',
+                                                borderRadius: '4px'
+                                            }}>
+                                                {isSent ? '→ SENT' : '← RECEIVED'}
+                                            </span>
+                                            <span className="mono" style={{ fontSize: '1.2rem' }}>${payment.amount}</span>
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', color: '#666' }}>
+                                            {isSent ? (
+                                                <>To: @{payment.recipient_username}</>
+                                            ) : (
+                                                <>From: @{payment.sender_username}</>
+                                            )}
+                                        </div>
+                                        <div className="mono" style={{ fontSize: '0.65rem', color: '#444', marginTop: '5px' }}>
+                                            {new Date(payment.created_at).toLocaleString()}
+                                        </div>
+                                    </div>
+                                    <div style={{ fontSize: '1.2rem' }}>
+                                        {payment.status === 'completed' && <span style={{ color: '#4ade80' }}>✓</span>}
+                                        {payment.status === 'pending' && <span style={{ color: '#f59e0b' }}>⏳</span>}
+                                        {payment.status === 'failed' && <span style={{ color: '#ef4444' }}>✗</span>}
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+
+                                {(payment.tx_signature || payment.tweet_url) && (
+                                    <div style={{ marginTop: '10px', display: 'flex', gap: '15px' }}>
+                                        {payment.tx_signature && (
+                                            <a
+                                                href={`https://solscan.io/tx/${payment.tx_signature}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{ fontSize: '0.65rem', color: '#31d7ff', textDecoration: 'none' }}
+                                            >
+                                                View TX →
+                                            </a>
+                                        )}
+                                        {payment.tweet_url && (
+                                            <a
+                                                href={payment.tweet_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{ fontSize: '0.65rem', color: '#888', textDecoration: 'none' }}
+                                            >
+                                                View Tweet →
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>

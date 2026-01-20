@@ -1,58 +1,58 @@
-import { cardStyle, buttonStyle, successButtonStyle } from '../constants';
+import '../index.css';
 
 export function PendingClaims({ claims, onClaim, loading }) {
     if (!claims || claims.length === 0) return null;
 
     return (
-        <div style={{
-            ...cardStyle,
-            border: '2px solid #ff4500',
-            transform: 'rotate(-0.3deg)',
-            boxShadow: '8px 8px 0px #ff4500'
+        <div className="plate" style={{
+            padding: '30px',
+            marginBottom: '20px',
+            position: 'relative',
+            borderColor: 'rgba(212, 175, 55, 0.3)'
         }}>
             <div style={{
-                fontWeight: 'bold',
-                marginBottom: '15px',
-                fontSize: '14px',
-                textTransform: 'uppercase',
-                color: '#ff4500'
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                marginBottom: '20px'
             }}>
-                💸 PENDING CLAIMS ({claims.length})
+                <span style={{ fontSize: '1.5rem' }}>💸</span>
+                <span className="engraved" style={{ color: '#d4af37', fontSize: '0.8rem' }}>
+                    PENDING CLAIMS ({claims.length})
+                </span>
             </div>
 
             {claims.map((claim) => (
-                <div key={claim.tweet_id} style={{
-                    background: '#fff3cd',
-                    border: '1px solid #ffc107',
-                    padding: '15px',
-                    marginBottom: '10px'
-                }}>
+                <div key={claim.tweet_id} className="inset-panel" style={{ marginBottom: '15px', padding: '20px' }}>
                     <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: '10px',
                         flexWrap: 'wrap',
-                        gap: '10px'
+                        gap: '15px'
                     }}>
                         <div>
-                            <div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '5px' }}>
+                            <div className="amount-display" style={{ fontSize: '2rem' }}>
                                 ${claim.amount}
+                                <span className="currency">USDC</span>
                             </div>
-                            <div style={{ fontSize: '12px', opacity: '0.7' }}>
-                                From: @{claim.sender || claim.sender_username}
+                            <div className="handle-badge" style={{ marginTop: '10px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                                </svg>
+                                @{claim.sender || claim.sender_username}
                             </div>
                         </div>
                         <button
                             onClick={() => onClaim(claim)}
                             disabled={loading}
+                            className="btn btn-gold"
                             style={{
-                                ...successButtonStyle,
                                 opacity: loading ? 0.7 : 1,
                                 cursor: loading ? 'not-allowed' : 'pointer'
                             }}
                         >
-                            {loading ? '⏳ CLAIMING...' : '💰 CLAIM'}
+                            {loading ? '⏳ CLAIMING...' : '💰 CLAIM NOW'}
                         </button>
                     </div>
 
@@ -62,12 +62,14 @@ export function PendingClaims({ claims, onClaim, loading }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
-                                fontSize: '10px',
-                                color: '#1a1a1a',
-                                textDecoration: 'underline'
+                                display: 'inline-block',
+                                marginTop: '12px',
+                                fontSize: '0.7rem',
+                                color: '#31d7ff',
+                                textDecoration: 'none'
                             }}
                         >
-                            View tweet →
+                            View source tweet →
                         </a>
                     )}
                 </div>
