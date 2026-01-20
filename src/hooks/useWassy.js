@@ -26,6 +26,7 @@ export function useWassy() {
     const [delegationAmount, setDelegationAmount] = useState(1000);
     const [payments, setPayments] = useState([]);
     const [pendingClaims, setPendingClaims] = useState([]);
+    const [pendingOutgoing, setPendingOutgoing] = useState([]); // Payments user sent that aren't claimed yet
     const [allUsers, setAllUsers] = useState([]);
     const [userStats, setUserStats] = useState({ deposited: 0, claimed: 0, sent: 0 });
     const [loading, setLoading] = useState(false);
@@ -124,10 +125,19 @@ export function useWassy() {
             const response = await fetch(`${API}/api/payments/${xUsername}`);
             if (response.ok) {
                 const data = await response.json();
-                setPayments(data.payments || []);
+                const allPayments = data.payments || [];
+                setPayments(allPayments);
+
+                // Calculate pending outgoing payments (sent by user, not yet claimed)
+                const outgoing = allPayments.filter(p =>
+                    p.sender_username === xUsername.toLowerCase() &&
+                    p.status === 'pending' &&
+                    !p.claimed_by
+                );
+                setPendingOutgoing(outgoing);
 
                 // Calculate stats from actual data
-                const stats = (data.payments || []).reduce((acc, p) => {
+                const stats = allPayments.reduce((acc, p) => {
                     if (p.sender_username === xUsername.toLowerCase()) {
                         acc.sent += parseFloat(p.amount) || 0;
                     } else if (p.recipient_username === xUsername.toLowerCase()) {
@@ -332,6 +342,7 @@ export function useWassy() {
         // Payments
         payments,
         pendingClaims,
+        pendingOutgoing,
         claimPayment,
         fetchPendingClaims,
 

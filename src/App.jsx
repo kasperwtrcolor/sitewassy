@@ -8,6 +8,7 @@ import './index.css';
 import { LoginScreen, LoadingScreen } from './components/LoginScreen';
 import { WalletCard } from './components/WalletCard';
 import { PendingClaims } from './components/PendingClaims';
+import { PendingOutgoing } from './components/PendingOutgoing';
 import { PaymentHistory } from './components/PaymentHistory';
 import { StatsCard, HowToPayCard, Footer } from './components/Cards';
 import { LeaderboardModal, AchievementsModal, AdminModal } from './components/Modals';
@@ -39,6 +40,7 @@ function WassyPayApp() {
     authorizeDelegation,
     payments,
     pendingClaims,
+    pendingOutgoing,
     claimPayment,
     fetchPendingClaims,
     allUsers,
@@ -214,7 +216,14 @@ function WassyPayApp() {
             {/* Stats Card */}
             <StatsCard userStats={userStats} />
 
-            {/* Pending Claims */}
+            {/* Pending Outgoing Payments (for senders) */}
+            <PendingOutgoing
+              payments={pendingOutgoing}
+              isDelegated={isDelegated}
+              walletBalance={walletBalance}
+            />
+
+            {/* Pending Claims (for recipients) */}
             <PendingClaims claims={pendingClaims} onClaim={claimPayment} loading={loading} />
           </div>
         </div>
