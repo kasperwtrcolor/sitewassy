@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { PrivyProvider, usePrivy, useWallets, useFundWallet } from '@privy-io/react-auth';
+import { PrivyProvider, usePrivy } from '@privy-io/react-auth';
+import { useWallets } from '@privy-io/react-auth/solana';
+import { useFundWallet } from '@privy-io/react-auth';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
@@ -10,38 +12,21 @@ const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybap
 const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || "https://rpc.dev.fun/699840f631c97306a0c4";
 
 function WassyPayApp() {
-  const { ready, authenticated, user, login, logout, createWallet, exportWallet } = usePrivy();
+  const { ready, authenticated, user, login, logout, exportWallet } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
   const { fundWallet } = useFundWallet();
 
-  // Get ONLY Solana wallets from Privy - strict chainType filtering
-  const allSolanaWallets = wallets?.filter(w => w.chainType === 'solana') || [];
-  // Prefer Privy embedded wallet, fallback to first Solana wallet
-  const solanaWallet = allSolanaWallets.find(w => w.walletClientType === 'privy') || allSolanaWallets[0] || null;
+  // Get embedded Solana wallet from Privy (wallets from @privy-io/react-auth/solana are already Solana only)
+  const solanaWallet = wallets?.find(w => w.walletClientType === 'privy') || wallets?.[0] || null;
 
-  // Log wallet info (only in development)
+  // Log wallet info (development only)
   useEffect(() => {
-    if (walletsReady) {
-      const solanaCount = allSolanaWallets.length;
-      const ethCount = wallets?.filter(w => w.chainType === 'ethereum')?.length || 0;
-      if (solanaCount > 0) {
-        console.log(`✅ Solana wallet ready: ${solanaWallet?.address?.slice(0, 8)}...`);
-      }
-      if (ethCount > 0) {
-        console.warn(`⚠️ ${ethCount} Ethereum wallet(s) detected but ignored - disable in Privy dashboard`);
-      }
+    if (walletsReady && wallets?.length > 0) {
+      console.log(`✅ Solana wallet ready: ${solanaWallet?.address?.slice(0, 8)}...`);
+    } else if (walletsReady && authenticated) {
+      console.log('⏳ Waiting for wallet...');
     }
-  }, [wallets, walletsReady, solanaWallet, allSolanaWallets]);
-
-  // Auto-create Solana wallet if missing
-  useEffect(() => {
-    if (authenticated && walletsReady && !solanaWallet && createWallet) {
-      console.log('🔧 No Solana wallet detected, attempting to create...');
-      createWallet({ chainType: 'solana' })
-        .then(() => console.log('✅ Solana wallet creation initiated'))
-        .catch(err => console.error('❌ Failed to create Solana wallet:', err));
-    }
-  }, [authenticated, walletsReady, solanaWallet, createWallet]);
+  }, [wallets, walletsReady, solanaWallet, authenticated]);
 
   // Admin wallet
   const ADMIN_WALLET = '6SxLVfFovSjR2LAFcJ5wfT6RFjc8GxsscRekGnLq8BMe';
@@ -226,15 +211,15 @@ function WassyPayApp() {
           const data = await response.json();
           setPayments(data.payments || []);
 
-          // Calculate stats
+          // Calculate stats from actual payment data only
           const stats = (data.payments || []).reduce((acc, p) => {
-            if (p.sender_username === xUsername) {
+            if (p.sender_username === xUsername.toLowerCase()) {
               acc.sent += parseFloat(p.amount) || 0;
-            } else {
+            } else if (p.recipient_username === xUsername.toLowerCase()) {
               acc.claimed += parseFloat(p.amount) || 0;
             }
             return acc;
-          }, { deposited: delegationAmount, claimed: 0, sent: 0 });
+          }, { deposited: 0, claimed: 0, sent: 0 });
           setUserStats(stats);
 
           // Update achievements
@@ -797,44 +782,14 @@ function WassyPayApp() {
             <div style={{
               background: '#fff3cd',
               border: '1px solid #ffc107',
-              padding: '15px'
+              padding: '15px',
+              textAlign: 'center'
             }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>⏳ CREATING WALLET...</div>
-              <div style={{ fontSize: '12px', marginBottom: '15px' }}>
-                Privy is setting up your embedded Solana wallet. This may take a few moments.
+              <div style={{ fontSize: '24px', marginBottom: '10px' }}>⏳</div>
+              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>LOADING WALLET...</div>
+              <div style={{ fontSize: '12px', opacity: '0.7' }}>
+                Your embedded Solana wallet is being loaded from Privy.
               </div>
-              {createWallet && (
-                <button
-                  onClick={async () => {
-                    try {
-                      console.log('🔘 Manual Solana wallet creation triggered');
-                      await createWallet({ chainType: 'solana' });
-                      console.log('✅ Solana wallet creation successful');
-                    } catch (err) {
-                      console.error('❌ Manual Solana wallet creation failed:', err);
-                      setError(`Failed to create wallet: ${err.message}`);
-                    }
-                  }}
-                  style={{
-                    background: '#1a1a1a',
-                    color: 'white',
-                    border: 'none',
-                    padding: '10px 20px',
-                    fontFamily: "'Courier Prime', monospace",
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    fontSize: '12px',
-                    width: '100%',
-                    transition: 'all 0.1s'
-                  }}
-                  onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
-                  onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
-                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                >
-                  🔧 CREATE WALLET MANUALLY
-                </button>
-              )}
             </div>
           )}
         </div>
