@@ -300,11 +300,12 @@ export default function App() {
           }
         },
         // Privy v3 Solana RPC configuration (required for signAndSendTransaction)
+        // Using Solana's official mainnet RPC with WebSocket support
         solana: {
           rpcs: {
             'solana:mainnet': {
-              rpc: createSolanaRpc(SOLANA_RPC),
-              rpcSubscriptions: createSolanaRpcSubscriptions(SOLANA_RPC.replace('https://', 'wss://'))
+              rpc: createSolanaRpc('https://api.mainnet-beta.solana.com'),
+              rpcSubscriptions: createSolanaRpcSubscriptions('wss://api.mainnet-beta.solana.com')
             }
           }
         }
