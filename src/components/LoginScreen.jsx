@@ -57,12 +57,10 @@ export function LoginScreen({ onLogin }) {
                             fontWeight: 700,
                             lineHeight: 0.9,
                             marginBottom: '20px',
-                            background: 'linear-gradient(180deg, #fff 0%, #666 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
+                            color: '#ffffff'
                         }}>
                             SOCIAL PAYMENTS<br />
-                            <span style={{ color: '#d4af37', WebkitTextFillColor: '#d4af37' }}>REIMAGINED</span>
+                            <span style={{ color: '#d4af37' }}>REIMAGINED</span>
                         </h1>
 
                         <p className="animate-fade-in delay-2" style={{
@@ -115,7 +113,7 @@ export function LoginScreen({ onLogin }) {
                             <div className="flow-step animate-slide-left delay-1">
                                 <div className="step-number">1</div>
                                 <div className="step-content">
-                                    <h4 style={{ color: '#31d7ff' }}>💰 FUND</h4>
+                                    <h4 style={{ color: '#31d7ff', fontWeight: 600 }}>FUND</h4>
                                     <p>Connect your X account and Solana wallet. Deposit USDC to start sending payments.</p>
                                 </div>
                             </div>
@@ -124,7 +122,7 @@ export function LoginScreen({ onLogin }) {
                             <div className="flow-step animate-slide-left delay-2">
                                 <div className="step-number">2</div>
                                 <div className="step-content">
-                                    <h4 style={{ color: '#d4af37' }}>✍️ TAG</h4>
+                                    <h4 style={{ color: '#d4af37', fontWeight: 600 }}>TAG</h4>
                                     <p>Post on X: "@bot_wassy send @username $amount" — that's it. No apps, no forms.</p>
                                 </div>
                             </div>
@@ -133,7 +131,7 @@ export function LoginScreen({ onLogin }) {
                             <div className="flow-step animate-slide-left delay-3">
                                 <div className="step-number">3</div>
                                 <div className="step-content">
-                                    <h4 style={{ color: '#4ade80' }}>🎯 CLAIM</h4>
+                                    <h4 style={{ color: '#4ade80', fontWeight: 600 }}>CLAIM</h4>
                                     <p>Recipient sees the payment, clicks claim, and USDC transfers instantly on Solana.</p>
                                 </div>
                             </div>

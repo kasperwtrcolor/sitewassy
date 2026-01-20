@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useWallets } from '@privy-io/react-auth/solana';
-import { useFundWallet } from '@privy-io/react-auth';
+// Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_WALLET } from '../constants';
@@ -9,7 +9,7 @@ import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_WALLET } from '../cons
 export function useWassy() {
     const { ready, authenticated, user, login, logout, exportWallet } = usePrivy();
     const { wallets, ready: walletsReady } = useWallets();
-    const { fundWallet } = useFundWallet();
+    // useFundWallet removed - causes crashes, using manual funding instead
 
     // Get embedded Solana wallet from Privy
     const solanaWallet = wallets?.find(w => w.walletClientType === 'privy') || wallets?.[0] || null;
@@ -267,7 +267,7 @@ export function useWassy() {
         }
     };
 
-    // Fund wallet via Privy - with error handling to prevent crash
+    // Fund wallet - copy address to clipboard and open Solscan
     const handleFundWallet = async () => {
         if (!solanaWallet?.address) {
             setError('No wallet found');
@@ -275,18 +275,15 @@ export function useWassy() {
         }
 
         try {
-            if (fundWallet) {
-                await fundWallet(solanaWallet.address, { cluster: 'mainnet-beta' });
-            } else {
-                // Fallback: open Solscan to show wallet address
-                window.open(`https://solscan.io/account/${solanaWallet.address}`, '_blank');
-                setSuccess('Fund your wallet by sending USDC to the address shown');
-            }
-        } catch (err) {
-            console.error('Fund wallet error:', err);
-            // Don't crash - just show a helpful message
+            // Copy address to clipboard
+            await navigator.clipboard.writeText(solanaWallet.address);
+            setSuccess('Wallet address copied! Send USDC to this address on Solana.');
+            // Open Solscan for reference
             window.open(`https://solscan.io/account/${solanaWallet.address}`, '_blank');
-            setSuccess('Fund your wallet by sending USDC to the address shown');
+        } catch (err) {
+            // Fallback if clipboard fails
+            window.open(`https://solscan.io/account/${solanaWallet.address}`, '_blank');
+            setSuccess('Send USDC to your wallet address shown on Solscan.');
         }
     };
 
