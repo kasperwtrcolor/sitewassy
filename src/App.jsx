@@ -1586,11 +1586,7 @@ export default function App() {
           ethereum: {
             createOnLogin: 'off'
           }
-        },
-        // Set Solana as default chain
-        defaultChain: 'solana',
-        // Only support Solana
-        supportedChains: ['solana']
+        }
       }}
     >
       <WassyPayApp />
