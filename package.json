@@ -10,6 +10,7 @@
   "dependencies": {
     "@devfunlabs/web-sdk": "latest",
     "@privy-io/react-auth": "^3.10.1",
+    "@solana-program/memo": "^0.10.0",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "lucide-react": "latest",
