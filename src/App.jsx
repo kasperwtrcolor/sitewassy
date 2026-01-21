@@ -47,7 +47,7 @@ function WassyPayApp() {
     fetchPendingClaims,
     allUsers,
     handleFundWallet,
-    exportWallet,
+    handleExportWallet,
     loading,
     error,
     success,
@@ -205,7 +205,7 @@ function WassyPayApp() {
               isAuthorizing={isAuthorizing}
               onAuthorize={handleAuthorize}
               onFundWallet={handleFundWallet}
-              onExportWallet={solanaWallet ? exportWallet : null}
+              onExportWallet={solanaWallet ? handleExportWallet : null}
               error={error}
               success={success}
             />

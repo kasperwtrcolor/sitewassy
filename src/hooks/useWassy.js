@@ -307,6 +307,28 @@ export function useWassy() {
         }
     };
 
+    // Export/manage wallet with error handling for mobile
+    const handleExportWallet = async () => {
+        if (!exportWallet) {
+            setError('Wallet management not available');
+            return;
+        }
+
+        try {
+            await exportWallet();
+        } catch (err) {
+            console.error('Export wallet error:', err);
+            // On mobile browsers, exportWallet may not work properly
+            // Show a helpful error message
+            if (err.message?.includes('not supported') || err.message?.includes('unavailable')) {
+                setError('Wallet export is only available on desktop browsers. Use a desktop to export your private key.');
+            } else {
+                setError('Unable to open wallet manager. Please try again or use a desktop browser.');
+            }
+            setTimeout(() => setError(''), 5000);
+        }
+    };
+
     // Data fetching effect
     useEffect(() => {
         if (!xUsername) return;
@@ -360,7 +382,7 @@ export function useWassy() {
 
         // Actions
         handleFundWallet,
-        exportWallet,
+        handleExportWallet,
 
         // UI state
         loading,
