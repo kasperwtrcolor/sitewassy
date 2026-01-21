@@ -3,7 +3,7 @@ export const API = import.meta.env.VITE_API_URL || "https://wassy-pay-backend.on
 export const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
 export const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS;
 export const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-export const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || "https://rpc.dev.fun/699840f631c97306a0c4";
+export const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || "https://api.mainnet-beta.solana.com";
 export const ADMIN_WALLET = '6SxLVfFovSjR2LAFcJ5wfT6RFjc8GxsscRekGnLq8BMe';
 
 // Common styles

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useWallets } from '@privy-io/react-auth/solana';
+import { useWallets, useSignAndSendTransaction } from '@privy-io/react-auth/solana';
 // Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -9,6 +9,7 @@ import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_WALLET } from '../cons
 export function useWassy() {
     const { ready, authenticated, user, login, logout, exportWallet } = usePrivy();
     const { wallets, ready: walletsReady } = useWallets();
+    const { signAndSendTransaction } = useSignAndSendTransaction();
     // useFundWallet removed - causes crashes, using manual funding instead
 
     // Get embedded Solana wallet from Privy
@@ -257,12 +258,23 @@ export function useWassy() {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = walletPubkey;
 
-            // Privy v3: signAndSendTransaction is directly on wallet object
-            const signedTx = await solanaWallet.signAndSendTransaction(transaction);
+            // Privy v3: Use useSignAndSendTransaction hook with serialized transaction
+            console.log('Sending authorization transaction...');
+            const result = await signAndSendTransaction({
+                transaction: transaction.serialize({ requireAllSignatures: false }),
+                wallet: solanaWallet
+            });
+
+            console.log('Transaction result:', result);
 
             // Wait for confirmation
-            if (signedTx?.signature) {
-                await connection.confirmTransaction(signedTx.signature);
+            const signature = result?.signature;
+            if (signature) {
+                // Convert Uint8Array signature to base58 string if needed
+                const sigString = typeof signature === 'string'
+                    ? signature
+                    : Buffer.from(signature).toString('base64');
+                await connection.confirmTransaction(sigString);
             }
 
             await fetch(`${API}/api/authorize`, {
@@ -271,7 +283,7 @@ export function useWassy() {
                 body: JSON.stringify({
                     wallet: solanaWallet.address,
                     amount: amount,
-                    signature: signedTx?.signature || signedTx
+                    signature: result?.signature || 'confirmed'
                 })
             });
 

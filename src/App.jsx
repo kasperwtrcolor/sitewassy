@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
-import { createSolanaRpc, createSolanaRpcSubscriptions } from '@solana/kit';
-import { PRIVY_APP_ID, SOLANA_RPC } from './constants';
+import { PRIVY_APP_ID } from './constants';
 import { useWassy } from './hooks/useWassy';
 import './index.css';
 
@@ -299,16 +298,6 @@ export default function App() {
           },
           ethereum: {
             createOnLogin: 'off'
-          }
-        },
-        // Privy v3 Solana RPC configuration (required for signAndSendTransaction)
-        // Using custom RPC to avoid public mainnet rate limits
-        solana: {
-          rpcs: {
-            'solana:mainnet': {
-              rpc: createSolanaRpc(SOLANA_RPC)
-              // Note: rpcSubscriptions omitted - custom RPC may not support WebSockets
-            }
           }
         }
       }}
