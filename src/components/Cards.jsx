@@ -1,6 +1,12 @@
 import '../index.css';
 
 export function StatsCard({ userStats }) {
+    // Safe defaults for Firebase stats (using totalDeposited/totalSent/totalClaimed/points)
+    const deposited = userStats?.totalDeposited || 0;
+    const sent = userStats?.totalSent || 0;
+    const claimed = userStats?.totalClaimed || 0;
+    const points = userStats?.points || 0;
+
     return (
         <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
             <div className="engraved" style={{ marginBottom: '20px' }}>// YOUR_STATS</div>
@@ -8,25 +14,25 @@ export function StatsCard({ userStats }) {
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                     <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>DEPOSITED</div>
                     <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700' }}>
-                        ${userStats.deposited.toFixed(2)}
+                        ${deposited.toFixed(2)}
                     </div>
                 </div>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                     <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>SENT</div>
                     <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ef4444' }}>
-                        ${userStats.sent.toFixed(2)}
+                        ${sent.toFixed(2)}
                     </div>
                 </div>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                     <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>CLAIMED</div>
                     <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#4ade80' }}>
-                        ${userStats.claimed.toFixed(2)}
+                        ${claimed.toFixed(2)}
                     </div>
                 </div>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                     <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>POINTS</div>
                     <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#d4af37' }}>
-                        {(userStats.deposited + userStats.sent + userStats.claimed).toFixed(0)}
+                        {points.toFixed(0)}
                     </div>
                 </div>
             </div>

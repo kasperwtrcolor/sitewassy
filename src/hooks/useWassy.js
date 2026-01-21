@@ -184,16 +184,8 @@ export function useWassy() {
                 );
                 setPendingOutgoing(outgoing);
 
-                // Calculate stats from actual data
-                const stats = allPayments.reduce((acc, p) => {
-                    if (p.sender_username === xUsername.toLowerCase()) {
-                        acc.sent += parseFloat(p.amount) || 0;
-                    } else if (p.recipient_username === xUsername.toLowerCase()) {
-                        acc.claimed += parseFloat(p.amount) || 0;
-                    }
-                    return acc;
-                }, { deposited: 0, claimed: 0, sent: 0 });
-                setUserStats(stats);
+                // Note: Stats now come from Firebase (userProfile.stats)
+                // The backend still tracks payments for tweet scanning
             }
         } catch (err) {
             console.error('Error fetching payments:', err);
