@@ -1,7 +1,116 @@
 import '../index.css';
+import { useState, useEffect } from 'react';
+
+// Scrolling Payment Ticker - shows recent payment usernames
+export function PaymentTicker({ payments }) {
+    if (!payments || payments.length === 0) return null;
+
+    // Get unique recent senders/recipients for the ticker
+    const recentUsers = [...new Set(
+        payments.slice(0, 20).flatMap(p => [
+            p.sender_username ? `@${p.sender_username}` : null,
+            p.recipient_username ? `@${p.recipient_username}` : null
+        ]).filter(Boolean)
+    )].slice(0, 15);
+
+    if (recentUsers.length === 0) return null;
+
+    // Double the items for seamless loop
+    const tickerItems = [...recentUsers, ...recentUsers];
+
+    return (
+        <div className="ticker-container" style={{
+            overflow: 'hidden',
+            background: 'linear-gradient(90deg, rgba(49,215,255,0.1), rgba(212,175,55,0.1))',
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            padding: '8px 0',
+            marginBottom: '20px'
+        }}>
+            <div className="ticker-content" style={{
+                display: 'flex',
+                animation: 'scroll 30s linear infinite',
+                whiteSpace: 'nowrap'
+            }}>
+                {tickerItems.map((user, i) => (
+                    <span key={i} style={{
+                        display: 'inline-block',
+                        padding: '0 30px',
+                        color: i % 2 === 0 ? '#31d7ff' : '#d4af37',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '0.8rem',
+                        fontWeight: '600'
+                    }}>
+                        {user} ⚡
+                    </span>
+                ))}
+            </div>
+            <style>{`
+                @keyframes scroll {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+            `}</style>
+        </div>
+    );
+}
+
+// Countdown Timer - next bot scan
+export function ScanCountdown({ lastScanTimestamp }) {
+    const [timeLeft, setTimeLeft] = useState('');
+    const SCAN_INTERVAL = 30 * 60 * 1000; // 30 minutes in ms
+
+    useEffect(() => {
+        const updateCountdown = () => {
+            const lastScan = lastScanTimestamp || Date.now();
+            const nextScan = lastScan + SCAN_INTERVAL;
+            const now = Date.now();
+            const diff = nextScan - now;
+
+            if (diff <= 0) {
+                setTimeLeft('Scanning now...');
+                return;
+            }
+
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            setTimeLeft(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        };
+
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+        return () => clearInterval(interval);
+    }, [lastScanTimestamp]);
+
+    return (
+        <div className="plate" style={{
+            padding: '15px 20px',
+            marginBottom: '20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+        }}>
+            <div>
+                <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '4px' }}>
+                    // NEXT_PAYMENT_SCAN
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#666' }}>
+                    Payments are scanned every 30 minutes
+                </div>
+            </div>
+            <div className="mono" style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#31d7ff',
+                textShadow: '0 0 10px rgba(49,215,255,0.5)'
+            }}>
+                ⏱️ {timeLeft}
+            </div>
+        </div>
+    );
+}
 
 export function StatsCard({ userStats }) {
-    // Safe defaults for Firebase stats (using totalDeposited/totalSent/totalClaimed/points)
+    // Safe defaults for Firebase stats
     const deposited = userStats?.totalDeposited || 0;
     const sent = userStats?.totalSent || 0;
     const claimed = userStats?.totalClaimed || 0;
@@ -59,23 +168,82 @@ export function HowToPayCard() {
     );
 }
 
-export function Footer() {
+export function Footer({ onShowTerms }) {
     return (
         <div style={{ textAlign: 'center', padding: '30px', color: '#444' }}>
-            <a
-                href="https://twitter.com/bot_wassy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn"
-                style={{ marginBottom: '15px' }}
-            >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="white" style={{ marginRight: '8px', verticalAlign: 'middle' }}>
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                @BOT_WASSY
-            </a>
-            <div className="mono" style={{ fontSize: '0.65rem', marginTop: '15px' }}>
+            <div className="mono" style={{ fontSize: '0.65rem', marginBottom: '15px' }}>
                 © 2026 WASSY PAY • BUILT ON SOLANA
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                <a
+                    href="https://twitter.com/bot_wassy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#666', fontSize: '0.7rem', textDecoration: 'none' }}
+                >
+                    @bot_wassy
+                </a>
+                <span style={{ color: '#333' }}>•</span>
+                <button
+                    onClick={onShowTerms}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#666',
+                        fontSize: '0.7rem',
+                        cursor: 'pointer',
+                        fontFamily: "'JetBrains Mono', monospace"
+                    }}
+                >
+                    Terms & Conditions
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// Terms and Conditions Modal
+export function TermsModal({ show, onClose }) {
+    if (!show) return null;
+
+    return (
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-plate" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+                <div className="engraved" style={{ marginBottom: '20px' }}>// TERMS_AND_CONDITIONS</div>
+
+                <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#888', lineHeight: 1.8 }}>
+                        <h3 style={{ color: '#31d7ff', marginBottom: '10px' }}>1. Service Description</h3>
+                        <p>WassyPay is a non-custodial social payment service built on Solana. Users maintain full control of their wallets and funds at all times.</p>
+
+                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>2. No Financial Advice</h3>
+                        <p>This service does not provide financial, investment, or legal advice. Users are responsible for their own financial decisions.</p>
+
+                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>3. Risk Acknowledgment</h3>
+                        <p>Cryptocurrency transactions are irreversible. Users acknowledge the risks associated with blockchain transactions including but not limited to: network fees, transaction failures, and price volatility.</p>
+
+                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>4. User Responsibility</h3>
+                        <p>Users are responsible for:</p>
+                        <ul style={{ marginLeft: '20px', marginTop: '5px' }}>
+                            <li>Securing their wallet credentials</li>
+                            <li>Ensuring sufficient funds for transactions</li>
+                            <li>Verifying recipient addresses before sending</li>
+                        </ul>
+
+                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>5. Service Availability</h3>
+                        <p>We strive for 99.9% uptime but do not guarantee uninterrupted service. Payment scanning occurs every 30 minutes.</p>
+
+                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>6. Privacy</h3>
+                        <p>We only store X usernames and wallet addresses necessary for service operation. Blockchain transactions are public by nature.</p>
+
+                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>7. Modifications</h3>
+                        <p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance of modified terms.</p>
+                    </div>
+                </div>
+
+                <button onClick={onClose} className="btn btn-primary" style={{ marginTop: '20px', width: '100%' }}>
+                    I UNDERSTAND
+                </button>
             </div>
         </div>
     );

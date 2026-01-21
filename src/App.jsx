@@ -11,8 +11,8 @@ import { WalletCard } from './components/WalletCard';
 import { PendingClaims } from './components/PendingClaims';
 import { PendingOutgoing } from './components/PendingOutgoing';
 import { PaymentHistory } from './components/PaymentHistory';
-import { StatsCard, HowToPayCard, Footer } from './components/Cards';
-import { LeaderboardModal, AchievementsModal, AdminModal } from './components/Modals';
+import { StatsCard, HowToPayCard, Footer, PaymentTicker, ScanCountdown, TermsModal } from './components/Cards';
+import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal } from './components/Modals';
 
 // Achievements definitions
 const ACHIEVEMENTS = [
@@ -58,15 +58,21 @@ function WassyPayApp() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
 
-  // Calculate unlocked achievements
+  // Last scan timestamp (Jan 21 06:37:41 PM GMT+1 = 1769017061699)
+  const lastScanTimestamp = 1769017061699;
+
+  // Calculate unlocked achievements (using Firebase field names)
   const unlockedAchievements = [];
-  if (userStats.sent > 0) unlockedAchievements.push('first_payment');
-  if (userStats.claimed > 0) unlockedAchievements.push('first_claim');
+  if ((userStats?.totalSent || 0) > 0) unlockedAchievements.push('first_payment');
+  if ((userStats?.totalClaimed || 0) > 0) unlockedAchievements.push('first_claim');
   if (isDelegated) unlockedAchievements.push('authorized');
-  if (userStats.sent > 100) unlockedAchievements.push('big_spender');
-  if (userStats.claimed > 100) unlockedAchievements.push('collector');
+  if ((userStats?.totalSent || 0) > 100) unlockedAchievements.push('big_spender');
+  if ((userStats?.totalClaimed || 0) > 100) unlockedAchievements.push('collector');
 
   // Handle authorization with loading state
   const handleAuthorize = async (amount) => {
@@ -151,18 +157,18 @@ function WassyPayApp() {
         {/* Action Buttons */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          gap: '12px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+          gap: '10px',
           marginBottom: '20px'
         }}>
           <button onClick={handleCheckForPayments} className="btn btn-primary">
-            🔍 CHECK PAYMENTS
+            🔍 CHECK
           </button>
           <button onClick={() => setShowLeaderboard(true)} className="btn">
-            🏆 LEADERBOARD
+            🏆 LEADERS
           </button>
           <button onClick={() => setShowAchievements(true)} className="btn" style={{ position: 'relative' }}>
-            ⭐ ACHIEVEMENTS
+            ⭐ BADGES
             {unlockedAchievements.length > 0 && (
               <span style={{
                 position: 'absolute',
@@ -183,12 +189,24 @@ function WassyPayApp() {
               </span>
             )}
           </button>
+          <button onClick={() => setShowStats(true)} className="btn">
+            📊 STATS
+          </button>
+          <button onClick={() => setShowHistory(true)} className="btn">
+            📜 HISTORY
+          </button>
           {isAdmin && (
             <button onClick={() => setShowAdminPanel(true)} className="btn btn-danger">
               👑 ADMIN
             </button>
           )}
         </div>
+
+        {/* Payment Ticker - scrolling recent users */}
+        <PaymentTicker payments={payments} />
+
+        {/* Countdown to next scan */}
+        <ScanCountdown lastScanTimestamp={lastScanTimestamp} />
 
         {/* Two Column Layout */}
         <div className="grid-2">
@@ -216,9 +234,6 @@ function WassyPayApp() {
 
           {/* Right Column */}
           <div>
-            {/* Stats Card */}
-            <StatsCard userStats={userStats} />
-
             {/* Pending Outgoing Payments (for senders) */}
             <PendingOutgoing
               payments={pendingOutgoing}
@@ -231,11 +246,8 @@ function WassyPayApp() {
           </div>
         </div>
 
-        {/* Payment History - Full Width */}
-        <PaymentHistory payments={payments} xUsername={xUsername} />
-
         {/* Footer */}
-        <Footer />
+        <Footer onShowTerms={() => setShowTerms(true)} />
 
         {/* Modals */}
         <LeaderboardModal
@@ -253,6 +265,21 @@ function WassyPayApp() {
           show={showAdminPanel}
           onClose={() => setShowAdminPanel(false)}
           users={allUsers}
+        />
+        <StatsModal
+          show={showStats}
+          onClose={() => setShowStats(false)}
+          userStats={userStats}
+        />
+        <HistoryModal
+          show={showHistory}
+          onClose={() => setShowHistory(false)}
+          payments={payments}
+          xUsername={xUsername}
+        />
+        <TermsModal
+          show={showTerms}
+          onClose={() => setShowTerms(false)}
         />
       </div>
     </div>

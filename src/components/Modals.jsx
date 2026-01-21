@@ -226,3 +226,143 @@ export function AdminModal({ show, onClose, users }) {
         </div>
     );
 }
+
+// Stats Modal - shows user stats in popup
+export function StatsModal({ show, onClose, userStats }) {
+    if (!show) return null;
+
+    const deposited = userStats?.totalDeposited || 0;
+    const sent = userStats?.totalSent || 0;
+    const claimed = userStats?.totalClaimed || 0;
+    const points = userStats?.points || 0;
+
+    return (
+        <div style={modalOverlayStyle} onClick={onClose}>
+            <div className="plate animate-scale" style={{
+                maxWidth: '400px',
+                width: '100%',
+                padding: '30px',
+                position: 'relative'
+            }} onClick={e => e.stopPropagation()}>
+                <div className="screw tl"></div>
+                <div className="screw tr"></div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>📊</span>
+                    <span className="engraved" style={{ fontSize: '0.9rem' }}>YOUR STATS</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
+                        <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>DEPOSITED</div>
+                        <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                            ${deposited.toFixed(2)}
+                        </div>
+                    </div>
+                    <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
+                        <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>SENT</div>
+                        <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ef4444' }}>
+                            ${sent.toFixed(2)}
+                        </div>
+                    </div>
+                    <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
+                        <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>CLAIMED</div>
+                        <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#4ade80' }}>
+                            ${claimed.toFixed(2)}
+                        </div>
+                    </div>
+                    <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
+                        <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>POINTS</div>
+                        <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#d4af37' }}>
+                            {points.toFixed(0)}
+                        </div>
+                    </div>
+                </div>
+
+                <button onClick={onClose} className="btn" style={{ width: '100%', marginTop: '20px' }}>
+                    CLOSE
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// History Modal - shows transaction history in popup
+export function HistoryModal({ show, onClose, payments, xUsername }) {
+    if (!show) return null;
+
+    const username = xUsername?.toLowerCase();
+
+    return (
+        <div style={modalOverlayStyle} onClick={onClose}>
+            <div className="plate animate-scale" style={{
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                padding: '30px',
+                position: 'relative'
+            }} onClick={e => e.stopPropagation()}>
+                <div className="screw tl"></div>
+                <div className="screw tr"></div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>📜</span>
+                    <span className="engraved" style={{ fontSize: '0.9rem' }}>TRANSACTION HISTORY</span>
+                </div>
+
+                {(!payments || payments.length === 0) ? (
+                    <div className="inset-panel" style={{ textAlign: 'center', padding: '40px' }}>
+                        <div style={{ color: '#666' }}>No transactions yet</div>
+                    </div>
+                ) : (
+                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                        {payments.slice(0, 20).map((p, idx) => {
+                            const isSender = p.sender_username === username;
+                            const isRecipient = p.recipient_username === username;
+
+                            return (
+                                <div key={p.id || idx} style={{
+                                    background: 'rgba(255,255,255,0.02)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    borderRadius: '10px',
+                                    padding: '12px 15px',
+                                    marginBottom: '10px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
+                                            {isSender ? (
+                                                <span>Sent to <span style={{ color: '#31d7ff' }}>@{p.recipient_username}</span></span>
+                                            ) : isRecipient ? (
+                                                <span>Received from <span style={{ color: '#31d7ff' }}>@{p.sender_username}</span></span>
+                                            ) : (
+                                                <span>@{p.sender_username} → @{p.recipient_username}</span>
+                                            )}
+                                        </div>
+                                        <div className="mono" style={{ fontSize: '0.65rem', color: '#666' }}>
+                                            {p.status === 'completed' ? '✅ Completed' : '⏳ Pending'}
+                                        </div>
+                                    </div>
+                                    <div className="mono" style={{
+                                        fontSize: '1.1rem',
+                                        fontWeight: '700',
+                                        color: isSender ? '#ef4444' : isRecipient ? '#4ade80' : '#888'
+                                    }}>
+                                        {isSender ? '-' : isRecipient ? '+' : ''}${(p.amount || 0).toFixed(2)}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                <button onClick={onClose} className="btn" style={{ width: '100%', marginTop: '20px' }}>
+                    CLOSE
+                </button>
+            </div>
+        </div>
+    );
+}
