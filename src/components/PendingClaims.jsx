@@ -5,17 +5,23 @@ export function PendingClaims({ claims, onClaim, loading }) {
 
     // Helper to determine sender fund status
     const getSenderStatus = (claim) => {
-        // Check if sender fund info is available from backend
+        // Check if sender fund info is available from backend (new enriched claims)
+        if (claim.sender_can_pay === true) {
+            return { ok: true, message: 'Sender is ready to pay' };
+        }
         if (claim.sender_authorized === false) {
             return { ok: false, message: 'Sender needs to authorize vault' };
         }
+        if (claim.sender_authorized === true && claim.sender_delegated_amount < claim.amount) {
+            return { ok: false, message: `Sender authorized $${claim.sender_delegated_amount?.toFixed(2) || 0}, needs $${claim.amount}` };
+        }
         if (claim.sender_balance !== undefined && claim.sender_balance < claim.amount) {
-            return { ok: false, message: 'Sender has insufficient funds' };
+            return { ok: false, message: 'Sender has insufficient USDC balance' };
         }
-        if (claim.sender_authorized === true && claim.sender_balance >= claim.amount) {
-            return { ok: true, message: 'Sender is funded' };
+        // Status unknown (backend doesn't provide this info yet or no wallet)
+        if (claim.sender_wallet === null || claim.sender_wallet === undefined) {
+            return { ok: false, message: 'Sender needs to log in and fund' };
         }
-        // Status unknown (backend doesn't provide this info yet)
         return null;
     };
 
