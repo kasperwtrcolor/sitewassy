@@ -5,6 +5,7 @@ import { useWallets, useSignAndSendTransaction } from '@privy-io/react-auth/sola
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_WALLET } from '../constants';
+import { useFirestore } from './useFirestore';
 
 export function useWassy() {
     const { ready, authenticated, user, login, logout, exportWallet } = usePrivy();
@@ -30,10 +31,33 @@ export function useWassy() {
     const [pendingClaims, setPendingClaims] = useState([]);
     const [pendingOutgoing, setPendingOutgoing] = useState([]); // Payments user sent that aren't claimed yet
     const [allUsers, setAllUsers] = useState([]);
-    const [userStats, setUserStats] = useState({ deposited: 0, claimed: 0, sent: 0 });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+
+    // Firebase integration for real-time stats and achievements
+    const {
+        userProfile,
+        leaderboard,
+        loading: firebaseLoading,
+        updateAuthorization: updateFirebaseAuth,
+        recordClaim: recordFirebaseClaim,
+        fetchLeaderboard,
+        ACHIEVEMENTS
+    } = useFirestore(solanaWallet?.address, xUsername);
+
+    // Derive stats from Firebase userProfile
+    const userStats = userProfile?.stats || { totalDeposited: 0, totalSent: 0, totalClaimed: 0, points: 0 };
+
+    // Sync isDelegated from Firebase (real-time)
+    useEffect(() => {
+        if (userProfile?.authorization?.isDelegated !== undefined) {
+            setIsDelegated(userProfile.authorization.isDelegated);
+            if (userProfile.authorization.delegationAmount) {
+                setDelegationAmount(userProfile.authorization.delegationAmount);
+            }
+        }
+    }, [userProfile?.authorization]);
 
     // Log wallet info
     useEffect(() => {
@@ -215,7 +239,10 @@ export function useWassy() {
             });
 
             if (response.ok) {
-                setSuccess(`Successfully claimed $${claim.amount} from @${claim.sender}!`);
+                // Record claim in Firebase for stats and achievements
+                await recordFirebaseClaim(claim.amount, claim.sender_username);
+
+                setSuccess(`Successfully claimed $${claim.amount} from @${claim.sender_username || claim.sender}!`);
                 await fetchPendingClaims();
                 setTimeout(() => setSuccess(''), 5000);
                 return true;
@@ -297,6 +324,9 @@ export function useWassy() {
                     signature: signature ? 'confirmed' : 'unknown'
                 })
             });
+
+            // Update Firebase for real-time stats
+            await updateFirebaseAuth(amount);
 
             // Update UI state
             setIsDelegated(true);
@@ -412,8 +442,15 @@ export function useWassy() {
         handleFundWallet,
         handleExportWallet,
 
+        // Firebase data
+        userProfile,
+        leaderboard,
+        fetchLeaderboard,
+        achievements: userProfile?.achievements || [],
+        ACHIEVEMENTS,
+
         // UI state
-        loading,
+        loading: loading || firebaseLoading,
         error,
         success,
         setError,
