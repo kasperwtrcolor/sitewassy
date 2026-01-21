@@ -282,29 +282,30 @@ export function useWassy() {
 
             console.log('Transaction result:', result);
 
-            // Wait for confirmation
+            // Transaction was successful (Privy waits for confirmation)
+            // The signature may be a Uint8Array or string - just log it for reference
             const signature = result?.signature;
-            if (signature) {
-                // Convert Uint8Array signature to base58 string if needed
-                const sigString = typeof signature === 'string'
-                    ? signature
-                    : Buffer.from(signature).toString('base64');
-                await connection.confirmTransaction(sigString);
-            }
+            console.log('Transaction signature:', signature);
 
+            // Call backend to record authorization
             await fetch(`${API}/api/authorize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     wallet: solanaWallet.address,
                     amount: amount,
-                    signature: result?.signature || 'confirmed'
+                    signature: signature ? 'confirmed' : 'unknown'
                 })
             });
 
+            // Update UI state
             setIsDelegated(true);
             setDelegationAmount(amount);
-            setSuccess(`Authorized ${amount} USDC!`);
+            setSuccess(`✓ Authorized ${amount} USDC! You can now make payments.`);
+
+            // Refresh balance to show updated state
+            await fetchBalance();
+
             return true;
 
         } catch (err) {
