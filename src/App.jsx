@@ -64,7 +64,7 @@ function WassyPayApp() {
   const [isAuthorizing, setIsAuthorizing] = useState(false);
 
   // Last scan timestamp (Jan 21 06:37:41 PM GMT+1 = 1769017061699)
-  const lastScanTimestamp = 1769017061699;
+  // Last scan timestamp removed - ScanCountdown now calculates dynamically
 
   // Calculate unlocked achievements (using Firebase field names)
   const unlockedAchievements = [];
@@ -206,7 +206,7 @@ function WassyPayApp() {
         <PaymentTicker payments={payments} />
 
         {/* Countdown to next scan */}
-        <ScanCountdown lastScanTimestamp={lastScanTimestamp} />
+        <ScanCountdown />
 
         {/* Two Column Layout */}
         <div className="grid-2">

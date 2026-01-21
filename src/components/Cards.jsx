@@ -55,31 +55,40 @@ export function PaymentTicker({ payments }) {
 }
 
 // Countdown Timer - next bot scan
-export function ScanCountdown({ lastScanTimestamp }) {
+export function ScanCountdown() {
     const [timeLeft, setTimeLeft] = useState('');
-    const SCAN_INTERVAL = 30 * 60 * 1000; // 30 minutes in ms
 
     useEffect(() => {
         const updateCountdown = () => {
-            const lastScan = lastScanTimestamp || Date.now();
-            const nextScan = lastScan + SCAN_INTERVAL;
-            const now = Date.now();
-            const diff = nextScan - now;
+            const now = new Date();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
 
-            if (diff <= 0) {
-                setTimeLeft('Scanning now...');
-                return;
+            // Bot scans at :07 and :37 each hour (7 and 37 min marks)
+            // Find the next scan time
+            let nextScanMinute;
+            if (minutes < 7) {
+                nextScanMinute = 7;
+            } else if (minutes < 37) {
+                nextScanMinute = 37;
+            } else {
+                nextScanMinute = 67; // Next hour's :07
             }
 
-            const minutes = Math.floor(diff / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            setTimeLeft(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+            const minutesLeft = nextScanMinute - minutes - 1;
+            const secondsLeft = 60 - seconds;
+
+            if (minutesLeft < 0) {
+                setTimeLeft('0:00');
+            } else {
+                setTimeLeft(`${minutesLeft}:${secondsLeft.toString().padStart(2, '0')}`);
+            }
         };
 
         updateCountdown();
         const interval = setInterval(updateCountdown, 1000);
         return () => clearInterval(interval);
-    }, [lastScanTimestamp]);
+    }, []);
 
     return (
         <div className="plate" style={{
