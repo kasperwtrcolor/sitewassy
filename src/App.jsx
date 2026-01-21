@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
-import { createSolanaRpc } from '@solana/kit';
+import { createSolanaRpc, createSolanaRpcSubscriptions } from '@solana/kit';
 import { PRIVY_APP_ID, SOLANA_RPC } from './constants';
 import { useWassy } from './hooks/useWassy';
 import './index.css';
@@ -305,7 +305,9 @@ export default function App() {
         solana: {
           rpcs: {
             'solana:mainnet': {
-              rpc: createSolanaRpc(SOLANA_RPC)
+              rpc: createSolanaRpc(SOLANA_RPC),
+              // WebSocket subscriptions (Helius supports WSS)
+              rpcSubscriptions: createSolanaRpcSubscriptions(SOLANA_RPC.replace('https://', 'wss://'))
             }
           }
         }
