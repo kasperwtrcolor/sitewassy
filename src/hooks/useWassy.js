@@ -48,26 +48,41 @@ export function useWassy() {
     const fetchBalance = useCallback(async () => {
         if (!solanaWallet?.address) return;
 
+        const connection = new Connection(SOLANA_RPC, 'confirmed');
+        const walletPubkey = new PublicKey(solanaWallet.address);
+
+        // Fetch SOL balance for gas fees
         try {
-            const connection = new Connection(SOLANA_RPC);
-            const walletPubkey = new PublicKey(solanaWallet.address);
-
-            // Fetch SOL balance for gas fees
             const solBalanceLamports = await connection.getBalance(walletPubkey);
-            setSolBalance(solBalanceLamports / 1_000_000_000); // Convert lamports to SOL
-
-            // Fetch USDC balance
-            const ata = await getAssociatedTokenAddress(
-                new PublicKey(USDC_MINT),
-                walletPubkey
-            );
-
-            const balance = await connection.getTokenAccountBalance(ata);
-            setWalletBalance(parseFloat(balance.value.uiAmount || 0));
+            const solBal = solBalanceLamports / 1_000_000_000;
+            console.log('SOL balance:', solBal);
+            setSolBalance(solBal);
         } catch (err) {
-            console.error('Error fetching balance:', err);
-            setWalletBalance(0);
-            setSolBalance(0);
+            console.error('Error fetching SOL balance:', err);
+            // Don't reset to 0, keep previous value
+        }
+
+        // Fetch USDC balance (separate try/catch so one failure doesn't affect the other)
+        try {
+            const usdcMint = new PublicKey(USDC_MINT);
+            const ata = await getAssociatedTokenAddress(usdcMint, walletPubkey);
+
+            console.log('Fetching USDC balance for ATA:', ata.toString());
+            const tokenAccountInfo = await connection.getTokenAccountBalance(ata);
+            const usdcBal = parseFloat(tokenAccountInfo.value.uiAmount || 0);
+            console.log('USDC balance:', usdcBal);
+            setWalletBalance(usdcBal);
+        } catch (err) {
+            // TokenAccountNotFoundError means no USDC in wallet
+            if (err.message?.includes('could not find account') ||
+                err.message?.includes('Invalid param') ||
+                err.name === 'TokenAccountNotFoundError') {
+                console.log('No USDC token account found - wallet has 0 USDC');
+                setWalletBalance(0);
+            } else {
+                console.error('Error fetching USDC balance:', err);
+                // Don't reset to 0 on network errors, keep previous value
+            }
         }
     }, [solanaWallet?.address]);
 
