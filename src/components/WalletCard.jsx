@@ -3,6 +3,7 @@ import '../index.css';
 export function WalletCard({
     solanaWallet,
     walletBalance,
+    solBalance,
     isDelegated,
     delegationAmount,
     setDelegationAmount,
@@ -13,6 +14,7 @@ export function WalletCard({
     error,
     success
 }) {
+    const needsGas = solBalance < 0.01; // Less than 0.01 SOL is too low for gas
     if (!solanaWallet) {
         return (
             <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
@@ -49,7 +51,26 @@ export function WalletCard({
                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '5px' }} className="mono">
                     {walletBalance.toFixed(6)} USDC
                 </div>
+                <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px' }} className="mono">
+                    SOL: {solBalance.toFixed(4)}
+                </div>
             </div>
+
+            {/* SOL Gas Warning */}
+            {needsGas && (
+                <div style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '12px',
+                    padding: '15px',
+                    marginBottom: '20px'
+                }}>
+                    <div style={{ fontWeight: '600', marginBottom: '5px', color: '#ef4444' }}>⚠ LOW SOL BALANCE</div>
+                    <div style={{ fontSize: '0.8rem', color: '#888' }}>
+                        You need at least 0.01 SOL for transaction fees. Send a small amount of SOL to your wallet address.
+                    </div>
+                </div>
+            )}
 
             {/* Address */}
             <div className="ledger-item">

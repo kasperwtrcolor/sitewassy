@@ -22,6 +22,7 @@ export function useWassy() {
 
     // State
     const [walletBalance, setWalletBalance] = useState(0);
+    const [solBalance, setSolBalance] = useState(0); // SOL balance for gas fees
     const [isDelegated, setIsDelegated] = useState(false);
     const [delegationAmount, setDelegationAmount] = useState(1000);
     const [payments, setPayments] = useState([]);
@@ -42,13 +43,19 @@ export function useWassy() {
         }
     }, [wallets, walletsReady, solanaWallet, authenticated]);
 
-    // Fetch wallet balance
+    // Fetch wallet balances (USDC and SOL)
     const fetchBalance = useCallback(async () => {
         if (!solanaWallet?.address) return;
 
         try {
             const connection = new Connection(SOLANA_RPC);
             const walletPubkey = new PublicKey(solanaWallet.address);
+
+            // Fetch SOL balance for gas fees
+            const solBalanceLamports = await connection.getBalance(walletPubkey);
+            setSolBalance(solBalanceLamports / 1_000_000_000); // Convert lamports to SOL
+
+            // Fetch USDC balance
             const ata = await getAssociatedTokenAddress(
                 new PublicKey(USDC_MINT),
                 walletPubkey
@@ -59,6 +66,7 @@ export function useWassy() {
         } catch (err) {
             console.error('Error fetching balance:', err);
             setWalletBalance(0);
+            setSolBalance(0);
         }
     }, [solanaWallet?.address]);
 
@@ -327,6 +335,7 @@ export function useWassy() {
         solanaWallet,
         walletsReady,
         walletBalance,
+        solBalance,
 
         // User info
         xUsername,

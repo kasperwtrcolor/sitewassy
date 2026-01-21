@@ -32,6 +32,7 @@ function WassyPayApp() {
     solanaWallet,
     walletsReady,
     walletBalance,
+    solBalance,
     xUsername,
     isAdmin,
     userStats,
@@ -197,6 +198,7 @@ function WassyPayApp() {
             <WalletCard
               solanaWallet={solanaWallet}
               walletBalance={walletBalance}
+              solBalance={solBalance}
               isDelegated={isDelegated}
               delegationAmount={delegationAmount}
               setDelegationAmount={setDelegationAmount}
@@ -300,12 +302,12 @@ export default function App() {
           }
         },
         // Privy v3 Solana RPC configuration (required for signAndSendTransaction)
-        // Using Solana's official mainnet RPC with WebSocket support
+        // Using custom RPC to avoid public mainnet rate limits
         solana: {
           rpcs: {
             'solana:mainnet': {
-              rpc: createSolanaRpc('https://api.mainnet-beta.solana.com'),
-              rpcSubscriptions: createSolanaRpcSubscriptions('wss://api.mainnet-beta.solana.com')
+              rpc: createSolanaRpc(SOLANA_RPC)
+              // Note: rpcSubscriptions omitted - custom RPC may not support WebSockets
             }
           }
         }
