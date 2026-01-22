@@ -2,11 +2,11 @@
 // All sensitive values MUST be set via environment variables
 export const API = import.meta.env.VITE_API_URL || "https://wassy-pay-backend.onrender.com";
 export const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
-export const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS || "HXAV7ysEaCH8imtGLU7A8c51tbP34NT9t8L3zvfR8L3Q";
+export const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS || "Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE";
 export const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 // IMPORTANT: Set VITE_SOLANA_RPC in Vercel to your Helius API key
 export const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC;
-export const ADMIN_WALLET = import.meta.env.VITE_ADMIN_WALLET || 'HXAV7ysEaCH8imtGLU7A8c51tbP34NT9t8L3zvfR8L3Q';
+export const ADMIN_WALLET = import.meta.env.VITE_ADMIN_WALLET || 'Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE';
 
 // Validation - warn if required env vars are missing
 if (!SOLANA_RPC) {
