@@ -64,15 +64,15 @@ export function ScanCountdown() {
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
 
-            // Bot scans at :07 and :37 each hour (7 and 37 min marks)
+            // Bot scans at :14 and :44 each hour (14 and 44 min marks)
             // Find the next scan time
             let nextScanMinute;
-            if (minutes < 7) {
-                nextScanMinute = 7;
-            } else if (minutes < 37) {
-                nextScanMinute = 37;
+            if (minutes < 14) {
+                nextScanMinute = 14;
+            } else if (minutes < 44) {
+                nextScanMinute = 44;
             } else {
-                nextScanMinute = 67; // Next hour's :07
+                nextScanMinute = 74; // Next hour's :14
             }
 
             const minutesLeft = nextScanMinute - minutes - 1;
