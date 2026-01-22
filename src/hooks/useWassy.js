@@ -114,7 +114,7 @@ export function useWassy() {
     useEffect(() => {
         if (!solanaWallet?.address) return;
         fetchBalance();
-        const interval = setInterval(fetchBalance, 15000);
+        const interval = setInterval(fetchBalance, 120000); // Every 2 minutes (was 15s)
         return () => clearInterval(interval);
     }, [solanaWallet?.address, fetchBalance]);
 
@@ -391,7 +391,7 @@ export function useWassy() {
             fetchPayments();
             fetchPendingClaims();
             fetchAllUsers();
-        }, 30000);
+        }, 120000); // Every 2 minutes (was 30s)
 
         return () => clearInterval(interval);
     }, [xUsername, fetchPayments, fetchPendingClaims, fetchAllUsers]);

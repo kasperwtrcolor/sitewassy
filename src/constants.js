@@ -1,12 +1,20 @@
 // API and Solana constants
+// All sensitive values MUST be set via environment variables
 export const API = import.meta.env.VITE_API_URL || "https://wassy-pay-backend.onrender.com";
 export const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
 export const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS || "HXAV7ysEaCH8imtGLU7A8c51tbP34NT9t8L3zvfR8L3Q";
 export const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-// Helius offers a generous free RPC tier for Solana mainnet
-// Sign up at helius.dev to get your own API key, or use this public endpoint
-export const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || "https://mainnet.helius-rpc.com/?api-key=1d8740dc-e5f4-421c-b823-e1bad1889eff";
-export const ADMIN_WALLET = 'HXAV7ysEaCH8imtGLU7A8c51tbP34NT9t8L3zvfR8L3Q';
+// IMPORTANT: Set VITE_SOLANA_RPC in Vercel to your Helius API key
+export const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC;
+export const ADMIN_WALLET = import.meta.env.VITE_ADMIN_WALLET || 'HXAV7ysEaCH8imtGLU7A8c51tbP34NT9t8L3zvfR8L3Q';
+
+// Validation - warn if required env vars are missing
+if (!SOLANA_RPC) {
+    console.warn('⚠️ VITE_SOLANA_RPC not set - RPC calls will fail');
+}
+if (!PRIVY_APP_ID) {
+    console.warn('⚠️ VITE_PRIVY_APP_ID not set - authentication will fail');
+}
 
 // Common styles
 export const cardStyle = {
