@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { createSolanaRpc, createSolanaRpcSubscriptions } from '@solana/kit';
 import { PRIVY_APP_ID, SOLANA_RPC } from './constants';
@@ -63,7 +63,18 @@ function WassyPayApp() {
   const [showTerms, setShowTerms] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
 
-  // Last scan timestamp (Jan 21 06:37:41 PM GMT+1 = 1769017061699)
+  // Theme toggle
+  const [theme, setTheme] = useState(() => localStorage.getItem('wassy-theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('wassy-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   // Last scan timestamp removed - ScanCountdown now calculates dynamically
 
   // Calculate unlocked achievements (using Firebase field names)
@@ -102,11 +113,16 @@ function WassyPayApp() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0d0d0d',
-      backgroundImage: 'radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0d0d0d 100%)',
+      background: 'var(--bg-primary)',
+      backgroundImage: 'radial-gradient(circle at 50% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
       padding: '20px',
       fontFamily: "'Space Grotesk', sans-serif"
     }}>
+      {/* Theme Toggle */}
+      <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+        {theme === 'dark' ? '☀️' : '🌙'}
+      </button>
+
       {/* Main Container */}
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 

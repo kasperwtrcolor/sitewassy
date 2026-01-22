@@ -1,6 +1,31 @@
+import { useState, useEffect, useRef } from 'react';
 import '../index.css';
+import { TermsModal } from './Cards';
 
 export function LoginScreen({ onLogin }) {
+    const [showTerms, setShowTerms] = useState(false);
+    const howItWorksRef = useRef(null);
+
+    // Scroll animation observer
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+        );
+
+        // Observe all scroll-animated elements
+        const elements = document.querySelectorAll('.scroll-fade-in, .scroll-slide-left, .scroll-slide-right');
+        elements.forEach((el) => observer.observe(el));
+
+        return () => observer.disconnect();
+    }, []);
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -102,8 +127,8 @@ export function LoginScreen({ onLogin }) {
                 </div>
 
                 {/* How It Works Section */}
-                <div className="animate-fade-in delay-5" style={{ marginBottom: '40px' }}>
-                    <h2 className="engraved" style={{ textAlign: 'center', marginBottom: '30px', fontSize: '0.8rem' }}>
+                <div style={{ marginBottom: '40px' }}>
+                    <h2 className="engraved scroll-fade-in" style={{ textAlign: 'center', marginBottom: '30px', fontSize: '0.8rem' }}>
             // HOW_IT_WORKS
                     </h2>
 
@@ -111,7 +136,7 @@ export function LoginScreen({ onLogin }) {
                         {/* Left Column - Flow Steps */}
                         <div>
                             {/* Step 1: FUND */}
-                            <div className="flow-step animate-slide-left delay-1">
+                            <div className="flow-step scroll-slide-left scroll-delay-1">
                                 <div className="step-number">1</div>
                                 <div className="step-content">
                                     <h4 style={{ color: '#31d7ff', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>FUND</h4>
@@ -120,7 +145,7 @@ export function LoginScreen({ onLogin }) {
                             </div>
 
                             {/* Step 2: TAG */}
-                            <div className="flow-step animate-slide-left delay-2">
+                            <div className="flow-step scroll-slide-left scroll-delay-2">
                                 <div className="step-number">2</div>
                                 <div className="step-content">
                                     <h4 style={{ color: '#d4af37', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>TAG</h4>
@@ -129,7 +154,7 @@ export function LoginScreen({ onLogin }) {
                             </div>
 
                             {/* Step 3: CLAIM */}
-                            <div className="flow-step animate-slide-left delay-3">
+                            <div className="flow-step scroll-slide-left scroll-delay-3">
                                 <div className="step-number">3</div>
                                 <div className="step-content">
                                     <h4 style={{ color: '#4ade80', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>CLAIM</h4>
@@ -240,8 +265,26 @@ export function LoginScreen({ onLogin }) {
                     Built on Solana
                     <span style={{ margin: '0 15px' }}>•</span>
                     © 2026
+                    <div style={{ marginTop: '15px' }}>
+                        <button
+                            onClick={() => setShowTerms(true)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#666',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                textDecoration: 'underline'
+                            }}
+                        >
+                            Terms & Conditions
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {/* Terms Modal */}
+            <TermsModal show={showTerms} onClose={() => setShowTerms(false)} />
         </div>
     );
 }

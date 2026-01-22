@@ -21,9 +21,11 @@ export function LeaderboardModal({ show, onClose, users }) {
     const sortedUsers = [...(users || [])]
         .map(u => ({
             ...u,
-            points: (u.total_deposited || 0) + (u.total_sent || 0) + (u.total_claimed || 0)
+            // Use stats.points from Firebase if available, otherwise calculate
+            points: u.stats?.points || u.points || ((u.total_deposited || 0) + (u.total_sent || 0) + (u.total_claimed || 0))
         }))
-        .sort((a, b) => b.points - a.points);
+        .sort((a, b) => b.points - a.points)
+        .filter(u => u.points > 0);
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
