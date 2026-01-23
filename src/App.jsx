@@ -34,6 +34,7 @@ function WassyPayApp() {
     walletsReady,
     walletBalance,
     solBalance,
+    hasEmbeddedWallet,
     xUsername,
     isAdmin,
     userStats,
@@ -298,7 +299,7 @@ function WassyPayApp() {
               isAuthorizing={isAuthorizing}
               onAuthorize={handleAuthorize}
               onFundWallet={handleFundWallet}
-              onExportWallet={solanaWallet ? handleExportWallet : null}
+              onExportWallet={hasEmbeddedWallet ? handleExportWallet : null}
               error={error}
               success={success}
             />

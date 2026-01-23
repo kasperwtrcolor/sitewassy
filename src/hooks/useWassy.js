@@ -13,8 +13,12 @@ export function useWassy() {
     const { signAndSendTransaction } = useSignAndSendTransaction();
     // useFundWallet removed - causes crashes, using manual funding instead
 
-    // Get embedded Solana wallet from Privy
-    const solanaWallet = wallets?.find(w => w.walletClientType === 'privy') || wallets?.[0] || null;
+    // Find embedded Solana wallet (created by Privy)
+    const embeddedWallet = wallets?.find(w => w.walletClientType === 'privy');
+    // Fall back to any available wallet for transactions
+    const solanaWallet = embeddedWallet || wallets?.[0] || null;
+    // Track if user has an embedded wallet (for export functionality)
+    const hasEmbeddedWallet = !!embeddedWallet;
 
     // Get X username from Privy
     const xUsername = user?.twitter?.username || '';
@@ -445,6 +449,7 @@ export function useWassy() {
         walletsReady,
         walletBalance,
         solBalance,
+        hasEmbeddedWallet,
 
         // User info
         xUsername,
