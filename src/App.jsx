@@ -193,14 +193,16 @@ function WassyPayApp() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <div style={{
+              fontFamily: "'Fredoka', sans-serif",
               fontWeight: 700,
-              fontSize: '1.2rem',
-              letterSpacing: '-0.02em',
-              background: 'linear-gradient(180deg, #fff 0%, #888 100%)',
+              fontSize: '1.4rem',
+              letterSpacing: '0.02em',
+              background: 'linear-gradient(180deg, #31d7ff 0%, #fff 50%, #31d7ff 100%)',
               WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 0 30px rgba(49, 215, 255, 0.3)'
             }}>
-              WASSY PAY
+              Wassy Pay
             </div>
           </div>
 

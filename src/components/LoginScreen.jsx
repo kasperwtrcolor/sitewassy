@@ -60,14 +60,15 @@ export function LoginScreen({ onLogin }) {
                     {/* Header */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                         <div style={{
+                            fontFamily: "'Fredoka', sans-serif",
                             fontWeight: 700,
-                            fontSize: '1.2rem',
-                            letterSpacing: '-0.02em',
-                            background: 'linear-gradient(180deg, #fff 0%, #888 100%)',
+                            fontSize: '1.4rem',
+                            letterSpacing: '0.02em',
+                            background: 'linear-gradient(180deg, #31d7ff 0%, #fff 50%, #31d7ff 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
                         }}>
-                            WASSY PAY // v2
+                            Wassy Pay
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', fontSize: '10px', letterSpacing: '2px', color: '#31d7ff' }}>
                             <span className="status-light" style={{ marginRight: '8px' }}></span>

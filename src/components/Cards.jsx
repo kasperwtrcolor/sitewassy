@@ -174,7 +174,7 @@ export function Footer({ onShowTerms, onRestartTutorial }) {
     return (
         <div style={{ textAlign: 'center', padding: '30px', color: '#444' }}>
             <div className="mono" style={{ fontSize: '0.65rem', marginBottom: '15px' }}>
-                © 2026 WASSY PAY • BUILT ON SOLANA
+                © 2026 Wassy Pay • BUILT ON SOLANA
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <a
@@ -222,16 +222,16 @@ export function TermsModal({ show, onClose }) {
 
                 <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
                     <div style={{ fontSize: '0.8rem', color: '#888', lineHeight: 1.8, fontFamily: "'JetBrains Mono', monospace" }}>
-                        <h3 style={{ color: '#31d7ff', marginBottom: '10px' }}>1. Service Description</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginBottom: '10px', fontWeight: 600 }}>1. Service Description</h3>
                         <p>WassyPay is a non-custodial social payment service built on Solana. Users maintain full control of their wallets and funds at all times.</p>
 
-                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>2. No Financial Advice</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>2. No Financial Advice</h3>
                         <p>This service does not provide financial, investment, or legal advice. Users are responsible for their own financial decisions.</p>
 
-                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>3. Risk Acknowledgment</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>3. Risk Acknowledgment</h3>
                         <p>Cryptocurrency transactions are irreversible. Users acknowledge the risks associated with blockchain transactions including but not limited to: network fees, transaction failures, and price volatility.</p>
 
-                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>4. User Responsibility</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>4. User Responsibility</h3>
                         <p>Users are responsible for:</p>
                         <ul style={{ marginLeft: '20px', marginTop: '5px' }}>
                             <li>Securing their wallet credentials</li>
@@ -239,13 +239,13 @@ export function TermsModal({ show, onClose }) {
                             <li>Verifying recipient addresses before sending</li>
                         </ul>
 
-                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>5. Service Availability</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>5. Service Availability</h3>
                         <p>We strive for 99.9% uptime but do not guarantee uninterrupted service. Payment scanning occurs every 30 minutes.</p>
 
-                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>6. Privacy</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>6. Privacy</h3>
                         <p>We only store X usernames and wallet addresses necessary for service operation. Blockchain transactions are public by nature.</p>
 
-                        <h3 style={{ color: '#31d7ff', marginTop: '20px', marginBottom: '10px' }}>7. Modifications</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>7. Modifications</h3>
                         <p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance of modified terms.</p>
                     </div>
                 </div>

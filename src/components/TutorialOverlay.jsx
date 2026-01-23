@@ -58,7 +58,7 @@ export function TutorialOverlay({ onComplete }) {
 
         if (element) {
             // Scroll element into view smoothly
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 
             // Wait for scroll to complete, then update rect
             setTimeout(() => {
@@ -69,14 +69,26 @@ export function TutorialOverlay({ onComplete }) {
                     width: rect.width + 20,
                     height: rect.height + 20
                 });
-            }, 300);
+            }, 500);
         }
     }, [step]);
+
+    // Scroll to top on first render to ensure elements are visible
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Delay initial target update to ensure page is rendered
+        const timer = setTimeout(updateTarget, 800);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         updateTarget();
         window.addEventListener('resize', updateTarget);
-        return () => window.removeEventListener('resize', updateTarget);
+        window.addEventListener('scroll', updateTarget);
+        return () => {
+            window.removeEventListener('resize', updateTarget);
+            window.removeEventListener('scroll', updateTarget);
+        };
     }, [updateTarget, currentStep]);
 
     const handleNext = () => {
