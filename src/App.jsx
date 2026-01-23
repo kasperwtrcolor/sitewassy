@@ -197,22 +197,26 @@ function WassyPayApp() {
               fontWeight: 700,
               fontSize: '1.4rem',
               letterSpacing: '0.02em',
-              background: 'linear-gradient(180deg, #31d7ff 0%, #fff 50%, #31d7ff 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '0 0 30px rgba(49, 215, 255, 0.3)'
+              color: 'var(--text-primary)'
             }}>
               Wassy Pay
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div className="handle-badge">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
               </svg>
               @{xUsername}
             </div>
+            <button
+              onClick={resetTutorial}
+              className="btn"
+              style={{ padding: '8px 12px', fontSize: '0.7rem' }}
+            >
+              📚 Start Tutorial
+            </button>
             <button
               onClick={logout}
               className="btn"
@@ -318,7 +322,7 @@ function WassyPayApp() {
         </div>
 
         {/* Footer */}
-        <Footer onShowTerms={() => setShowTerms(true)} onRestartTutorial={resetTutorial} />
+        <Footer onShowTerms={() => setShowTerms(true)} />
 
         {/* Modals */}
         <LeaderboardModal

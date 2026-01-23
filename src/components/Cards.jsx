@@ -170,7 +170,7 @@ export function HowToPayCard() {
     );
 }
 
-export function Footer({ onShowTerms, onRestartTutorial }) {
+export function Footer({ onShowTerms }) {
     return (
         <div style={{ textAlign: 'center', padding: '30px', color: '#444' }}>
             <div className="mono" style={{ fontSize: '0.65rem', marginBottom: '15px' }}>
@@ -198,13 +198,6 @@ export function Footer({ onShowTerms, onRestartTutorial }) {
                     }}
                 >
                     Terms & Conditions
-                </button>
-                <span style={{ color: '#333' }}>•</span>
-                <button
-                    onClick={onRestartTutorial}
-                    className="tutorial-restart-btn"
-                >
-                    📚 Restart Tutorial
                 </button>
             </div>
         </div>

@@ -64,9 +64,7 @@ export function LoginScreen({ onLogin }) {
                             fontWeight: 700,
                             fontSize: '1.4rem',
                             letterSpacing: '0.02em',
-                            background: 'linear-gradient(180deg, #31d7ff 0%, #fff 50%, #31d7ff 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
+                            color: '#fff'
                         }}>
                             Wassy Pay
                         </div>
