@@ -299,7 +299,7 @@ function WassyPayApp() {
               isAuthorizing={isAuthorizing}
               onAuthorize={handleAuthorize}
               onFundWallet={handleFundWallet}
-              onExportWallet={hasEmbeddedWallet ? handleExportWallet : null}
+              onExportWallet={solanaWallet ? handleExportWallet : null}
               error={error}
               success={success}
             />

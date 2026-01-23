@@ -409,9 +409,10 @@ export function useWassy() {
             await exportWallet();
         } catch (err) {
             console.error('Export wallet error:', err);
-            // On mobile browsers, exportWallet may not work properly
-            // Show a helpful error message
-            if (err.message?.includes('not supported') || err.message?.includes('unavailable')) {
+            // Handle specific error cases
+            if (err.message?.includes('embedded wallet')) {
+                setError('Wallet management requires an embedded Privy wallet. Please contact support if you believe this is an error.');
+            } else if (err.message?.includes('not supported') || err.message?.includes('unavailable')) {
                 setError('Wallet export is only available on desktop browsers. Use a desktop to export your private key.');
             } else {
                 setError('Unable to open wallet manager. Please try again or use a desktop browser.');
