@@ -13,6 +13,7 @@ import { PendingOutgoing } from './components/PendingOutgoing';
 import { PaymentHistory } from './components/PaymentHistory';
 import { StatsCard, HowToPayCard, Footer, PaymentTicker, ScanCountdown, TermsModal } from './components/Cards';
 import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal } from './components/Modals';
+import { TutorialOverlay, useTutorial } from './components/TutorialOverlay';
 
 // Achievements definitions
 const ACHIEVEMENTS = [
@@ -66,6 +67,9 @@ function WassyPayApp() {
   // Animation states
   const [isClaiming, setIsClaiming] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+
+  // Tutorial state
+  const { showTutorial, completeTutorial, resetTutorial } = useTutorial();
 
   // Theme toggle
   const [theme, setTheme] = useState(() => localStorage.getItem('wassy-theme') || 'dark');
@@ -150,6 +154,9 @@ function WassyPayApp() {
       padding: '20px',
       fontFamily: "'Space Grotesk', sans-serif"
     }}>
+      {/* Tutorial Overlay */}
+      {showTutorial && <TutorialOverlay onComplete={completeTutorial} />}
+
       {/* Confetti Animation */}
       {renderConfetti()}
 
@@ -266,7 +273,9 @@ function WassyPayApp() {
         <PaymentTicker payments={payments} />
 
         {/* Countdown to next scan */}
-        <ScanCountdown />
+        <div className="scan-countdown">
+          <ScanCountdown />
+        </div>
 
         {/* Two Column Layout */}
         <div className="grid-2">
@@ -307,7 +316,7 @@ function WassyPayApp() {
         </div>
 
         {/* Footer */}
-        <Footer onShowTerms={() => setShowTerms(true)} />
+        <Footer onShowTerms={() => setShowTerms(true)} onRestartTutorial={resetTutorial} />
 
         {/* Modals */}
         <LeaderboardModal

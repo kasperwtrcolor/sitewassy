@@ -125,7 +125,7 @@ export function StatsCard({ userStats }) {
     const points = userStats?.points || 0;
 
     return (
-        <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
+        <div className="plate stats-card" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
             <div className="engraved" style={{ marginBottom: '20px' }}>// YOUR_STATS</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
@@ -153,7 +153,7 @@ export function StatsCard({ userStats }) {
 
 export function HowToPayCard() {
     return (
-        <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
+        <div className="plate howto-card" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
             <div className="engraved" style={{ marginBottom: '20px' }}>// HOW_TO_PAY</div>
             <div className="inset-panel" style={{ textAlign: 'center', padding: '20px', marginBottom: '15px' }}>
                 <span className="mono" style={{ fontSize: '1rem' }}>
@@ -170,13 +170,13 @@ export function HowToPayCard() {
     );
 }
 
-export function Footer({ onShowTerms }) {
+export function Footer({ onShowTerms, onRestartTutorial }) {
     return (
         <div style={{ textAlign: 'center', padding: '30px', color: '#444' }}>
             <div className="mono" style={{ fontSize: '0.65rem', marginBottom: '15px' }}>
                 © 2026 WASSY PAY • BUILT ON SOLANA
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <a
                     href="https://twitter.com/bot_wassy"
                     target="_blank"
@@ -198,6 +198,13 @@ export function Footer({ onShowTerms }) {
                     }}
                 >
                     Terms & Conditions
+                </button>
+                <span style={{ color: '#333' }}>•</span>
+                <button
+                    onClick={onRestartTutorial}
+                    className="tutorial-restart-btn"
+                >
+                    📚 Restart Tutorial
                 </button>
             </div>
         </div>

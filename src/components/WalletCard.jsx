@@ -35,7 +35,7 @@ export function WalletCard({
     }
 
     return (
-        <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
+        <div className="plate wallet-card" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
             <div className="screw tl"></div>
             <div className="screw tr"></div>
 

@@ -26,7 +26,7 @@ export function PendingClaims({ claims, onClaim, loading }) {
     };
 
     return (
-        <div className="plate" style={{
+        <div className="plate claims-card" style={{
             padding: '30px',
             marginBottom: '20px',
             position: 'relative',
