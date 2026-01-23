@@ -378,7 +378,7 @@ export default function App() {
         appearance: {
           theme: 'dark',
           accentColor: '#31d7ff',
-          logo: 'https://i.imgur.com/ZQXqN0L.png'
+          logo: '/favicon.jpg'
         },
         embeddedWallets: {
           solana: {

@@ -88,8 +88,45 @@ export function WalletCard({
                     marginBottom: '20px'
                 }}>
                     <div style={{ fontWeight: '600', marginBottom: '5px', color: '#4ade80' }}>✓ AUTHORIZED</div>
-                    <div style={{ fontSize: '0.8rem', color: '#888' }}>
-                        Vault can move up to ${delegationAmount} USDC
+                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '12px' }}>
+                        Spending limit: <span style={{ color: '#4ade80' }}>${delegationAmount} USDC</span>
+                    </div>
+
+                    {/* Re-authorize section */}
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
+                        <div className="engraved" style={{ fontSize: '0.6rem', marginBottom: '8px' }}>
+                            INCREASE / UPDATE LIMIT
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <input
+                                type="number"
+                                value={delegationAmount}
+                                onChange={(e) => setDelegationAmount(parseFloat(e.target.value) || 0)}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 12px',
+                                    background: '#0a0a0a',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '6px',
+                                    color: '#fff',
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontSize: '0.9rem'
+                                }}
+                                placeholder="New amount"
+                            />
+                            <button
+                                onClick={() => onAuthorize(delegationAmount)}
+                                disabled={isAuthorizing}
+                                className="btn"
+                                style={{
+                                    padding: '8px 16px',
+                                    fontSize: '0.8rem',
+                                    opacity: isAuthorizing ? 0.5 : 1
+                                }}
+                            >
+                                {isAuthorizing ? '⏳' : '🔄 UPDATE'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             ) : (
