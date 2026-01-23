@@ -37,9 +37,7 @@ This integration adds **non-custodial Privy embedded wallets** to Wassy Pay, ena
 Add these environment variables to your Vercel project:
 
 ```bash
-VITE_PRIVY_APP_ID=cmjucu149007bl70cn1lo06od
-VITE_VAULT_ADDRESS=Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE
-VITE_USDC_MINT=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+
 ```
 
 **How to add on Vercel:**
