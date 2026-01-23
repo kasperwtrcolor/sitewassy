@@ -110,12 +110,10 @@ export function useWassy() {
         }
     }, [solanaWallet?.address]);
 
-    // Fetch balance on wallet change
+    // Fetch balance on wallet change (no polling - refresh manually after transactions)
     useEffect(() => {
         if (!solanaWallet?.address) return;
         fetchBalance();
-        const interval = setInterval(fetchBalance, 120000); // Every 2 minutes (was 15s)
-        return () => clearInterval(interval);
     }, [solanaWallet?.address, fetchBalance]);
 
     // Register user with backend on login
@@ -192,20 +190,18 @@ export function useWassy() {
         }
     }, [xUsername]);
 
-    // Fetch all users (admin only)
+    // Fetch leaderboard users (public endpoint)
     const fetchAllUsers = useCallback(async () => {
-        if (!isAdmin) return;
-
         try {
-            const response = await fetch(`${API}/api/admin/users`);
+            const response = await fetch(`${API}/api/leaderboard`);
             if (response.ok) {
                 const data = await response.json();
                 setAllUsers(data.users || []);
             }
         } catch (err) {
-            console.error('Error fetching users:', err);
+            console.error('Error fetching leaderboard:', err);
         }
-    }, [isAdmin]);
+    }, []);
 
     // Claim a payment
     const claimPayment = async (claim) => {
@@ -236,8 +232,9 @@ export function useWassy() {
 
                 setSuccess(`Successfully claimed $${claim.amount} from @${claim.sender_username || claim.sender}!`);
                 await fetchPendingClaims();
+                await fetchBalance(); // Refresh balance after claim
                 setTimeout(() => setSuccess(''), 5000);
-                return true;
+                return { success: true, amount: claim.amount, sender: claim.sender_username };
             } else {
                 const data = await response.json();
                 setError(data.error || 'Failed to claim payment.');

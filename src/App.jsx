@@ -63,6 +63,10 @@ function WassyPayApp() {
   const [showTerms, setShowTerms] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
 
+  // Animation states
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
   // Theme toggle
   const [theme, setTheme] = useState(() => localStorage.getItem('wassy-theme') || 'dark');
 
@@ -99,6 +103,34 @@ function WassyPayApp() {
     setTimeout(() => setSuccess(''), 3000);
   };
 
+  // Handle claim with loading overlay and confetti
+  const handleClaim = async (claim) => {
+    setIsClaiming(true);
+    const result = await claimPayment(claim);
+    setIsClaiming(false);
+
+    if (result && result.success) {
+      // Trigger confetti!
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
+  };
+
+  // Generate confetti pieces
+  const renderConfetti = () => {
+    if (!showConfetti) return null;
+    const pieces = [];
+    for (let i = 0; i < 50; i++) {
+      const style = {
+        left: `${Math.random() * 100}%`,
+        animationDelay: `${Math.random() * 0.5}s`,
+        animationDuration: `${2 + Math.random() * 2}s`
+      };
+      pieces.push(<div key={i} className="confetti" style={style} />);
+    }
+    return <div className="confetti-container">{pieces}</div>;
+  };
+
   // Loading state
   if (!ready || !walletsReady) {
     return <LoadingScreen />;
@@ -118,6 +150,18 @@ function WassyPayApp() {
       padding: '20px',
       fontFamily: "'Space Grotesk', sans-serif"
     }}>
+      {/* Confetti Animation */}
+      {renderConfetti()}
+
+      {/* Claiming Overlay */}
+      {isClaiming && (
+        <div className="claiming-overlay">
+          <div className="claiming-spinner"></div>
+          <div style={{ color: '#fff', fontSize: '1.2rem' }}>Processing claim...</div>
+          <div style={{ color: '#888', fontSize: '0.9rem', marginTop: '10px' }}>Submitting transaction to Solana</div>
+        </div>
+      )}
+
       {/* Theme Toggle */}
       <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
         {theme === 'dark' ? '☀️' : '🌙'}
@@ -258,7 +302,7 @@ function WassyPayApp() {
             />
 
             {/* Pending Claims (for recipients) */}
-            <PendingClaims claims={pendingClaims} onClaim={claimPayment} loading={loading} />
+            <PendingClaims claims={pendingClaims} onClaim={handleClaim} loading={loading || isClaiming} />
           </div>
         </div>
 
