@@ -64,15 +64,15 @@ export function ScanCountdown() {
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
 
-            // Bot scans at :14 and :44 each hour (14 and 44 min marks)
+            // Bot scans at :20 and :50 each hour (20 and 50 min marks)
             // Find the next scan time
             let nextScanMinute;
-            if (minutes < 14) {
-                nextScanMinute = 14;
-            } else if (minutes < 44) {
-                nextScanMinute = 44;
+            if (minutes < 20) {
+                nextScanMinute = 20;
+            } else if (minutes < 50) {
+                nextScanMinute = 50;
             } else {
-                nextScanMinute = 74; // Next hour's :14
+                nextScanMinute = 80; // Next hour's :20
             }
 
             const minutesLeft = nextScanMinute - minutes - 1;
@@ -120,7 +120,6 @@ export function ScanCountdown() {
 
 export function StatsCard({ userStats }) {
     // Safe defaults for Firebase stats
-    const deposited = userStats?.totalDeposited || 0;
     const sent = userStats?.totalSent || 0;
     const claimed = userStats?.totalClaimed || 0;
     const points = userStats?.points || 0;
@@ -128,13 +127,7 @@ export function StatsCard({ userStats }) {
     return (
         <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
             <div className="engraved" style={{ marginBottom: '20px' }}>// YOUR_STATS</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '20px' }}>
-                <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
-                    <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>DEPOSITED</div>
-                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700' }}>
-                        ${deposited.toFixed(2)}
-                    </div>
-                </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                     <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>SENT</div>
                     <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ef4444' }}>
@@ -221,7 +214,7 @@ export function TermsModal({ show, onClose }) {
                 <div className="engraved" style={{ marginBottom: '20px' }}>// TERMS_AND_CONDITIONS</div>
 
                 <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888', lineHeight: 1.8 }}>
+                    <div style={{ fontSize: '0.8rem', color: '#888', lineHeight: 1.8, fontFamily: "'JetBrains Mono', monospace" }}>
                         <h3 style={{ color: '#31d7ff', marginBottom: '10px' }}>1. Service Description</h3>
                         <p>WassyPay is a non-custodial social payment service built on Solana. Users maintain full control of their wallets and funds at all times.</p>
 

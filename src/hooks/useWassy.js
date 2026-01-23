@@ -46,8 +46,48 @@ export function useWassy() {
         ACHIEVEMENTS
     } = useFirestore(solanaWallet?.address, xUsername);
 
-    // Derive stats from Firebase userProfile
-    const userStats = userProfile?.stats || { totalDeposited: 0, totalSent: 0, totalClaimed: 0, points: 0 };
+    // State for backend stats (from backend_users collection via API)
+    const [backendStats, setBackendStats] = useState({ totalSent: 0, totalClaimed: 0 });
+
+    // Fetch backend stats from backend_users collection via the leaderboard API
+    useEffect(() => {
+        if (!xUsername) return;
+
+        const fetchBackendStats = async () => {
+            try {
+                const response = await fetch(`${API}/api/leaderboard`);
+                if (response.ok) {
+                    const data = await response.json();
+                    // Find this user's stats in the leaderboard data
+                    const myStats = data.users?.find(u =>
+                        u.x_username?.toLowerCase() === xUsername.toLowerCase()
+                    );
+                    if (myStats) {
+                        setBackendStats({
+                            totalSent: myStats.total_sent || 0,
+                            totalClaimed: myStats.total_claimed || 0,
+                            points: myStats.points || 0
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch backend stats:', err);
+            }
+        };
+
+        fetchBackendStats();
+        // Refresh every 2 minutes
+        const interval = setInterval(fetchBackendStats, 120000);
+        return () => clearInterval(interval);
+    }, [xUsername]);
+
+    // Derive stats - use backend stats for sent/claimed as they're more accurate
+    const userStats = {
+        totalDeposited: 0, // Not used anymore
+        totalSent: backendStats.totalSent || userProfile?.stats?.totalSent || 0,
+        totalClaimed: backendStats.totalClaimed || userProfile?.stats?.totalClaimed || 0,
+        points: backendStats.points || userProfile?.stats?.points || 0
+    };
 
     // Sync isDelegated from Firebase (real-time)
     useEffect(() => {

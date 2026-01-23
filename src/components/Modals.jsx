@@ -233,7 +233,6 @@ export function AdminModal({ show, onClose, users }) {
 export function StatsModal({ show, onClose, userStats }) {
     if (!show) return null;
 
-    const deposited = userStats?.totalDeposited || 0;
     const sent = userStats?.totalSent || 0;
     const claimed = userStats?.totalClaimed || 0;
     const points = userStats?.points || 0;
@@ -254,13 +253,7 @@ export function StatsModal({ show, onClose, userStats }) {
                     <span className="engraved" style={{ fontSize: '0.9rem' }}>YOUR STATS</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                    <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
-                        <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>DEPOSITED</div>
-                        <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700' }}>
-                            ${deposited.toFixed(2)}
-                        </div>
-                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                     <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                         <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>SENT</div>
                         <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ef4444' }}>
