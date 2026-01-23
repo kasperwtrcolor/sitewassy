@@ -38,11 +38,7 @@ A completely fresh, simplified non-custodial payment platform where users:
 
 #### **.env.local** - Updated
 ```env
-VITE_PRIVY_APP_ID=cmjucu149007bl70cn1lo06od
-VITE_VAULT_ADDRESS=Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE
-VITE_USDC_MINT=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
-VITE_SOLANA_RPC=https://rpc.dev.fun/699840f631c97306a0c4
-VITE_API_URL=https://wassy-pay-backend.onrender.com
+
 ```
 
 #### **README.md** - New ✨
