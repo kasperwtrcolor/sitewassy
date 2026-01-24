@@ -3,7 +3,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useWallets, useSignAndSendTransaction, useExportWallet } from '@privy-io/react-auth/solana';
 // Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
-import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_WALLET } from '../constants';
 import { useFirestore } from './useFirestore';
 
@@ -313,22 +313,32 @@ export function useWassy() {
             const userATA = await getAssociatedTokenAddress(usdcMint, walletPubkey);
             const accountInfo = await connection.getAccountInfo(userATA);
 
+            const transaction = new Transaction();
+
+            // 1. If user doesn't have a USDC token account, add instruction to create it
             if (!accountInfo) {
-                setError('Fund your wallet with USDC first.');
-                return false;
+                console.log('Adding instruction to create USDC ATA...');
+                transaction.add(
+                    createAssociatedTokenAccountInstruction(
+                        walletPubkey, // payer
+                        userATA,      // ata
+                        walletPubkey, // owner
+                        usdcMint      // mint
+                    )
+                );
             }
 
+            // 2. Add the approve instruction
             const amountLamports = Math.floor(amount * 1_000_000);
-            const approveIx = createApproveInstruction(
+            transaction.add(createApproveInstruction(
                 userATA,
                 vaultPubkey,
                 walletPubkey,
                 amountLamports,
                 [],
                 TOKEN_PROGRAM_ID
-            );
+            ));
 
-            const transaction = new Transaction().add(approveIx);
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = walletPubkey;

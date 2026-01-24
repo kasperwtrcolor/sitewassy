@@ -167,15 +167,15 @@ export function WalletCard({
 
                     <button
                         onClick={() => onAuthorize(delegationAmount)}
-                        disabled={isAuthorizing}
+                        disabled={isAuthorizing || solBalance === 0}
                         className="btn"
                         style={{
                             width: '100%',
-                            opacity: isAuthorizing ? 0.5 : 1,
-                            cursor: isAuthorizing ? 'not-allowed' : 'pointer'
+                            opacity: isAuthorizing || solBalance === 0 ? 0.5 : 1,
+                            cursor: isAuthorizing || solBalance === 0 ? 'not-allowed' : 'pointer'
                         }}
                     >
-                        {isAuthorizing ? '⏳ AUTHORIZING...' : '🔐 AUTHORIZE VAULT'}
+                        {isAuthorizing ? '⏳ AUTHORIZING...' : (solBalance === 0 ? '⛽ FUND GAS REQUIRED' : '🔐 AUTHORIZE VAULT')}
                     </button>
                 </>
             )}
