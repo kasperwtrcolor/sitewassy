@@ -343,8 +343,13 @@ export function useWassy() {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = walletPubkey;
 
-            // Privy Solana hook expects the Transaction object directly
-            const signature = await signAndSendTransaction(transaction);
+            // Use serialized transaction as it was working before
+            const result = await signAndSendTransaction({
+                transaction: transaction.serialize({ requireAllSignatures: false }),
+                wallet: solanaWallet
+            });
+
+            const signature = result?.signature;
 
             // Call backend to record authorization
             await fetch(`${API}/api/authorize`, {
@@ -371,8 +376,9 @@ export function useWassy() {
             return true;
 
         } catch (err) {
-            console.error('Authorization error:', err);
-            setError(`Failed: ${err.message}`);
+            // Sanitize error to avoid leaking RPC URL
+            const cleanMessage = err.message?.split('?api-key')[0] || 'Unknown error';
+            setError(`Failed: ${cleanMessage}`);
             return false;
         } finally {
             setLoading(false);

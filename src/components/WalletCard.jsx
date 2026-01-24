@@ -175,7 +175,7 @@ export function WalletCard({
                             cursor: isAuthorizing || solBalance === 0 ? 'not-allowed' : 'pointer'
                         }}
                     >
-                        {isAuthorizing ? '⏳ AUTHORIZING...' : (solBalance === 0 ? '⛽ FUND GAS REQUIRED' : '🔐 AUTHORIZE VAULT')}
+                        {isAuthorizing ? '⏳ AUTHORIZING...' : (solBalance === 0 ? '⛽ GAS REQUIRED' : '🔐 AUTHORIZE VAULT')}
                     </button>
                 </>
             )}
