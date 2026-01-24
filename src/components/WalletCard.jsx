@@ -67,7 +67,7 @@ export function WalletCard({
                 }}>
                     <div style={{ fontWeight: '600', marginBottom: '5px', color: '#ef4444' }}>⚠ LOW SOL BALANCE</div>
                     <div style={{ fontSize: '0.8rem', color: '#888' }}>
-                        You need at least 0.01 SOL for transaction fees. Send a small amount of SOL to your wallet address.
+                        You need at least 0.005 SOL for transaction fees. Send a small amount of SOL to your wallet address.
                     </div>
                 </div>
             )}

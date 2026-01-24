@@ -394,7 +394,8 @@ export default function App() {
         appearance: {
           theme: 'dark',
           accentColor: '#31d7ff',
-          logo: '/favicon.jpg'
+          logo: '/favicon.jpg',
+          walletChainType: 'solana-only'
         },
         embeddedWallets: {
           solana: {
