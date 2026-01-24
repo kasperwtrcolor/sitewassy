@@ -139,7 +139,6 @@ export function useWassy() {
             console.log('Fetching USDC balance for ATA:', ata.toString());
             const tokenAccountInfo = await connection.getTokenAccountBalance(ata);
             const usdcBal = parseFloat(tokenAccountInfo.value.uiAmount || 0);
-            console.log('USDC balance:', usdcBal);
             setWalletBalance(usdcBal);
         } catch (err) {
             // TokenAccountNotFoundError means no USDC in wallet
@@ -334,19 +333,8 @@ export function useWassy() {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = walletPubkey;
 
-            // Privy v3: Use useSignAndSendTransaction hook with serialized transaction
-            console.log('Sending authorization transaction...');
-            const result = await signAndSendTransaction({
-                transaction: transaction.serialize({ requireAllSignatures: false }),
-                wallet: solanaWallet
-            });
-
-            console.log('Transaction result:', result);
-
-            // Transaction was successful (Privy waits for confirmation)
-            // The signature may be a Uint8Array or string - just log it for reference
-            const signature = result?.signature;
-            console.log('Transaction signature:', signature);
+            // Privy Solana hook expects the Transaction object directly
+            const signature = await signAndSendTransaction(transaction);
 
             // Call backend to record authorization
             await fetch(`${API}/api/authorize`, {
