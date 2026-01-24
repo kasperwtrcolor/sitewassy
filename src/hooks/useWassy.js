@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useWallets, useSignAndSendTransaction } from '@privy-io/react-auth/solana';
+import { useWallets, useSignAndSendTransaction, useExportWallet } from '@privy-io/react-auth/solana';
 // Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -8,9 +8,10 @@ import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_WALLET } from '../cons
 import { useFirestore } from './useFirestore';
 
 export function useWassy() {
-    const { ready, authenticated, user, login, logout, exportWallet } = usePrivy();
+    const { ready, authenticated, user, login, logout } = usePrivy();
     const { wallets, ready: walletsReady } = useWallets();
     const { signAndSendTransaction } = useSignAndSendTransaction();
+    const { exportWallet } = useExportWallet();
     // useFundWallet removed - causes crashes, using manual funding instead
 
     // Find embedded Solana wallet (created by Privy)
@@ -406,7 +407,8 @@ export function useWassy() {
         }
 
         try {
-            await exportWallet({ address: solanaWallet.address, chainType: 'solana' });
+            // Solana-specific export hook handles the target automatically
+            await exportWallet();
         } catch (err) {
             console.error('Export wallet error:', err);
             // Handle specific error cases

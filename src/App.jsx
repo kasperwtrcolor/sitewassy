@@ -395,14 +395,14 @@ export default function App() {
           theme: 'dark',
           accentColor: '#31d7ff',
           logo: '/favicon.jpg',
-          walletChainType: 'ethereum-and-solana'
+          walletChainType: 'solana-only'
         },
         embeddedWallets: {
           solana: {
             createOnLogin: 'all-users'
           },
           ethereum: {
-            createOnLogin: 'all-users'
+            createOnLogin: 'off'
           }
         },
         // Solana RPC configuration - REQUIRED for signAndSendTransaction
