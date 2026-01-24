@@ -14,7 +14,7 @@ export function WalletCard({
     error,
     success
 }) {
-    const needsGas = solBalance < 0.01; // Less than 0.01 SOL is too low for gas
+    const needsGas = solBalance < 0.005; // Less than 0.005 SOL is too low for gas
     if (!solanaWallet) {
         return (
             <div className="plate" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>

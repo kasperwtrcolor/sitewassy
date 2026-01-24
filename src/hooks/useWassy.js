@@ -406,7 +406,7 @@ export function useWassy() {
         }
 
         try {
-            await exportWallet();
+            await exportWallet({ address: solanaWallet.address });
         } catch (err) {
             console.error('Export wallet error:', err);
             // Handle specific error cases
