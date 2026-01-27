@@ -29,8 +29,7 @@ export function PendingClaims({ claims, onClaim, loading }) {
         <div className="plate claims-card" style={{
             padding: '30px',
             marginBottom: '20px',
-            position: 'relative',
-            borderColor: 'rgba(212, 175, 55, 0.3)'
+            position: 'relative'
         }}>
             <div style={{
                 display: 'flex',
@@ -39,7 +38,7 @@ export function PendingClaims({ claims, onClaim, loading }) {
                 marginBottom: '20px'
             }}>
                 <span style={{ fontSize: '1.5rem' }}>💸</span>
-                <span className="engraved" style={{ color: '#d4af37', fontSize: '0.8rem' }}>
+                <span className="engraved" style={{ color: 'var(--accent-gold)', fontSize: '0.8rem' }}>
                     PENDING CLAIMS ({claims.length})
                 </span>
             </div>
@@ -77,12 +76,12 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                         padding: '6px 10px',
                                         borderRadius: '6px',
                                         background: senderStatus.ok
-                                            ? 'rgba(74, 222, 128, 0.1)'
-                                            : 'rgba(245, 158, 11, 0.1)',
-                                        border: `1px solid ${senderStatus.ok
-                                            ? 'rgba(74, 222, 128, 0.3)'
-                                            : 'rgba(245, 158, 11, 0.3)'}`,
-                                        color: senderStatus.ok ? '#4ade80' : '#f59e0b'
+                                            ? 'var(--bg-success)'
+                                            : 'var(--bg-warning)',
+                                        border: senderStatus.ok
+                                            ? 'var(--border-success)'
+                                            : 'var(--border-warning)',
+                                        color: senderStatus.ok ? 'var(--success)' : 'var(--warning)'
                                     }}>
                                         {senderStatus.ok ? '✓' : '⚠'} {senderStatus.message}
                                     </div>
@@ -110,7 +109,7 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                     display: 'inline-block',
                                     marginTop: '12px',
                                     fontSize: '0.7rem',
-                                    color: '#31d7ff',
+                                    color: 'var(--glow)',
                                     textDecoration: 'none'
                                 }}
                             >

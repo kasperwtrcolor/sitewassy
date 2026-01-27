@@ -21,8 +21,8 @@ export function PaymentTicker({ payments }) {
     return (
         <div className="ticker-container" style={{
             overflow: 'hidden',
-            background: 'linear-gradient(90deg, rgba(49,215,255,0.1), rgba(212,175,55,0.1))',
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            background: 'var(--bg-inset)',
+            borderBottom: '1px solid var(--border-subtle)',
             padding: '8px 0',
             marginBottom: '20px'
         }}>
@@ -35,7 +35,7 @@ export function PaymentTicker({ payments }) {
                     <span key={i} style={{
                         display: 'inline-block',
                         padding: '0 30px',
-                        color: i % 2 === 0 ? '#31d7ff' : '#d4af37',
+                        color: i % 2 === 0 ? 'var(--glow)' : 'var(--accent-gold)',
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: '0.8rem',
                         fontWeight: '600'
@@ -102,15 +102,15 @@ export function ScanCountdown() {
                 <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '4px' }}>
                     // NEXT_PAYMENT_SCAN
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#666' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     Payments are scanned every 30 minutes
                 </div>
             </div>
             <div className="mono" style={{
                 fontSize: '1.5rem',
                 fontWeight: '700',
-                color: '#31d7ff',
-                textShadow: '0 0 10px rgba(49,215,255,0.5)'
+                color: 'var(--glow)',
+                textShadow: 'var(--glow-shadow)'
             }}>
                 ⏱️ {timeLeft}
             </div>
@@ -130,19 +130,19 @@ export function StatsCard({ userStats }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                     <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>SENT</div>
-                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ef4444' }}>
+                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--danger)' }}>
                         ${sent.toFixed(2)}
                     </div>
                 </div>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                     <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>CLAIMED</div>
-                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#4ade80' }}>
+                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--success)' }}>
                         ${claimed.toFixed(2)}
                     </div>
                 </div>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
                     <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>POINTS</div>
-                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#d4af37' }}>
+                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--accent-gold)' }}>
                         {points.toFixed(0)}
                     </div>
                 </div>
@@ -157,13 +157,13 @@ export function HowToPayCard() {
             <div className="engraved" style={{ marginBottom: '20px' }}>// HOW_TO_PAY</div>
             <div className="inset-panel" style={{ textAlign: 'center', padding: '20px', marginBottom: '15px' }}>
                 <span className="mono" style={{ fontSize: '1rem' }}>
-                    <span style={{ color: '#31d7ff' }}>@bot_wassy</span>
-                    <span style={{ color: '#888' }}> send </span>
-                    <span style={{ color: '#d4af37' }}>@friend</span>
-                    <span style={{ color: '#4ade80' }}> $5</span>
+                    <span style={{ color: 'var(--glow)' }}>@bot_wassy</span>
+                    <span style={{ color: 'var(--text-muted)' }}> send </span>
+                    <span style={{ color: 'var(--accent-gold)' }}>@friend</span>
+                    <span style={{ color: 'var(--success)' }}> $5</span>
                 </span>
             </div>
-            <p style={{ fontSize: '0.8rem', color: '#666', textAlign: 'center', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.6 }}>
                 Post on X with the format above. Payments are scanned every 30 minutes.
             </p>
         </div>
@@ -181,17 +181,17 @@ export function Footer({ onShowTerms }) {
                     href="https://twitter.com/bot_wassy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: '#666', fontSize: '0.7rem', textDecoration: 'none' }}
+                    style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', textDecoration: 'none' }}
                 >
                     @bot_wassy
                 </a>
-                <span style={{ color: '#333' }}>•</span>
+                <span style={{ color: 'var(--text-primary)' }}>•</span>
                 <button
                     onClick={onShowTerms}
                     style={{
                         background: 'none',
                         border: 'none',
-                        color: '#666',
+                        color: 'var(--text-secondary)',
                         fontSize: '0.7rem',
                         cursor: 'pointer',
                         fontFamily: "'JetBrains Mono', monospace"
@@ -214,17 +214,17 @@ export function TermsModal({ show, onClose }) {
                 <div className="engraved" style={{ marginBottom: '20px' }}>// TERMS_AND_CONDITIONS</div>
 
                 <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#888', lineHeight: 1.8, fontFamily: "'JetBrains Mono', monospace" }}>
-                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginBottom: '10px', fontWeight: 600 }}>1. Service Description</h3>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.8, fontFamily: "'JetBrains Mono', monospace" }}>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginBottom: '10px', fontWeight: 600 }}>1. Service Description</h3>
                         <p>WassyPay is a non-custodial social payment service built on Solana. Users maintain full control of their wallets and funds at all times.</p>
 
-                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>2. No Financial Advice</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>2. No Financial Advice</h3>
                         <p>This service does not provide financial, investment, or legal advice. Users are responsible for their own financial decisions.</p>
 
-                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>3. Risk Acknowledgment</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>3. Risk Acknowledgment</h3>
                         <p>Cryptocurrency transactions are irreversible. Users acknowledge the risks associated with blockchain transactions including but not limited to: network fees, transaction failures, and price volatility.</p>
 
-                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>4. User Responsibility</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>4. User Responsibility</h3>
                         <p>Users are responsible for:</p>
                         <ul style={{ marginLeft: '20px', marginTop: '5px' }}>
                             <li>Securing their wallet credentials</li>
@@ -232,13 +232,13 @@ export function TermsModal({ show, onClose }) {
                             <li>Verifying recipient addresses before sending</li>
                         </ul>
 
-                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>5. Service Availability</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>5. Service Availability</h3>
                         <p>We strive for 99.9% uptime but do not guarantee uninterrupted service. Payment scanning occurs every 30 minutes.</p>
 
-                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>6. Privacy</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>6. Privacy</h3>
                         <p>We only store X usernames and wallet addresses necessary for service operation. Blockchain transactions are public by nature.</p>
 
-                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: '#31d7ff', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>7. Modifications</h3>
+                        <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>7. Modifications</h3>
                         <p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance of modified terms.</p>
                     </div>
                 </div>

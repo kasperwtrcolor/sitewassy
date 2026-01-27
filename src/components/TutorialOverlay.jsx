@@ -210,8 +210,8 @@ export function TutorialOverlay({ onComplete }) {
                         width: targetRect.width,
                         height: targetRect.height,
                         borderRadius: '12px',
-                        border: '2px solid #31d7ff',
-                        boxShadow: '0 0 20px rgba(49, 215, 255, 0.5), inset 0 0 20px rgba(49, 215, 255, 0.1)',
+                        border: '2px solid var(--glow)',
+                        boxShadow: 'var(--glow-shadow)',
                         pointerEvents: 'none',
                         transition: 'all 0.4s ease-out'
                     }}

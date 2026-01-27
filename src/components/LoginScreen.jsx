@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import '../index.css';
 import { TermsModal } from './Cards';
 
-export function LoginScreen({ onLogin }) {
+export function LoginScreen({ onLogin, theme, onToggleTheme }) {
     const [showTerms, setShowTerms] = useState(false);
     const howItWorksRef = useRef(null);
 
@@ -29,12 +29,16 @@ export function LoginScreen({ onLogin }) {
     return (
         <div style={{
             minHeight: '100vh',
-            background: '#0d0d0d',
-            backgroundImage: 'radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0d0d0d 100%)',
+            background: 'var(--bg-primary)',
+            backgroundImage: 'radial-gradient(circle at 50% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
             padding: '40px 20px',
             fontFamily: "'Space Grotesk', sans-serif",
             overflow: 'hidden'
         }}>
+            {/* Theme Toggle */}
+            <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+                {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
             <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
                 {/* Main Hero Plate */}
@@ -101,16 +105,16 @@ export function LoginScreen({ onLogin }) {
 
                         {/* Command Preview */}
                         <div className="animate-scale delay-3" style={{
-                            background: '#0a0a0a',
-                            border: '1px solid rgba(255,255,255,0.05)',
+                            background: 'var(--bg-inset)',
+                            border: '1px solid var(--border-subtle)',
                             borderRadius: '12px',
                             padding: '20px 30px',
                             display: 'inline-block',
                             marginBottom: '30px',
-                            boxShadow: 'inset 4px 4px 8px rgba(0,0,0,0.6), inset -2px -2px 5px rgba(255,255,255,0.02)'
+                            boxShadow: theme === 'dark' ? 'inset 4px 4px 8px rgba(0,0,0,0.6), inset -2px -2px 5px rgba(255,255,255,0.02)' : 'none'
                         }}>
-                            <span className="mono" style={{ fontSize: '1.1rem', color: '#888' }}>
-                                <span style={{ color: '#31d7ff' }}>@bot_wassy</span> send <span style={{ color: '#d4af37' }}>@friend</span> <span style={{ color: '#4ade80' }}>$100</span>
+                            <span className="mono" style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
+                                <span style={{ color: 'var(--glow)' }}>@bot_wassy</span> send <span style={{ color: 'var(--accent-gold)' }}>@friend</span> <span style={{ color: 'var(--success)' }}>$100</span>
                             </span>
                         </div>
 
@@ -288,19 +292,23 @@ export function LoginScreen({ onLogin }) {
     );
 }
 
-export function LoadingScreen() {
+export function LoadingScreen({ theme, onToggleTheme }) {
     return (
         <div style={{
             minHeight: '100vh',
-            background: '#0d0d0d',
+            background: 'var(--bg-primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: "'Space Grotesk', sans-serif"
         }}>
+            {/* Theme Toggle */}
+            <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+                {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
             <div className="animate-scale" style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '20px' }}>◎</div>
-                <div style={{ color: '#31d7ff', fontSize: '0.8rem', letterSpacing: '0.2em' }}>INITIALIZING...</div>
+                <div style={{ color: 'var(--glow)', fontSize: '0.8rem', letterSpacing: '0.2em' }}>INITIALIZING...</div>
             </div>
         </div>
     );

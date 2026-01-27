@@ -25,8 +25,8 @@ export function WalletCard({
 
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '40px' }}>
                     <div className="status-light" style={{ marginBottom: '15px' }}></div>
-                    <div style={{ fontWeight: '600', marginBottom: '8px' }}>LOADING WALLET...</div>
-                    <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                    <div style={{ fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>LOADING WALLET...</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         Your embedded Solana wallet is being loaded from Privy.
                     </div>
                 </div>
@@ -48,10 +48,10 @@ export function WalletCard({
                     ${walletBalance.toFixed(2)}
                     <span className="currency">USDC</span>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '5px' }} className="mono">
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '5px' }} className="mono">
                     {walletBalance.toFixed(6)} USDC
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px' }} className="mono">
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '8px', borderTop: '1px solid var(--border-subtle)', paddingTop: '8px' }} className="mono">
                     SOL: {solBalance.toFixed(4)}
                 </div>
             </div>
@@ -59,14 +59,14 @@ export function WalletCard({
             {/* SOL Gas Warning */}
             {needsGas && (
                 <div style={{
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    background: 'var(--bg-danger)',
+                    border: 'var(--border-danger)',
                     borderRadius: '12px',
                     padding: '15px',
                     marginBottom: '20px'
                 }}>
-                    <div style={{ fontWeight: '600', marginBottom: '5px', color: '#ef4444' }}>⚠ LOW SOL BALANCE</div>
-                    <div style={{ fontSize: '0.8rem', color: '#888' }}>
+                    <div style={{ fontWeight: '600', marginBottom: '5px', color: 'var(--danger)' }}>⚠ LOW SOL BALANCE</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         You need at least 0.005 SOL for transaction fees. Send a small amount of SOL to your wallet address.
                     </div>
                 </div>
@@ -81,19 +81,19 @@ export function WalletCard({
             {/* Authorization Section */}
             {isDelegated ? (
                 <div style={{
-                    background: 'rgba(74, 222, 128, 0.1)',
-                    border: '1px solid rgba(74, 222, 128, 0.3)',
+                    background: 'var(--bg-success)',
+                    border: 'var(--border-success)',
                     borderRadius: '12px',
                     padding: '15px',
                     marginBottom: '20px'
                 }}>
-                    <div style={{ fontWeight: '600', marginBottom: '5px', color: '#4ade80' }}>✓ AUTHORIZED</div>
-                    <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '12px' }}>
-                        Spending limit: <span style={{ color: '#4ade80' }}>${delegationAmount} USDC</span>
+                    <div style={{ fontWeight: '600', marginBottom: '5px', color: 'var(--success)' }}>✓ AUTHORIZED</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                        Spending limit: <span style={{ color: 'var(--success)' }}>${delegationAmount} USDC</span>
                     </div>
 
                     {/* Re-authorize section */}
-                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
+                    <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
                         <div className="engraved" style={{ fontSize: '0.6rem', marginBottom: '8px' }}>
                             INCREASE / UPDATE LIMIT
                         </div>
@@ -105,10 +105,10 @@ export function WalletCard({
                                 style={{
                                     flex: 1,
                                     padding: '8px 12px',
-                                    background: '#0a0a0a',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    background: 'var(--bg-inset)',
+                                    border: '1px solid var(--border-medium)',
                                     borderRadius: '6px',
-                                    color: '#fff',
+                                    color: 'var(--text-primary)',
                                     fontFamily: "'JetBrains Mono', monospace",
                                     fontSize: '0.9rem'
                                 }}
@@ -132,13 +132,13 @@ export function WalletCard({
             ) : (
                 <>
                     <div style={{
-                        background: 'rgba(245, 158, 11, 0.1)',
-                        border: '1px solid rgba(245, 158, 11, 0.3)',
+                        background: 'var(--bg-warning)',
+                        border: 'var(--border-warning)',
                         borderRadius: '12px',
                         padding: '15px',
                         marginBottom: '20px'
                     }}>
-                        <div style={{ fontSize: '0.8rem', color: '#f59e0b' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--warning)' }}>
                             ⚠ Authorization required before making payments
                         </div>
                     </div>
@@ -154,10 +154,10 @@ export function WalletCard({
                             style={{
                                 width: '100%',
                                 padding: '12px 15px',
-                                background: '#0a0a0a',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--bg-inset)',
+                                border: '1px solid var(--border-medium)',
                                 borderRadius: '8px',
-                                color: '#fff',
+                                color: 'var(--text-primary)',
                                 fontFamily: "'JetBrains Mono', monospace",
                                 fontSize: '1rem'
                             }}
@@ -206,13 +206,13 @@ export function WalletCard({
             {/* Error/Success Messages */}
             {error && (
                 <div style={{
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    background: 'var(--bg-danger)',
+                    border: 'var(--border-danger)',
                     borderRadius: '8px',
                     padding: '12px',
                     marginTop: '15px',
                     fontSize: '0.8rem',
-                    color: '#ef4444'
+                    color: 'var(--danger)'
                 }}>
                     {error}
                 </div>
@@ -220,13 +220,13 @@ export function WalletCard({
 
             {success && (
                 <div style={{
-                    background: 'rgba(74, 222, 128, 0.1)',
-                    border: '1px solid rgba(74, 222, 128, 0.3)',
+                    background: 'var(--bg-success)',
+                    border: 'var(--border-success)',
                     borderRadius: '8px',
                     padding: '12px',
                     marginTop: '15px',
                     fontSize: '0.8rem',
-                    color: '#4ade80'
+                    color: 'var(--success)'
                 }}>
                     {success}
                 </div>

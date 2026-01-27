@@ -138,12 +138,12 @@ function WassyPayApp() {
 
   // Loading state
   if (!ready || !walletsReady) {
-    return <LoadingScreen />;
+    return <LoadingScreen theme={theme} onToggleTheme={toggleTheme} />;
   }
 
   // Login screen
   if (!authenticated) {
-    return <LoginScreen onLogin={login} />;
+    return <LoginScreen onLogin={login} theme={theme} onToggleTheme={toggleTheme} />;
   }
 
   // Main dashboard
@@ -153,7 +153,8 @@ function WassyPayApp() {
       background: 'var(--bg-primary)',
       backgroundImage: 'radial-gradient(circle at 50% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
       padding: '20px',
-      fontFamily: "'Space Grotesk', sans-serif"
+      fontFamily: "'Space Grotesk', sans-serif",
+      color: 'var(--text-primary)'
     }}>
       {/* Tutorial Overlay */}
       {showTutorial && <TutorialOverlay onComplete={completeTutorial} />}

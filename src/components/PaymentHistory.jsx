@@ -7,9 +7,9 @@ export function PaymentHistory({ payments, xUsername }) {
 
             {payments.length === 0 ? (
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '40px' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '15px', opacity: 0.3 }}>$</div>
-                    <div style={{ color: '#666' }}>No transactions yet</div>
-                    <div style={{ fontSize: '0.75rem', color: '#444', marginTop: '8px' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '15px', opacity: 0.3, color: 'var(--text-primary)' }}>$</div>
+                    <div style={{ color: 'var(--text-muted)' }}>No transactions yet</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>
                         Make your first payment by posting on X
                     </div>
                 </div>
@@ -21,8 +21,8 @@ export function PaymentHistory({ payments, xUsername }) {
                             <div
                                 key={payment.id || payment.tweet_id}
                                 style={{
-                                    background: 'rgba(255,255,255,0.02)',
-                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    background: 'var(--bg-inset)',
+                                    border: 'var(--border-subtle)',
                                     borderRadius: '12px',
                                     padding: '15px',
                                     marginBottom: '10px'
@@ -44,31 +44,32 @@ export function PaymentHistory({ payments, xUsername }) {
                                             gap: '10px'
                                         }}>
                                             <span style={{
-                                                color: isSent ? '#ef4444' : '#4ade80',
+                                                color: isSent ? 'var(--danger)' : 'var(--success)',
                                                 fontSize: '0.7rem',
                                                 padding: '3px 8px',
-                                                background: isSent ? 'rgba(239,68,68,0.1)' : 'rgba(74,222,128,0.1)',
+                                                background: isSent ? 'var(--bg-danger)' : 'var(--bg-success)',
+                                                border: '1px solid var(--border-medium)',
                                                 borderRadius: '4px'
                                             }}>
                                                 {isSent ? '→ SENT' : '← RECEIVED'}
                                             </span>
-                                            <span className="mono" style={{ fontSize: '1.2rem' }}>${payment.amount}</span>
+                                            <span className="mono" style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>${payment.amount}</span>
                                         </div>
-                                        <div style={{ fontSize: '0.75rem', color: '#666' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                                             {isSent ? (
                                                 <>To: @{payment.recipient_username}</>
                                             ) : (
                                                 <>From: @{payment.sender_username}</>
                                             )}
                                         </div>
-                                        <div className="mono" style={{ fontSize: '0.65rem', color: '#444', marginTop: '5px' }}>
+                                        <div className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '5px' }}>
                                             {new Date(payment.created_at).toLocaleString()}
                                         </div>
                                     </div>
                                     <div style={{ fontSize: '1.2rem' }}>
-                                        {payment.status === 'completed' && <span style={{ color: '#4ade80' }}>✓</span>}
-                                        {payment.status === 'pending' && <span style={{ color: '#f59e0b' }}>⏳</span>}
-                                        {payment.status === 'failed' && <span style={{ color: '#ef4444' }}>✗</span>}
+                                        {payment.status === 'completed' && <span style={{ color: 'var(--success)' }}>✓</span>}
+                                        {payment.status === 'pending' && <span style={{ color: 'var(--warning)' }}>⏳</span>}
+                                        {payment.status === 'failed' && <span style={{ color: 'var(--danger)' }}>✗</span>}
                                     </div>
                                 </div>
 
@@ -79,7 +80,7 @@ export function PaymentHistory({ payments, xUsername }) {
                                                 href={`https://solscan.io/tx/${payment.tx_signature}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                style={{ fontSize: '0.65rem', color: '#31d7ff', textDecoration: 'none' }}
+                                                style={{ fontSize: '0.65rem', color: 'var(--glow)', textDecoration: 'none' }}
                                             >
                                                 View TX →
                                             </a>
@@ -89,7 +90,7 @@ export function PaymentHistory({ payments, xUsername }) {
                                                 href={payment.tweet_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                style={{ fontSize: '0.65rem', color: '#888', textDecoration: 'none' }}
+                                                style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textDecoration: 'none' }}
                                             >
                                                 View Tweet →
                                             </a>
