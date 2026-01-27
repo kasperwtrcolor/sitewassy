@@ -56,7 +56,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                         right: '-20px',
                         fontSize: '12rem',
                         fontWeight: '900',
-                        color: 'rgba(255,255,255,0.01)',
+                        color: theme === 'dark' ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.02)',
                         pointerEvents: 'none',
                         userSelect: 'none'
                     }}>WASSY</div>
@@ -68,7 +68,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             fontWeight: 700,
                             fontSize: '1.4rem',
                             letterSpacing: '0.02em',
-                            color: '#fff'
+                            color: 'var(--text-primary)'
                         }}>
                             Wassy Pay
                         </div>
@@ -85,7 +85,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             fontWeight: 700,
                             lineHeight: 0.9,
                             marginBottom: '20px',
-                            color: '#ffffff',
+                            color: 'var(--text-primary)',
                             fontFamily: "'JetBrains Mono', monospace"
                         }}>
                             SOCIAL PAYMENTS<br />
@@ -93,7 +93,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                         </h1>
 
                         <p className="animate-fade-in delay-2" style={{
-                            color: '#888',
+                            color: 'var(--text-secondary)',
                             fontSize: '1.1rem',
                             maxWidth: '600px',
                             margin: '0 auto 30px',
@@ -142,8 +142,8 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div className="flow-step scroll-slide-left scroll-delay-1">
                                 <div className="step-number">1</div>
                                 <div className="step-content">
-                                    <h4 style={{ color: '#31d7ff', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>FUND</h4>
-                                    <p>Connect your X account and Solana wallet. Deposit USDC to start sending payments.</p>
+                                    <h4 style={{ color: 'var(--glow)', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>FUND</h4>
+                                    <p style={{ color: 'var(--text-secondary)' }}>Connect your X account and Solana wallet. Deposit USDC to start sending payments.</p>
                                 </div>
                             </div>
 
@@ -151,8 +151,8 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div className="flow-step scroll-slide-left scroll-delay-2">
                                 <div className="step-number">2</div>
                                 <div className="step-content">
-                                    <h4 style={{ color: '#d4af37', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>TAG</h4>
-                                    <p>Post on X: "@bot_wassy send @username $amount" — that's it. No apps, no forms.</p>
+                                    <h4 style={{ color: 'var(--accent-gold)', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>TAG</h4>
+                                    <p style={{ color: 'var(--text-secondary)' }}>Post on X: "@bot_wassy send @username $amount" — that's it. No apps, no forms.</p>
                                 </div>
                             </div>
 
@@ -160,8 +160,8 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div className="flow-step scroll-slide-left scroll-delay-3">
                                 <div className="step-number">3</div>
                                 <div className="step-content">
-                                    <h4 style={{ color: '#4ade80', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>CLAIM</h4>
-                                    <p>Recipient sees the payment, clicks claim, and USDC transfers instantly on Solana.</p>
+                                    <h4 style={{ color: 'var(--success)', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>CLAIM</h4>
+                                    <p style={{ color: 'var(--text-secondary)' }}>Recipient sees the payment, clicks claim, and USDC transfers instantly on Solana.</p>
                                 </div>
                             </div>
                         </div>
@@ -198,11 +198,11 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div style={{
                                 marginTop: '20px',
                                 padding: '15px',
-                                background: 'rgba(49, 215, 255, 0.05)',
+                                background: 'var(--bg-inset)',
                                 borderRadius: '8px',
-                                border: '1px solid rgba(49, 215, 255, 0.1)'
+                                border: '1px solid var(--border-subtle)'
                             }}>
-                                <p className="mono" style={{ fontSize: '0.7rem', color: '#666', lineHeight: 1.6 }}>
+                                <p className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
                                     Funds stay in YOUR wallet until claimed. You authorize a spending limit, and the protocol
                                     handles transfers when payments are verified on X.
                                 </p>
@@ -228,7 +228,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div className="engraved">X Post</div>
                         </div>
 
-                        <div style={{ color: '#31d7ff', fontSize: '1.5rem' }}>→</div>
+                        <div style={{ color: 'var(--glow)', fontSize: '1.5rem' }}>→</div>
 
                         {/* Backend */}
                         <div className="inset-panel" style={{ textAlign: 'center', minWidth: '120px' }}>
@@ -236,7 +236,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div className="engraved">Scanner</div>
                         </div>
 
-                        <div style={{ color: '#d4af37', fontSize: '1.5rem' }}>→</div>
+                        <div style={{ color: 'var(--accent-gold)', fontSize: '1.5rem' }}>→</div>
 
                         {/* Solana */}
                         <div className="inset-panel" style={{ textAlign: 'center', minWidth: '120px' }}>
@@ -244,7 +244,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div className="engraved">Solana</div>
                         </div>
 
-                        <div style={{ color: '#4ade80', fontSize: '1.5rem' }}>→</div>
+                        <div style={{ color: 'var(--success)', fontSize: '1.5rem' }}>→</div>
 
                         {/* USDC */}
                         <div className="inset-panel" style={{ textAlign: 'center', minWidth: '120px' }}>
@@ -255,12 +255,12 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                 </div>
 
                 {/* Footer */}
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#444' }}>
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
                     <a
                         href="https://twitter.com/bot_wassy"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: '#31d7ff', textDecoration: 'none' }}
+                        style={{ color: 'var(--glow)', textDecoration: 'none' }}
                     >
                         @bot_wassy
                     </a>
@@ -274,7 +274,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             style={{
                                 background: 'none',
                                 border: 'none',
-                                color: '#666',
+                                color: 'var(--text-muted)',
                                 cursor: 'pointer',
                                 fontSize: '0.8rem',
                                 textDecoration: 'underline'
