@@ -53,7 +53,8 @@ function WassyPayApp() {
     loading,
     error,
     success,
-    setSuccess
+    setSuccess,
+    setError
   } = useWassy();
 
   // Modal states
