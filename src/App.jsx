@@ -63,7 +63,9 @@ function WassyPayApp() {
   const [showStats, setShowStats] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [lastClaimedPayment, setLastClaimedPayment] = useState(null);
 
   // Animation states
   const [isClaiming, setIsClaiming] = useState(false);
@@ -115,9 +117,11 @@ function WassyPayApp() {
     setIsClaiming(false);
 
     if (result && result.success) {
+      setLastClaimedPayment(claim);
+      setShowShareModal(true);
       // Trigger confetti!
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+      setTimeout(() => setShowConfetti(false), 5000);
     }
   };
 
@@ -327,6 +331,15 @@ function WassyPayApp() {
         <Footer onShowTerms={() => setShowTerms(true)} />
 
         {/* Modals */}
+        {lastClaimedPayment && (
+          <ShareSuccessModal
+            show={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            payment={lastClaimedPayment}
+            xUsername={xUsername}
+            theme={theme}
+          />
+        )}
         <LeaderboardModal
           show={showLeaderboard}
           onClose={() => setShowLeaderboard(false)}

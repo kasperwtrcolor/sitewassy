@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import '../index.css';
 
 const modalOverlayStyle = {
@@ -358,6 +359,172 @@ export function HistoryModal({ show, onClose, payments, xUsername }) {
                 <button onClick={onClose} className="btn" style={{ width: '100%', marginTop: '20px' }}>
                     CLOSE
                 </button>
+            </div>
+        </div>
+    );
+}
+
+// Share Success Modal - triggered after claim
+export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) {
+    const canvasRef = useRef(null);
+
+    if (!show || !payment) return null;
+
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        `Just claimed $${payment.amount} USDC on X via @bot_wassy! 💸\n\nSocial payments are finally here on Solana. ◎\n\nClaim yours at wassypay.com`
+    )}`;
+
+    const generateReceipt = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const width = 800;
+        const height = 450;
+        canvas.width = width;
+        canvas.height = height;
+
+        // Background
+        const isLight = theme === 'light';
+        ctx.fillStyle = isLight ? '#ffffff' : '#0d0d0d';
+        ctx.fillRect(0, 0, width, height);
+
+        if (isLight) {
+            // Grid background for light mode
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < width; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < height; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(width, i);
+                ctx.stroke();
+            }
+        }
+
+        // Draw border
+        ctx.strokeStyle = isLight ? '#000000' : '#31d7ff';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(20, 20, width - 40, height - 40);
+
+        // Header
+        ctx.fillStyle = isLight ? '#000000' : '#ffffff';
+        ctx.font = 'bold 32px Space Grotesk';
+        ctx.fillText('WASSY PAY // RECEIPT', 60, 80);
+
+        // Date
+        ctx.font = '16px JetBrains Mono';
+        ctx.fillStyle = isLight ? '#666666' : '#888888';
+        ctx.fillText(new Date().toLocaleString().toUpperCase(), 60, 110);
+
+        // Amount Box
+        const boxY = 150;
+        const boxHeight = 150;
+        ctx.fillStyle = isLight ? '#f8f8f8' : '#141416';
+        if (isLight) {
+            ctx.fillRect(60, boxY, width - 120, boxHeight);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(60, boxY, width - 120, boxHeight);
+        } else {
+            ctx.fillRect(60, boxY, width - 120, boxHeight);
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(60, boxY, width - 120, boxHeight);
+        }
+
+        // Amount Display
+        ctx.fillStyle = isLight ? '#000000' : '#ffffff';
+        ctx.font = 'bold 80px Space Grotesk';
+        ctx.textAlign = 'center';
+        ctx.fillText(`$${payment.amount} USDC`, width / 2, boxY + 100);
+
+        // Recipients
+        ctx.textAlign = 'left';
+        ctx.font = '20px JetBrains Mono';
+        ctx.fillStyle = isLight ? '#000000' : '#31d7ff';
+        ctx.fillText(`FROM: @${payment.sender_username}`, 80, boxY + boxHeight + 50);
+        ctx.fillText(`CLAIMED BY: @${xUsername}`, 80, boxY + boxHeight + 80);
+
+        // Status
+        ctx.textAlign = 'right';
+        ctx.font = 'bold 24px Space Grotesk';
+        ctx.fillStyle = '#4ade80';
+        ctx.fillText('✓ CONFIRMED ON SOLANA', width - 80, boxY + boxHeight + 65);
+
+        // Branding
+        ctx.textAlign = 'center';
+        ctx.font = '14px Space Grotesk';
+        ctx.fillStyle = isLight ? '#999999' : '#444444';
+        ctx.fillText('BULT ON SOLANA // WASSYPAY.COM', width / 2, height - 45);
+
+        // Download
+        const link = document.createElement('a');
+        link.download = `wassypay-receipt-${payment.id || Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    };
+
+    return (
+        <div style={modalOverlayStyle} onClick={onClose}>
+            <div className="plate animate-scale" style={{
+                maxWidth: '450px',
+                width: '100%',
+                padding: '40px 30px',
+                position: 'relative',
+                textAlign: 'center'
+            }} onClick={e => e.stopPropagation()}>
+                <div className="screw tl"></div>
+                <div className="screw tr"></div>
+
+                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>💎</div>
+
+                <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '10px' }}>
+                    CLAIM SUCCESSFUL!
+                </h2>
+
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', lineHeight: 1.6 }}>
+                    You just claimed <span style={{ color: 'var(--success)', fontWeight: '700' }}>${payment.amount} USDC</span>.
+                    The funds are available in your wallet.
+                </p>
+
+                <div className="inset-panel" style={{ marginBottom: '30px', padding: '20px' }}>
+                    <div className="engraved" style={{ marginBottom: '15px', fontSize: '0.6rem' }}>SHARE THE LOVE</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <a
+                            href={shareUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-primary"
+                            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                            SHARE ON X
+                        </a>
+
+                        <button
+                            onClick={generateReceipt}
+                            className="btn btn-gold"
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                        >
+                            📥 DOWNLOAD RECEIPT
+                        </button>
+                    </div>
+                </div>
+
+                <button onClick={onClose} className="btn" style={{ width: '100%' }}>
+                    BACK TO DASHBOARD
+                </button>
+
+                {/* Hidden Canvas for Receipt Generation */}
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
             </div>
         </div>
     );
