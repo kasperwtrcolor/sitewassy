@@ -12,7 +12,7 @@ import { PendingClaims } from './components/PendingClaims';
 import { PendingOutgoing } from './components/PendingOutgoing';
 import { PaymentHistory } from './components/PaymentHistory';
 import { StatsCard, HowToPayCard, Footer, PaymentTicker, ScanCountdown, TermsModal } from './components/Cards';
-import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal } from './components/Modals';
+import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal, ShareSuccessModal } from './components/Modals';
 import { TutorialOverlay, useTutorial } from './components/TutorialOverlay';
 
 // Achievements definitions
@@ -85,6 +85,17 @@ function WassyPayApp() {
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
+
+  // Auto-dismiss errors and success messages
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        if (success) setSuccess('');
+        if (error) setError('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, success, setSuccess, setError]);
 
   // Last scan timestamp removed - ScanCountdown now calculates dynamically
 
