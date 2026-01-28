@@ -33,9 +33,9 @@ export function PendingOutgoing({ payments, isDelegated, walletBalance }) {
                     padding: '12px',
                     marginBottom: '15px',
                     fontSize: '0.8rem',
-                    color: 'var(--warning)'
+                    color: 'var(--text-on-status)'
                 }}>
-                    ⚠️ {!isDelegated
+                    <span style={{ fontWeight: '700' }}>⚠</span> {!isDelegated
                         ? 'Authorize your wallet to process these payments'
                         : `Need $${totalPending.toFixed(2)} USDC to cover pending payments (Balance: $${walletBalance.toFixed(2)})`
                     }
@@ -50,9 +50,9 @@ export function PendingOutgoing({ payments, isDelegated, walletBalance }) {
                     padding: '12px',
                     marginBottom: '15px',
                     fontSize: '0.8rem',
-                    color: 'var(--success)'
+                    color: 'var(--text-on-status)'
                 }}>
-                    ✓ Wallet funded & authorized. Recipients can claim these payments.
+                    <span style={{ fontWeight: '700' }}>✓</span> Wallet funded & authorized. Recipients can claim these payments.
                 </div>
             )}
 

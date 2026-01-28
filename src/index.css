@@ -28,6 +28,8 @@
   --text-primary: #e0e0e0;
   --text-secondary: #888888;
   --text-muted: #666666;
+  --text-on-status: #ffffff;
+  /* For dark mode, white or status-colored text works */
 
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.03);
@@ -491,6 +493,8 @@ body {
   --text-primary: #000000;
   --text-secondary: #222222;
   --text-muted: #666666;
+  --text-on-status: #000000;
+  /* Force black on status backgrounds in light mode */
 
   /* Neubrutalist Variables */
   --brutal-border: 2px solid #000000;
@@ -798,6 +802,82 @@ body {
 
 .confetti:nth-child(odd) {
   background: var(--accent-gold);
+}
+
+/* ===== TOAST NOTIFICATIONS ===== */
+.toast-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 90%;
+  max-width: 400px;
+}
+
+.toast-notification {
+  pointer-events: auto;
+  padding: 24px 30px;
+  border-radius: 16px;
+  background: var(--burnished);
+  border: 1px solid var(--border-medium);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  animation: toast-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  position: relative;
+}
+
+[data-theme="light"] .toast-notification {
+  border-radius: 0px;
+  border: var(--brutal-border);
+  box-shadow: 12px 12px 0px #000;
+}
+
+.toast-notification.success {
+  border-left: 6px solid var(--success);
+}
+
+.toast-notification.error {
+  border-left: 6px solid var(--danger);
+}
+
+.toast-notification .message {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.toast-notification .sub-message {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-exit {
+  animation: toast-out 0.3s ease-in forwards;
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
 }
 
 .confetti:nth-child(even) {

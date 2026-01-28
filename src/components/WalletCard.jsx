@@ -24,7 +24,7 @@ export function WalletCard({
                 <div className="engraved" style={{ marginBottom: '15px' }}>// WALLET_STATUS</div>
 
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '40px' }}>
-                    <div className="status-light" style={{ marginBottom: '15px' }}></div>
+                    <div className="status-light" style={{ marginBottom: '15px', background: 'var(--glow)', boxShadow: 'var(--glow-shadow)' }}></div>
                     <div style={{ fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>LOADING WALLET...</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         Your embedded Solana wallet is being loaded from Privy.
@@ -65,8 +65,8 @@ export function WalletCard({
                     padding: '15px',
                     marginBottom: '20px'
                 }}>
-                    <div style={{ fontWeight: '600', marginBottom: '5px', color: 'var(--danger)' }}>⚠ LOW SOL BALANCE</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    <div style={{ fontWeight: '600', marginBottom: '5px', color: 'var(--text-on-status)' }}>⚠ LOW SOL BALANCE</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-on-status)', opacity: 0.9 }}>
                         You need at least 0.005 SOL for transaction fees. Send a small amount of SOL to your wallet address.
                     </div>
                 </div>
@@ -87,9 +87,9 @@ export function WalletCard({
                     padding: '15px',
                     marginBottom: '20px'
                 }}>
-                    <div style={{ fontWeight: '600', marginBottom: '5px', color: 'var(--success)' }}>✓ AUTHORIZED</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                        Spending limit: <span style={{ color: 'var(--success)' }}>${delegationAmount} USDC</span>
+                    <div style={{ fontWeight: '600', marginBottom: '5px', color: 'var(--text-on-status)' }}>✓ AUTHORIZED</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-on-status)', marginBottom: '12px', opacity: 0.9 }}>
+                        Spending limit: <span style={{ fontWeight: '700' }}>${delegationAmount} USDC</span>
                     </div>
 
                     {/* Re-authorize section */}
@@ -138,7 +138,7 @@ export function WalletCard({
                         padding: '15px',
                         marginBottom: '20px'
                     }}>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--warning)' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-on-status)', fontWeight: '600' }}>
                             ⚠ Authorization required before making payments
                         </div>
                     </div>
@@ -203,32 +203,21 @@ export function WalletCard({
                 </button>
             )}
 
-            {/* Error/Success Messages */}
-            {error && (
-                <div style={{
-                    background: 'var(--bg-danger)',
-                    border: 'var(--border-danger)',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginTop: '15px',
-                    fontSize: '0.8rem',
-                    color: 'var(--danger)'
-                }}>
-                    {error}
-                </div>
-            )}
-
-            {success && (
-                <div style={{
-                    background: 'var(--bg-success)',
-                    border: 'var(--border-success)',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    marginTop: '15px',
-                    fontSize: '0.8rem',
-                    color: 'var(--success)'
-                }}>
-                    {success}
+            {/* Floating Toast Notifications */}
+            {(error || success) && (
+                <div className="toast-container">
+                    {error && (
+                        <div className="toast-notification error">
+                            <div className="message">⚠ ERROR</div>
+                            <div className="sub-message">{error}</div>
+                        </div>
+                    )}
+                    {success && (
+                        <div className="toast-notification success">
+                            <div className="message">✓ SUCCESS</div>
+                            <div className="sub-message">{success}</div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

@@ -81,9 +81,9 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                         border: senderStatus.ok
                                             ? 'var(--border-success)'
                                             : 'var(--border-warning)',
-                                        color: senderStatus.ok ? 'var(--success)' : 'var(--warning)'
+                                        color: senderStatus.ok ? 'var(--text-on-status)' : 'var(--text-on-status)'
                                     }}>
-                                        {senderStatus.ok ? '✓' : '⚠'} {senderStatus.message}
+                                        <span style={{ fontWeight: '700' }}>{senderStatus.ok ? '✓' : '⚠'}</span> {senderStatus.message}
                                     </div>
                                 )}
                             </div>
