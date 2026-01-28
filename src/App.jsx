@@ -93,7 +93,7 @@ function WassyPayApp() {
       const timer = setTimeout(() => {
         if (success) setSuccess('');
         if (error) setError('');
-      }, 5000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [error, success, setSuccess, setError]);

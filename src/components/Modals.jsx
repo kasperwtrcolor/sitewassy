@@ -371,7 +371,7 @@ export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) 
     if (!show || !payment) return null;
 
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        `Just claimed $${payment.amount} USDC on X via @bot_wassy! 💸\n\nSocial payments are finally here on Solana. ◎\n\nClaim yours at wassypay.com`
+        `Just claimed $${payment.amount} USDC on X via @bot_wassy! 💸\n\nSocial payments are finally here on Solana. ◎\n\nClaim yours at wassypay.fun`
     )}`;
 
     const generateReceipt = () => {
@@ -461,7 +461,7 @@ export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) 
         ctx.textAlign = 'center';
         ctx.font = '14px Space Grotesk';
         ctx.fillStyle = isLight ? '#999999' : '#444444';
-        ctx.fillText('BULT ON SOLANA // WASSYPAY.COM', width / 2, height - 45);
+        ctx.fillText('BUILT ON SOLANA // WASSYPAY.FUN', width / 2, height - 45);
 
         // Download
         const link = document.createElement('a');
@@ -482,9 +482,24 @@ export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) 
                 <div className="screw tl"></div>
                 <div className="screw tr"></div>
 
-                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>💎</div>
+                <div style={{
+                    fontFamily: "'Fredoka', sans-serif",
+                    fontWeight: 700,
+                    fontSize: '2rem',
+                    letterSpacing: '0.02em',
+                    color: 'var(--text-primary)',
+                    marginBottom: '20px'
+                }}>
+                    Wassy Pay
+                </div>
 
-                <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '10px' }}>
+                <h2 style={{
+                    fontSize: '1.8rem',
+                    fontWeight: '800',
+                    marginBottom: '10px',
+                    fontFamily: "'Fredoka', sans-serif",
+                    color: 'var(--success)'
+                }}>
                     CLAIM SUCCESSFUL!
                 </h2>
 
