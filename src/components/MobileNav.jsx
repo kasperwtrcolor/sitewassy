@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { Home, Search, Trophy, Star, BarChart3 } from 'lucide-react';
+import { Home, User, Trophy } from 'lucide-react';
 import '../index.css';
 
 const navItems = [
     { id: 'home', icon: Home, label: 'Home' },
-    { id: 'check', icon: Search, label: 'Check' },
-    { id: 'leaders', icon: Trophy, label: 'Leaders' },
-    { id: 'badges', icon: Star, label: 'Badges' },
-    { id: 'stats', icon: BarChart3, label: 'Stats' }
+    { id: 'profile', icon: User, label: 'Profile' },
+    { id: 'leaders', icon: Trophy, label: 'Leaders' }
 ];
+
 
 export function MobileNav({
     activeItem = 'home',

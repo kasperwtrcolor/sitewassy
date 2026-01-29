@@ -16,6 +16,7 @@ import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryMod
 import { TutorialOverlay, useTutorial } from './components/TutorialOverlay';
 import { MobileNav } from './components/MobileNav';
 import { ThemeToggle } from './components/ThemeToggle';
+import { ProfilePage } from './components/ProfilePage';
 
 // Achievements definitions
 const ACHIEVEMENTS = [
@@ -76,6 +77,9 @@ function WassyPayApp() {
 
   // Tutorial state
   const { showTutorial, completeTutorial, resetTutorial } = useTutorial();
+
+  // Page navigation state
+  const [currentPage, setCurrentPage] = useState('home');
 
   // Theme toggle
   const [theme, setTheme] = useState(() => localStorage.getItem('wassy-theme') || 'dark');
@@ -195,116 +199,48 @@ function WassyPayApp() {
       {/* Main Container */}
       <div className="dashboard-container" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 15px' }}>
 
-        {/* Header */}
+        {/* Header - Simplified */}
         <div className="plate animate-fade-in dashboard-header" style={{
-          padding: '20px 30px',
+          padding: '15px 20px',
           marginBottom: '20px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '15px',
           position: 'relative'
         }}>
           <div className="screw tl"></div>
           <div className="screw tr"></div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div style={{
-              fontFamily: "'Fredoka', sans-serif",
-              fontWeight: 700,
-              fontSize: '1.4rem',
-              letterSpacing: '0.02em',
-              color: 'var(--text-primary)'
-            }}>
-              Wassy Pay
-            </div>
+          <div style={{
+            fontFamily: "'Fredoka', sans-serif",
+            fontWeight: 700,
+            fontSize: '1.3rem',
+            letterSpacing: '0.02em',
+            color: 'var(--text-primary)'
+          }}>
+            Wassy Pay
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div className="handle-badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-              </svg>
-              @{xUsername}
+          <button
+            onClick={logout}
+            className="btn"
+            style={{ padding: '8px 16px', fontSize: '0.75rem' }}
+          >
+            LOGOUT
+          </button>
+        </div>
+
+        {/* Page Content */}
+        {currentPage === 'home' ? (
+          <>
+            {/* Payment Ticker - scrolling recent users */}
+            <PaymentTicker payments={payments} />
+
+            {/* Countdown to next scan */}
+            <div className="scan-countdown">
+              <ScanCountdown />
             </div>
-            <button
-              onClick={resetTutorial}
-              className="btn"
-              style={{ padding: '8px 12px', fontSize: '0.7rem' }}
-            >
-              📚 Start Tutorial
-            </button>
-            <button
-              onClick={logout}
-              className="btn"
-              style={{ padding: '8px 16px', fontSize: '0.75rem' }}
-            >
-              LOGOUT
-            </button>
-          </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="action-buttons-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
-          gap: '10px',
-          marginBottom: '20px'
-        }}>
-          <button onClick={handleCheckForPayments} className="btn btn-primary">
-            🔍 CHECK
-          </button>
-          <button onClick={() => setShowLeaderboard(true)} className="btn">
-            🏆 LEADERS
-          </button>
-          <button onClick={() => setShowAchievements(true)} className="btn" style={{ position: 'relative' }}>
-            ⭐ BADGES
-            {unlockedAchievements.length > 0 && (
-              <span style={{
-                position: 'absolute',
-                top: '-5px',
-                right: '-5px',
-                background: '#d4af37',
-                color: '#000',
-                borderRadius: '50%',
-                width: '18px',
-                height: '18px',
-                fontSize: '0.65rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: '700'
-              }}>
-                {unlockedAchievements.length}
-              </span>
-            )}
-          </button>
-          <button onClick={() => setShowStats(true)} className="btn">
-            📊 STATS
-          </button>
-          <button onClick={() => setShowHistory(true)} className="btn">
-            📜 HISTORY
-          </button>
-          {isAdmin && (
-            <button onClick={() => setShowAdminPanel(true)} className="btn btn-danger">
-              👑 ADMIN
-            </button>
-          )}
-        </div>
-
-        {/* Payment Ticker - scrolling recent users */}
-        <PaymentTicker payments={payments} />
-
-        {/* Countdown to next scan */}
-        <div className="scan-countdown">
-          <ScanCountdown />
-        </div>
-
-        {/* Two Column Layout */}
-        <div className="grid-2">
-          {/* Left Column */}
-          <div>
             {/* Wallet Card */}
             <WalletCard
               solanaWallet={solanaWallet}
@@ -321,12 +257,6 @@ function WassyPayApp() {
               success={success}
             />
 
-            {/* How to Pay */}
-            <HowToPayCard />
-          </div>
-
-          {/* Right Column */}
-          <div>
             {/* Pending Outgoing Payments (for senders) */}
             <PendingOutgoing
               payments={pendingOutgoing}
@@ -336,8 +266,21 @@ function WassyPayApp() {
 
             {/* Pending Claims (for recipients) */}
             <PendingClaims claims={pendingClaims} onClaim={handleClaim} loading={loading || isClaiming} />
-          </div>
-        </div>
+
+            {/* How to Pay - minimal version */}
+            <HowToPayCard />
+          </>
+        ) : currentPage === 'profile' ? (
+          <ProfilePage
+            xUsername={xUsername}
+            userStats={userStats}
+            isDelegated={isDelegated}
+            onCheckPayments={handleCheckForPayments}
+            onResetTutorial={resetTutorial}
+            onOpenLeaderboard={() => setShowLeaderboard(true)}
+            onBack={() => setCurrentPage('home')}
+          />
+        ) : null}
 
         {/* Footer */}
         <Footer onShowTerms={() => setShowTerms(true)} />
@@ -387,32 +330,25 @@ function WassyPayApp() {
 
       {/* Mobile Bottom Navigation */}
       <MobileNav
-        activeItem="home"
+        activeItem={currentPage}
         onNavigate={(id) => {
           switch (id) {
             case 'home':
-              // Close all modals
+              setCurrentPage('home');
               setShowLeaderboard(false);
-              setShowAchievements(false);
-              setShowStats(false);
-              setShowHistory(false);
               break;
-            case 'check':
-              handleCheckForPayments();
+            case 'profile':
+              setCurrentPage('profile');
+              setShowLeaderboard(false);
               break;
             case 'leaders':
               setShowLeaderboard(true);
-              break;
-            case 'badges':
-              setShowAchievements(true);
-              break;
-            case 'stats':
-              setShowStats(true);
               break;
           }
         }}
         accentColor={theme === 'light' ? '#a855f7' : '#31d7ff'}
       />
+
     </div>
   );
 }
