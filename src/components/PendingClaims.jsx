@@ -1,7 +1,8 @@
 import '../index.css';
 
 export function PendingClaims({ claims, onClaim, loading }) {
-    if (!claims || claims.length === 0) return null;
+    const hasClaims = claims && claims.length > 0;
+
 
     // Helper to determine sender fund status
     const getSenderStatus = (claim) => {
@@ -39,86 +40,96 @@ export function PendingClaims({ claims, onClaim, loading }) {
             }}>
                 <span style={{ fontSize: '1.5rem' }}>💸</span>
                 <span className="engraved" style={{ color: 'var(--accent-gold)', fontSize: '0.8rem' }}>
-                    PENDING CLAIMS ({claims.length})
+                    PENDING CLAIMS ({hasClaims ? claims.length : 0})
                 </span>
             </div>
 
-            {claims.map((claim) => {
-                const senderStatus = getSenderStatus(claim);
-                const canClaim = !senderStatus || senderStatus.ok;
-
-                return (
-                    <div key={claim.tweet_id} className="inset-panel" style={{ marginBottom: '15px', padding: '20px' }}>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            flexWrap: 'wrap',
-                            gap: '15px'
-                        }}>
-                            <div>
-                                <div className="amount-display" style={{ fontSize: '2rem' }}>
-                                    ${claim.amount}
-                                    <span className="currency">USDC</span>
-                                </div>
-                                <div className="handle-badge" style={{ marginTop: '10px' }}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                                    </svg>
-                                    @{claim.sender || claim.sender_username}
-                                </div>
-
-                                {/* Sender Fund Status */}
-                                {senderStatus && (
-                                    <div style={{
-                                        marginTop: '10px',
-                                        fontSize: '0.75rem',
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
-                                        background: senderStatus.ok
-                                            ? 'var(--bg-success)'
-                                            : 'var(--bg-warning)',
-                                        border: senderStatus.ok
-                                            ? 'var(--border-success)'
-                                            : 'var(--border-warning)',
-                                        color: senderStatus.ok ? 'var(--text-on-status)' : 'var(--text-on-status)'
-                                    }}>
-                                        <span style={{ fontWeight: '700' }}>{senderStatus.ok ? '✓' : '⚠'}</span> {senderStatus.message}
-                                    </div>
-                                )}
-                            </div>
-                            <button
-                                onClick={() => onClaim(claim)}
-                                disabled={loading || !canClaim}
-                                className="btn btn-gold"
-                                style={{
-                                    opacity: (loading || !canClaim) ? 0.7 : 1,
-                                    cursor: (loading || !canClaim) ? 'not-allowed' : 'pointer'
-                                }}
-                            >
-                                {loading ? '⏳ CLAIMING...' : (canClaim ? '💰 CLAIM NOW' : '⏳ WAITING')}
-                            </button>
-                        </div>
-
-                        {claim.tweet_id && (
-                            <a
-                                href={`https://twitter.com/i/status/${claim.tweet_id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                    display: 'inline-block',
-                                    marginTop: '12px',
-                                    fontSize: '0.7rem',
-                                    color: 'var(--glow)',
-                                    textDecoration: 'none'
-                                }}
-                            >
-                                View source tweet →
-                            </a>
-                        )}
+            {!hasClaims ? (
+                <div className="inset-panel" style={{ padding: '20px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📭</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                        No pending claims yet. When someone sends you USDC via X, it will appear here!
                     </div>
-                );
-            })}
+                </div>
+            ) : (
+                claims.map((claim) => {
+                    const senderStatus = getSenderStatus(claim);
+                    const canClaim = !senderStatus || senderStatus.ok;
+
+                    return (
+                        <div key={claim.tweet_id} className="inset-panel" style={{ marginBottom: '15px', padding: '20px' }}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: '15px'
+                            }}>
+                                <div>
+                                    <div className="amount-display" style={{ fontSize: '2rem' }}>
+                                        ${claim.amount}
+                                        <span className="currency">USDC</span>
+                                    </div>
+                                    <div className="handle-badge" style={{ marginTop: '10px' }}>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '6px' }}>
+                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                                        </svg>
+                                        @{claim.sender || claim.sender_username}
+                                    </div>
+
+                                    {/* Sender Fund Status */}
+                                    {senderStatus && (
+                                        <div style={{
+                                            marginTop: '10px',
+                                            fontSize: '0.75rem',
+                                            padding: '6px 10px',
+                                            borderRadius: '6px',
+                                            background: senderStatus.ok
+                                                ? 'var(--bg-success)'
+                                                : 'var(--bg-warning)',
+                                            border: senderStatus.ok
+                                                ? 'var(--border-success)'
+                                                : 'var(--border-warning)',
+                                            color: senderStatus.ok ? 'var(--text-on-status)' : 'var(--text-on-status)'
+                                        }}>
+                                            <span style={{ fontWeight: '700' }}>{senderStatus.ok ? '✓' : '⚠'}</span> {senderStatus.message}
+                                        </div>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => onClaim(claim)}
+                                    disabled={loading || !canClaim}
+                                    className="btn btn-gold"
+                                    style={{
+                                        opacity: (loading || !canClaim) ? 0.7 : 1,
+                                        cursor: (loading || !canClaim) ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    {loading ? '⏳ CLAIMING...' : (canClaim ? '💰 CLAIM NOW' : '⏳ WAITING')}
+                                </button>
+                            </div>
+
+                            {claim.tweet_id && (
+                                <a
+                                    href={`https://twitter.com/i/status/${claim.tweet_id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        display: 'inline-block',
+                                        marginTop: '12px',
+                                        fontSize: '0.7rem',
+                                        color: 'var(--glow)',
+                                        textDecoration: 'none'
+                                    }}
+                                >
+                                    View source tweet →
+                                </a>
+                            )}
+                        </div>
+                    );
+                })
+            )}
         </div>
     );
 }
+

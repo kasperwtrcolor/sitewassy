@@ -196,6 +196,29 @@ function WassyPayApp() {
       {/* Theme Toggle */}
       <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
+      {/* Global Toast Notifications - visible on all pages */}
+      {(error || success) && (
+        <div className="toast-container" style={{
+          position: 'fixed',
+          top: '80px',
+          right: '20px',
+          zIndex: 9999
+        }}>
+          {error && (
+            <div className="toast-notification error">
+              <div className="message">⚠ ERROR</div>
+              <div className="sub-message">{error}</div>
+            </div>
+          )}
+          {success && (
+            <div className="toast-notification success">
+              <div className="message">✓ SUCCESS</div>
+              <div className="sub-message">{success}</div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main Container */}
       <div className="dashboard-container" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 15px' }}>
 

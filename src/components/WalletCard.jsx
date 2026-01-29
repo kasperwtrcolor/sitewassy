@@ -117,15 +117,17 @@ export function WalletCard({
                             <button
                                 onClick={() => onAuthorize(delegationAmount)}
                                 disabled={isAuthorizing}
-                                className="btn"
+                                className="btn update-limit-btn"
                                 style={{
-                                    padding: '8px 16px',
-                                    fontSize: '0.8rem',
-                                    opacity: isAuthorizing ? 0.5 : 1
+                                    padding: '8px 12px',
+                                    fontSize: '0.7rem',
+                                    opacity: isAuthorizing ? 0.5 : 1,
+                                    whiteSpace: 'nowrap'
                                 }}
                             >
-                                {isAuthorizing ? '⏳' : '🔄 UPDATE'}
+                                {isAuthorizing ? '⏳' : '🔄'}
                             </button>
+
                         </div>
                     </div>
                 </div>
@@ -202,24 +204,7 @@ export function WalletCard({
                     👤 MANAGE WALLET
                 </button>
             )}
-
-            {/* Floating Toast Notifications */}
-            {(error || success) && (
-                <div className="toast-container">
-                    {error && (
-                        <div className="toast-notification error">
-                            <div className="message">⚠ ERROR</div>
-                            <div className="sub-message">{error}</div>
-                        </div>
-                    )}
-                    {success && (
-                        <div className="toast-notification success">
-                            <div className="message">✓ SUCCESS</div>
-                            <div className="sub-message">{success}</div>
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 }
+
