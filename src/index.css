@@ -1404,3 +1404,289 @@ body {
     min-height: -webkit-fill-available;
   }
 }
+
+/* ===== MOBILE BOTTOM NAVIGATION ===== */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-medium);
+  padding: 8px 10px 12px;
+  z-index: 1000;
+  justify-content: space-around;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .mobile-nav {
+  background: #fff;
+  border-top: 2px solid #000;
+  box-shadow: 0 -4px 0px #000;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav {
+    display: flex;
+  }
+
+  /* Add padding to body to prevent content from being hidden behind nav */
+  body {
+    padding-bottom: 80px;
+  }
+
+  /* Hide desktop action buttons on mobile */
+  .action-buttons-grid {
+    display: none !important;
+  }
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  position: relative;
+  min-width: 50px;
+}
+
+.mobile-nav-item:hover {
+  color: var(--text-secondary);
+}
+
+.mobile-nav-item.active {
+  color: var(--accent, var(--glow));
+}
+
+.mobile-nav-item.bounce .mobile-nav-icon {
+  animation: icon-bounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes icon-bounce {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-8px) scale(1.2);
+  }
+}
+
+.mobile-nav-icon {
+  transition: transform 0.2s ease;
+}
+
+.mobile-nav-label {
+  font-size: 0.65rem;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.mobile-nav-underline {
+  position: absolute;
+  bottom: 8px;
+  height: 3px;
+  border-radius: 2px;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] .mobile-nav-underline {
+  height: 4px;
+  border-radius: 0;
+}
+
+/* ===== THEME TOGGLE PILL ===== */
+.theme-toggle-pill {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 70px;
+  height: 36px;
+  border-radius: 18px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  z-index: 1000;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.theme-toggle-pill.dark {
+  background: linear-gradient(145deg, #2a2a2c, #1a1a1c);
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.4),
+    -2px -2px 6px rgba(255, 255, 255, 0.05);
+}
+
+.theme-toggle-pill.light {
+  background: #fff;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0px #000;
+}
+
+.theme-toggle-icon {
+  font-size: 1rem;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1;
+}
+
+.theme-toggle-pill.dark .sun {
+  opacity: 0.4;
+}
+
+.theme-toggle-pill.dark .moon {
+  opacity: 1;
+}
+
+.theme-toggle-pill.light .sun {
+  opacity: 1;
+}
+
+.theme-toggle-pill.light .moon {
+  opacity: 0.4;
+}
+
+.theme-toggle-knob {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.theme-toggle-pill.dark .theme-toggle-knob {
+  transform: translateY(-50%) translateX(30px);
+  background: linear-gradient(145deg, #31d7ff, #1a9bc4);
+  box-shadow: 0 2px 8px rgba(49, 215, 255, 0.4);
+}
+
+.theme-toggle-pill.light .theme-toggle-knob {
+  transform: translateY(-50%) translateX(2px);
+  background: linear-gradient(145deg, #f59e0b, #d97706);
+  box-shadow: 2px 2px 0px #000;
+}
+
+@media (max-width: 480px) {
+  .theme-toggle-pill {
+    width: 60px;
+    height: 32px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .theme-toggle-knob {
+    width: 24px;
+    height: 24px;
+  }
+
+  .theme-toggle-pill.dark .theme-toggle-knob {
+    transform: translateY(-50%) translateX(24px);
+  }
+
+  .theme-toggle-icon {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===== MODAL POPUP FIXES FOR MOBILE ===== */
+@media (max-width: 600px) {
+
+  /* Override the full-screen modal behavior */
+  .modal-content,
+  .plate.animate-scale.modal-content {
+    max-width: 95% !important;
+    width: 95% !important;
+    min-height: auto !important;
+    max-height: 85vh !important;
+    margin: auto !important;
+    border-radius: 16px !important;
+    overflow-y: auto;
+  }
+
+  [data-theme="light"] .modal-content,
+  [data-theme="light"] .plate.animate-scale.modal-content {
+    border-radius: 0 !important;
+    border: 2px solid #000 !important;
+    box-shadow: 8px 8px 0px #000 !important;
+  }
+
+  /* Ensure modal overlay centers content */
+  div[style*="position: fixed"][style*="backdrop-filter"] {
+    padding: 20px !important;
+    align-items: center !important;
+  }
+}
+
+/* ===== LIGHT MODE MOBILE FIXES ===== */
+[data-theme="light"] {
+  /* Reduce shadow sizes on mobile to prevent overflow */
+  --brutal-shadow: 4px 4px 0px #000;
+  --brutal-shadow-hover: 6px 6px 0px #000;
+}
+
+@media (max-width: 600px) {
+  [data-theme="light"] .plate {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-shadow: 4px 4px 0px #000;
+  }
+
+  [data-theme="light"] .flow-step {
+    box-shadow: 3px 3px 0px #000;
+  }
+
+  [data-theme="light"] .btn {
+    box-shadow: 3px 3px 0px #000;
+  }
+
+  [data-theme="light"] .btn:hover {
+    box-shadow: 5px 5px 0px #000;
+  }
+
+  [data-theme="light"] .card {
+    box-shadow: 3px 3px 0px #000;
+  }
+
+  /* Ensure neubrutalist elements don't overflow */
+  [data-theme="light"] .inset-panel,
+  [data-theme="light"] .handle-badge {
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 375px) {
+  [data-theme="light"] .plate {
+    box-shadow: 3px 3px 0px #000;
+    padding: 12px !important;
+  }
+
+  [data-theme="light"] .amount-display {
+    font-size: 1.4rem !important;
+  }
+}
+
+/* Hide old theme toggle on mobile when new one exists */
+.theme-toggle {
+  display: none;
+}

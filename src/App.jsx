@@ -14,6 +14,8 @@ import { PaymentHistory } from './components/PaymentHistory';
 import { StatsCard, HowToPayCard, Footer, PaymentTicker, ScanCountdown, TermsModal } from './components/Cards';
 import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal, ShareSuccessModal } from './components/Modals';
 import { TutorialOverlay, useTutorial } from './components/TutorialOverlay';
+import { MobileNav } from './components/MobileNav';
+import { ThemeToggle } from './components/ThemeToggle';
 
 // Achievements definitions
 const ACHIEVEMENTS = [
@@ -188,9 +190,7 @@ function WassyPayApp() {
       )}
 
       {/* Theme Toggle */}
-      <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-        {theme === 'dark' ? '☀️' : '🌙'}
-      </button>
+      <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
       {/* Main Container */}
       <div className="dashboard-container" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 15px' }}>
@@ -384,6 +384,35 @@ function WassyPayApp() {
           onClose={() => setShowTerms(false)}
         />
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileNav
+        activeItem="home"
+        onNavigate={(id) => {
+          switch (id) {
+            case 'home':
+              // Close all modals
+              setShowLeaderboard(false);
+              setShowAchievements(false);
+              setShowStats(false);
+              setShowHistory(false);
+              break;
+            case 'check':
+              handleCheckForPayments();
+              break;
+            case 'leaders':
+              setShowLeaderboard(true);
+              break;
+            case 'badges':
+              setShowAchievements(true);
+              break;
+            case 'stats':
+              setShowStats(true);
+              break;
+          }
+        }}
+        accentColor={theme === 'light' ? '#a855f7' : '#31d7ff'}
+      />
     </div>
   );
 }

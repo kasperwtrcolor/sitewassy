@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import '../index.css';
 import { TermsModal } from './Cards';
+import { ThemeToggle } from './ThemeToggle';
 
 export function LoginScreen({ onLogin, theme, onToggleTheme }) {
     const [showTerms, setShowTerms] = useState(false);
@@ -36,9 +37,8 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
             overflow: 'hidden'
         }}>
             {/* Theme Toggle */}
-            <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-                {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
+            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+
             <div className="dashboard-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 15px' }}>
 
                 {/* Main Hero Plate */}
