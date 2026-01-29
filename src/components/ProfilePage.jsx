@@ -58,9 +58,6 @@ export function ProfilePage({
                     <button onClick={onResetTutorial} className="btn">
                         📚 RESTART TUTORIAL
                     </button>
-                    <button onClick={onOpenLeaderboard} className="btn">
-                        🏆 LEADERBOARD
-                    </button>
                 </div>
             </div>
 

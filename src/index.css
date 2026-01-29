@@ -1158,15 +1158,15 @@ body {
   }
 
   .plate {
-    margin-left: -10px;
-    margin-right: -10px;
     border-radius: 0 !important;
   }
 
   [data-theme="light"] .plate {
-    border-left: none;
-    border-right: none;
+    /* Keep all borders visible on mobile */
+    border: 2px solid #000 !important;
+    box-shadow: 4px 4px 0px #000;
   }
+
 
   .btn {
     padding: 12px 20px;

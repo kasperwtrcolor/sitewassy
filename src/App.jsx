@@ -301,10 +301,13 @@ function WassyPayApp() {
             userStats={userStats}
             isDelegated={isDelegated}
             onCheckPayments={handleCheckForPayments}
-            onResetTutorial={resetTutorial}
-            onOpenLeaderboard={() => setShowLeaderboard(true)}
+            onResetTutorial={() => {
+              setCurrentPage('home');
+              resetTutorial();
+            }}
             onBack={() => setCurrentPage('home')}
           />
+
         ) : null}
 
         {/* Footer */}
