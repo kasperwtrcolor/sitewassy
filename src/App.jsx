@@ -221,6 +221,31 @@ function WassyPayApp() {
             Wassy Pay
           </div>
 
+          {/* Desktop Navigation */}
+          <div className="desktop-nav" style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setCurrentPage('home')}
+              className={`btn ${currentPage === 'home' ? 'btn-primary' : ''}`}
+              style={{ padding: '8px 14px', fontSize: '0.7rem' }}
+            >
+              🏠 HOME
+            </button>
+            <button
+              onClick={() => setCurrentPage('profile')}
+              className={`btn ${currentPage === 'profile' ? 'btn-primary' : ''}`}
+              style={{ padding: '8px 14px', fontSize: '0.7rem' }}
+            >
+              👤 PROFILE
+            </button>
+            <button
+              onClick={() => setShowLeaderboard(true)}
+              className="btn"
+              style={{ padding: '8px 14px', fontSize: '0.7rem' }}
+            >
+              🏆 LEADERS
+            </button>
+          </div>
+
           <button
             onClick={logout}
             className="btn"

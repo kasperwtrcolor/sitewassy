@@ -1357,12 +1357,18 @@ body {
 /* Mobile-specific layout helpers */
 @media (max-width: 768px) {
 
+  /* Hide desktop navigation on mobile */
+  .desktop-nav {
+    display: none !important;
+  }
+
   /* Dashboard header stacking */
   .dashboard-header {
     flex-direction: column;
     align-items: stretch !important;
     gap: 12px !important;
   }
+
 
   .dashboard-header>div {
     justify-content: center;
