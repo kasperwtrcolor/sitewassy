@@ -193,10 +193,10 @@ function WassyPayApp() {
       </button>
 
       {/* Main Container */}
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <div className="dashboard-container" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 15px' }}>
 
         {/* Header */}
-        <div className="plate animate-fade-in" style={{
+        <div className="plate animate-fade-in dashboard-header" style={{
           padding: '20px 30px',
           marginBottom: '20px',
           display: 'flex',
@@ -246,7 +246,7 @@ function WassyPayApp() {
         </div>
 
         {/* Action Buttons */}
-        <div style={{
+        <div className="action-buttons-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
           gap: '10px',

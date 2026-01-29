@@ -30,7 +30,7 @@ export function LeaderboardModal({ show, onClose, users }) {
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div className="plate animate-scale" style={{
+            <div className="plate animate-scale modal-content" style={{
                 maxWidth: '600px',
                 width: '100%',
                 maxHeight: '80vh',
@@ -38,6 +38,7 @@ export function LeaderboardModal({ show, onClose, users }) {
                 padding: '30px',
                 position: 'relative'
             }} onClick={e => e.stopPropagation()}>
+
                 <div className="screw tl"></div>
                 <div className="screw tr"></div>
 
@@ -109,7 +110,7 @@ export function AchievementsModal({ show, onClose, achievements, unlockedIds }) 
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div className="plate animate-scale" style={{
+            <div className="plate animate-scale modal-content" style={{
                 maxWidth: '500px',
                 width: '100%',
                 maxHeight: '80vh',
@@ -165,7 +166,7 @@ export function AdminModal({ show, onClose, users }) {
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div className="plate animate-scale" style={{
+            <div className="plate animate-scale modal-content" style={{
                 maxWidth: '900px',
                 width: '100%',
                 maxHeight: '80vh',
@@ -240,7 +241,7 @@ export function StatsModal({ show, onClose, userStats }) {
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div className="plate animate-scale" style={{
+            <div className="plate animate-scale modal-content" style={{
                 maxWidth: '400px',
                 width: '100%',
                 padding: '30px',
@@ -291,7 +292,7 @@ export function HistoryModal({ show, onClose, payments, xUsername }) {
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div className="plate animate-scale" style={{
+            <div className="plate animate-scale modal-content" style={{
                 maxWidth: '600px',
                 width: '100%',
                 maxHeight: '80vh',
@@ -472,7 +473,7 @@ export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) 
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div className="plate animate-scale" style={{
+            <div className="plate animate-scale modal-content" style={{
                 maxWidth: '450px',
                 width: '100%',
                 padding: '40px 30px',

@@ -39,7 +39,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
             <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
                 {theme === 'dark' ? '☀️' : '🌙'}
             </button>
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div className="dashboard-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 15px' }}>
 
                 {/* Main Hero Plate */}
                 <div className="plate animate-fade-in" style={{ padding: '60px 40px', marginBottom: '40px', position: 'relative' }}>
@@ -62,7 +62,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                     }}>WASSY</div>
 
                     {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                    <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '10px' }}>
                         <div style={{
                             fontFamily: "'Fredoka', sans-serif",
                             fontWeight: 700,
@@ -94,10 +94,11 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
 
                         <p className="animate-fade-in delay-2" style={{
                             color: 'var(--text-secondary)',
-                            fontSize: '1.1rem',
+                            fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)',
                             maxWidth: '600px',
                             margin: '0 auto 30px',
-                            lineHeight: 1.6
+                            lineHeight: 1.6,
+                            padding: '0 10px'
                         }}>
                             Send USDC to anyone on X with a simple post. No banks, no accounts, no friction.
                             Just tag <span style={{ color: '#31d7ff' }}>@bot_wassy</span> and your payment flows through Solana.
@@ -108,19 +109,21 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             background: 'var(--bg-inset)',
                             border: '1px solid var(--border-subtle)',
                             borderRadius: '12px',
-                            padding: '20px 30px',
+                            padding: 'clamp(12px, 3vw, 20px) clamp(15px, 4vw, 30px)',
                             display: 'inline-block',
                             marginBottom: '30px',
-                            boxShadow: theme === 'dark' ? 'inset 4px 4px 8px rgba(0,0,0,0.6), inset -2px -2px 5px rgba(255,255,255,0.02)' : 'none'
+                            boxShadow: theme === 'dark' ? 'inset 4px 4px 8px rgba(0,0,0,0.6), inset -2px -2px 5px rgba(255,255,255,0.02)' : 'none',
+                            maxWidth: '100%',
+                            wordBreak: 'break-word'
                         }}>
-                            <span className="mono" style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
+                            <span className="mono" style={{ fontSize: 'clamp(0.85rem, 2.5vw, 1.1rem)', color: 'var(--text-secondary)' }}>
                                 <span style={{ color: 'var(--glow)' }}>@bot_wassy</span> send <span style={{ color: 'var(--accent-gold)' }}>@friend</span> <span style={{ color: 'var(--success)' }}>$100</span>
                             </span>
                         </div>
 
                         <br />
 
-                        <button onClick={onLogin} className="btn btn-gold animate-fade-in delay-4" style={{ fontSize: '1rem', padding: '18px 48px' }}>
+                        <button onClick={onLogin} className="btn btn-gold animate-fade-in delay-4" style={{ fontSize: 'clamp(0.85rem, 2.5vw, 1rem)', padding: 'clamp(14px, 3vw, 18px) clamp(32px, 8vw, 48px)' }}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '10px', verticalAlign: 'middle' }}>
                                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
                             </svg>
