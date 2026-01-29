@@ -95,7 +95,7 @@ function WassyPayApp() {
       const timer = setTimeout(() => {
         if (success) setSuccess('');
         if (error) setError('');
-      }, 3000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [error, success, setSuccess, setError]);
@@ -121,7 +121,7 @@ function WassyPayApp() {
   const handleCheckForPayments = async () => {
     await fetchPendingClaims();
     setSuccess(`Checked for payments! Found ${pendingClaims.length} pending claims.`);
-    setTimeout(() => setSuccess(''), 3000);
+    setTimeout(() => setSuccess(''), 5000);
   };
 
   // Handle claim with loading overlay and confetti
