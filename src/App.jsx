@@ -56,6 +56,7 @@ function WassyPayApp() {
     ACHIEVEMENTS,
     recordDailyLogin,
     recordShare,
+    userProfile,
     // Lottery
     currentLottery,
     setLotteryPrize: setLotteryPrizeApi,
@@ -326,6 +327,7 @@ function WassyPayApp() {
             xUsername={xUsername}
             userStats={userStats}
             isDelegated={isDelegated}
+            achievements={userProfile?.achievements || []}
             onCheckPayments={handleCheckForPayments}
             onResetTutorial={() => {
               setCurrentPage('home');

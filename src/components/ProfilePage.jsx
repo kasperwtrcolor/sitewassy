@@ -1,6 +1,6 @@
 import '../index.css';
 
-// Note: ACHIEVEMENTS is now passed as a prop from App.jsx (sourced from useFirestore)
+// Note: achievements prop is an array of achievement objects from Firebase (with id, name, icon, etc.)
 
 export function ProfilePage({
     xUsername,
@@ -10,13 +10,9 @@ export function ProfilePage({
     onResetTutorial,
     onOpenLeaderboard,
     onBack,
-    achievements = [] // Array of unlocked achievement IDs
+    achievements = [] // Array of unlocked achievement OBJECTS from Firebase
 }) {
-    // Get ACHIEVEMENTS list from useWassy - passed via context or passed as prop
-    // For now, we'll use a static reference to display all 15 achievements
-    // The actual unlocked status is tracked in 'achievements' prop
-
-    // Full achievements list - should eventually be imported from a shared location
+    // Full achievements list for display
     const ACHIEVEMENTS = [
         { id: 'first_payment', name: 'First Blood', desc: 'Send your first payment', icon: '🎯' },
         { id: 'first_claim', name: 'Claim Master', desc: 'Claim your first payment', icon: '💎' },
@@ -35,8 +31,12 @@ export function ProfilePage({
         { id: 'lottery_winner', name: 'Lucky', desc: 'Win the weekly lottery', icon: '🎰' }
     ];
 
-    // Calculate unlocked achievements based on stats + passed achievements array
-    const unlockedAchievements = [...achievements];
+    // Extract unlocked achievement IDs from achievement objects
+    // Handle both object format {id: 'x'} and string format 'x'
+    const unlockedIds = achievements.map(a => typeof a === 'object' ? a.id : a);
+
+    // Calculate unlocked achievements based on stats + Firebase achievements
+    const unlockedAchievements = [...unlockedIds];
     if ((userStats?.totalSent || 0) > 0 && !unlockedAchievements.includes('first_payment'))
         unlockedAchievements.push('first_payment');
     if ((userStats?.totalClaimed || 0) > 0 && !unlockedAchievements.includes('first_claim'))
@@ -51,6 +51,8 @@ export function ProfilePage({
         unlockedAchievements.push('whale');
     if ((userStats?.totalSent || 0) >= 10000 && !unlockedAchievements.includes('mega_whale'))
         unlockedAchievements.push('mega_whale');
+
+
 
 
     return (
