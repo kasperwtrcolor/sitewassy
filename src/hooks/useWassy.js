@@ -112,14 +112,27 @@ export function useWassy() {
         }
     }, [userProfile?.authorization]);
 
-    // Log wallet info
+    // Log wallet info and admin status
     useEffect(() => {
         if (walletsReady && wallets?.length > 0) {
             console.log(`✅ Solana wallet ready: ${solanaWallet?.address?.slice(0, 8)}...`);
         } else if (walletsReady && authenticated) {
             console.log('⏳ Waiting for wallet...');
         }
-    }, [wallets, walletsReady, solanaWallet, authenticated]);
+        // Debug admin check
+        if (xUsername) {
+            console.log(`👤 X Username: ${xUsername}, isAdmin: ${isAdmin}`);
+        }
+    }, [wallets, walletsReady, solanaWallet, authenticated, xUsername, isAdmin]);
+
+    // Record daily login when user authenticates
+    useEffect(() => {
+        if (authenticated && solanaWallet?.address && recordDailyLogin) {
+            console.log('📅 Recording daily login...');
+            recordDailyLogin();
+        }
+    }, [authenticated, solanaWallet?.address, recordDailyLogin]);
+
 
     // Fetch wallet balances (USDC and SOL)
     const fetchBalance = useCallback(async () => {
