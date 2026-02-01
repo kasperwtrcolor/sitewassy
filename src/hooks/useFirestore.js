@@ -454,17 +454,24 @@ export function useFirestore(walletAddress, xUsername) {
             const lotteryId = getCurrentLotteryId();
             const lotteryRef = doc(db, 'lotteries', lotteryId);
 
-            // Filter users who have sent payments
+            // Filter users who have sent payments AND have valid wallet addresses
+            // Handle both field naming conventions (snake_case and camelCase)
             const sendersWithEntries = eligibleUsers
-                .filter(u => (u.total_sent || 0) > 0)
+                .filter(u => {
+                    const totalSent = u.total_sent || u.totalSent || 0;
+                    const wallet = u.wallet_address || u.walletAddress;
+                    return totalSent > 0 && wallet;
+                })
                 .map(u => ({
-                    username: u.x_username,
-                    walletAddress: u.wallet_address,
-                    entries: Math.floor((u.total_sent || 0) / 10) + 1 // 1 entry + 1 per $10 sent
+                    username: u.x_username || u.xUsername || 'unknown',
+                    walletAddress: u.wallet_address || u.walletAddress,
+                    entries: Math.floor((u.total_sent || u.totalSent || 0) / 10) + 1 // 1 entry + 1 per $10 sent
                 }));
 
+            console.log('Eligible users with entries:', sendersWithEntries);
+
             if (sendersWithEntries.length === 0) {
-                return { success: false, error: 'No eligible users found' };
+                return { success: false, error: 'No eligible users found with valid wallet addresses' };
             }
 
             // Build weighted entry pool
@@ -478,6 +485,14 @@ export function useFirestore(walletAddress, xUsername) {
             // Random selection
             const winnerIndex = Math.floor(Math.random() * entryPool.length);
             const winner = entryPool[winnerIndex];
+
+            console.log('Selected winner:', winner);
+
+            // Validate winner has required fields
+            if (!winner.walletAddress) {
+                return { success: false, error: 'Winner has no wallet address' };
+            }
+
 
             // Update lottery with winner
             await updateDoc(lotteryRef, {
