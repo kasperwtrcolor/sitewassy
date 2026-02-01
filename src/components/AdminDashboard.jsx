@@ -213,14 +213,15 @@ export function AdminDashboard({
                         <div className="engraved" style={{ fontSize: '0.7rem', marginBottom: '10px' }}>
                             PRIZE AMOUNT (USDC)
                         </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                             <input
                                 type="number"
                                 value={localPrize}
                                 onChange={(e) => setLocalPrize(parseFloat(e.target.value) || 0)}
                                 onBlur={() => onSetLotteryPrize?.(localPrize)}
                                 style={{
-                                    flex: 1,
+                                    flex: '1 1 120px',
+                                    minWidth: '100px',
                                     padding: '12px',
                                     background: 'var(--bg-inset)',
                                     border: '1px solid var(--border-medium)',
@@ -233,13 +234,19 @@ export function AdminDashboard({
                             <button
                                 onClick={onDrawLottery}
                                 className="btn btn-gold"
-                                style={{ padding: '12px 24px' }}
+                                style={{
+                                    padding: '12px 20px',
+                                    flex: '1 1 auto',
+                                    minWidth: '140px',
+                                    whiteSpace: 'nowrap'
+                                }}
                                 disabled={currentLottery?.status === 'completed'}
                             >
-                                🎲 DRAW WINNER
+                                🎲 DRAW
                             </button>
                         </div>
                     </div>
+
 
                     <div className="inset-panel" style={{ padding: '20px' }}>
                         <div className="engraved" style={{ fontSize: '0.7rem', marginBottom: '15px' }}>

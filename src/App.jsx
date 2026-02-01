@@ -271,7 +271,17 @@ function WassyPayApp() {
             >
               🏆 LEADERS
             </button>
+            {isAdmin && (
+              <button
+                onClick={() => setCurrentPage('admin')}
+                className={`btn ${currentPage === 'admin' ? 'btn-primary' : ''}`}
+                style={{ padding: '8px 14px', fontSize: '0.7rem', color: 'var(--accent-gold)' }}
+              >
+                👑 ADMIN
+              </button>
+            )}
           </div>
+
 
           <button
             onClick={logout}
