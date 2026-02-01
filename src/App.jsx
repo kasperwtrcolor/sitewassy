@@ -17,15 +17,10 @@ import { TutorialOverlay, useTutorial } from './components/TutorialOverlay';
 import { MobileNav } from './components/MobileNav';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ProfilePage } from './components/ProfilePage';
+import { AdminDashboard } from './components/AdminDashboard';
 
-// Achievements definitions
-const ACHIEVEMENTS = [
-  { id: 'first_payment', name: 'First Blood', desc: 'Send your first payment', icon: '🎯' },
-  { id: 'first_claim', name: 'Claim Master', desc: 'Claim your first payment', icon: '💎' },
-  { id: 'authorized', name: 'Trusted', desc: 'Authorize the vault', icon: '🔐' },
-  { id: 'big_spender', name: 'Big Spender', desc: 'Send over $100', icon: '💸' },
-  { id: 'collector', name: 'Collector', desc: 'Claim over $100', icon: '🏆' }
-];
+// Note: ACHIEVEMENTS is now provided by useWassy hook from useFirestore.js
+
 
 function WassyPayApp() {
   const {
@@ -57,8 +52,16 @@ function WassyPayApp() {
     error,
     success,
     setSuccess,
-    setError
+    setError,
+    ACHIEVEMENTS,
+    recordDailyLogin,
+    recordShare,
+    // Lottery
+    currentLottery,
+    setLotteryPrize: setLotteryPrizeApi,
+    drawLotteryWinner
   } = useWassy();
+
 
   // Modal states
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -330,8 +333,24 @@ function WassyPayApp() {
             }}
             onBack={() => setCurrentPage('home')}
           />
-
+        ) : currentPage === 'admin' && isAdmin ? (
+          <AdminDashboard
+            users={allUsers}
+            currentLottery={currentLottery}
+            onSetLotteryPrize={setLotteryPrizeApi}
+            onDrawLottery={async () => {
+              const result = await drawLotteryWinner(allUsers);
+              if (result.success) {
+                setSuccess(`🎉 Winner: @${result.winner.username}!`);
+              } else {
+                setError(result.error || 'Failed to draw winner');
+              }
+            }}
+            onClose={() => setCurrentPage('home')}
+          />
         ) : null}
+
+
 
         {/* Footer */}
         <Footer onShowTerms={() => setShowTerms(true)} />
@@ -382,6 +401,7 @@ function WassyPayApp() {
       {/* Mobile Bottom Navigation */}
       <MobileNav
         activeItem={currentPage}
+        isAdmin={isAdmin}
         onNavigate={(id) => {
           switch (id) {
             case 'home':
@@ -395,10 +415,17 @@ function WassyPayApp() {
             case 'leaders':
               setShowLeaderboard(true);
               break;
+            case 'admin':
+              if (isAdmin) {
+                setCurrentPage('admin');
+                setShowLeaderboard(false);
+              }
+              break;
           }
         }}
         accentColor={theme === 'light' ? '#a855f7' : '#31d7ff'}
       />
+
 
     </div>
   );

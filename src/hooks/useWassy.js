@@ -4,7 +4,7 @@ import { useWallets, useSignAndSendTransaction, useExportWallet } from '@privy-i
 // Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
-import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_WALLET } from '../constants';
+import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_USERNAMES } from '../constants';
 import { useFirestore } from './useFirestore';
 
 export function useWassy() {
@@ -24,8 +24,8 @@ export function useWassy() {
     // Get X username from Privy
     const xUsername = user?.twitter?.username || '';
 
-    // Check if admin
-    const isAdmin = solanaWallet?.address === ADMIN_WALLET;
+    // Check if admin by X username (case-insensitive)
+    const isAdmin = ADMIN_USERNAMES.includes(xUsername?.toLowerCase());
 
     // State
     const [walletBalance, setWalletBalance] = useState(0);
@@ -47,9 +47,17 @@ export function useWassy() {
         loading: firebaseLoading,
         updateAuthorization: updateFirebaseAuth,
         recordClaim: recordFirebaseClaim,
+        recordDailyLogin,
+        recordShare,
         fetchLeaderboard,
-        ACHIEVEMENTS
+        ACHIEVEMENTS,
+        // Lottery
+        currentLottery,
+        fetchCurrentLottery,
+        setLotteryPrize,
+        drawLotteryWinner
     } = useFirestore(solanaWallet?.address, xUsername);
+
 
     // State for backend stats (from backend_users collection via API)
     const [backendStats, setBackendStats] = useState({ totalSent: 0, totalClaimed: 0 });
@@ -489,6 +497,14 @@ export function useWassy() {
         fetchLeaderboard,
         achievements: userProfile?.achievements || [],
         ACHIEVEMENTS,
+        recordDailyLogin,
+        recordShare,
+
+        // Lottery
+        currentLottery,
+        fetchCurrentLottery,
+        setLotteryPrize,
+        drawLotteryWinner,
 
         // UI state
         loading: loading || firebaseLoading,
@@ -497,4 +513,6 @@ export function useWassy() {
         setError,
         setSuccess
     };
+
+
 }

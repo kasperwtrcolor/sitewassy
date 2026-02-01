@@ -1,19 +1,25 @@
 import { useState, useRef, useEffect } from 'react';
-import { Home, User, Trophy } from 'lucide-react';
+import { Home, User, Trophy, Crown } from 'lucide-react';
 import '../index.css';
 
-const navItems = [
+const baseNavItems = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'profile', icon: User, label: 'Profile' },
     { id: 'leaders', icon: Trophy, label: 'Leaders' }
 ];
 
+const adminNavItem = { id: 'admin', icon: Crown, label: 'Admin' };
+
 
 export function MobileNav({
     activeItem = 'home',
     onNavigate,
-    accentColor = 'var(--glow)'
+    accentColor = 'var(--glow)',
+    isAdmin = false
 }) {
+    // Build nav items based on admin status
+    const navItems = isAdmin ? [...baseNavItems, adminNavItem] : baseNavItems;
+
     const [active, setActive] = useState(activeItem);
     const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
     const [bouncing, setBouncing] = useState(null);

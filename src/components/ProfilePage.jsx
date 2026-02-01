@@ -1,13 +1,6 @@
 import '../index.css';
 
-// Achievements definitions (same as App.jsx)
-const ACHIEVEMENTS = [
-    { id: 'first_payment', name: 'First Blood', desc: 'Send your first payment', icon: '🎯' },
-    { id: 'first_claim', name: 'Claim Master', desc: 'Claim your first payment', icon: '💎' },
-    { id: 'authorized', name: 'Trusted', desc: 'Authorize the vault', icon: '🔐' },
-    { id: 'big_spender', name: 'Big Spender', desc: 'Send over $100', icon: '💸' },
-    { id: 'collector', name: 'Collector', desc: 'Claim over $100', icon: '🏆' }
-];
+// Note: ACHIEVEMENTS is now passed as a prop from App.jsx (sourced from useFirestore)
 
 export function ProfilePage({
     xUsername,
@@ -16,15 +9,49 @@ export function ProfilePage({
     onCheckPayments,
     onResetTutorial,
     onOpenLeaderboard,
-    onBack
+    onBack,
+    achievements = [] // Array of unlocked achievement IDs
 }) {
-    // Calculate unlocked achievements
-    const unlockedAchievements = [];
-    if ((userStats?.totalSent || 0) > 0) unlockedAchievements.push('first_payment');
-    if ((userStats?.totalClaimed || 0) > 0) unlockedAchievements.push('first_claim');
-    if (isDelegated) unlockedAchievements.push('authorized');
-    if ((userStats?.totalSent || 0) > 100) unlockedAchievements.push('big_spender');
-    if ((userStats?.totalClaimed || 0) > 100) unlockedAchievements.push('collector');
+    // Get ACHIEVEMENTS list from useWassy - passed via context or passed as prop
+    // For now, we'll use a static reference to display all 15 achievements
+    // The actual unlocked status is tracked in 'achievements' prop
+
+    // Full achievements list - should eventually be imported from a shared location
+    const ACHIEVEMENTS = [
+        { id: 'first_payment', name: 'First Blood', desc: 'Send your first payment', icon: '🎯' },
+        { id: 'first_claim', name: 'Claim Master', desc: 'Claim your first payment', icon: '💎' },
+        { id: 'authorized', name: 'Trusted', desc: 'Authorize the vault', icon: '🔐' },
+        { id: 'big_spender', name: 'Big Spender', desc: 'Send over $100', icon: '💸' },
+        { id: 'collector', name: 'Collector', desc: 'Claim over $100', icon: '🏆' },
+        { id: 'whale', name: 'Whale', desc: 'Send over $1000', icon: '🐋' },
+        { id: 'mega_whale', name: 'Mega Whale', desc: 'Send over $10,000', icon: '🐳' },
+        { id: 'veteran', name: 'Veteran', desc: 'Complete 10 transactions', icon: '⭐' },
+        { id: 'multi_sender', name: 'Generous', desc: 'Send to 5 different users', icon: '🎁' },
+        { id: 'daily_login', name: 'Dedicated', desc: 'Log in today', icon: '📅' },
+        { id: 'streak_7', name: 'Weekly Warrior', desc: '7-day login streak', icon: '🔥' },
+        { id: 'streak_30', name: 'Monthly Master', desc: '30-day login streak', icon: '💫' },
+        { id: 'social_sharer', name: 'Influencer', desc: 'Share a payment on X', icon: '📣' },
+        { id: 'early_adopter', name: 'Pioneer', desc: 'Join in first 1000 users', icon: '🚀' },
+        { id: 'lottery_winner', name: 'Lucky', desc: 'Win the weekly lottery', icon: '🎰' }
+    ];
+
+    // Calculate unlocked achievements based on stats + passed achievements array
+    const unlockedAchievements = [...achievements];
+    if ((userStats?.totalSent || 0) > 0 && !unlockedAchievements.includes('first_payment'))
+        unlockedAchievements.push('first_payment');
+    if ((userStats?.totalClaimed || 0) > 0 && !unlockedAchievements.includes('first_claim'))
+        unlockedAchievements.push('first_claim');
+    if (isDelegated && !unlockedAchievements.includes('authorized'))
+        unlockedAchievements.push('authorized');
+    if ((userStats?.totalSent || 0) >= 100 && !unlockedAchievements.includes('big_spender'))
+        unlockedAchievements.push('big_spender');
+    if ((userStats?.totalClaimed || 0) >= 100 && !unlockedAchievements.includes('collector'))
+        unlockedAchievements.push('collector');
+    if ((userStats?.totalSent || 0) >= 1000 && !unlockedAchievements.includes('whale'))
+        unlockedAchievements.push('whale');
+    if ((userStats?.totalSent || 0) >= 10000 && !unlockedAchievements.includes('mega_whale'))
+        unlockedAchievements.push('mega_whale');
+
 
     return (
         <div className="profile-page">

@@ -7,6 +7,9 @@ export const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN
 // IMPORTANT: Set VITE_SOLANA_RPC in Vercel to your Helius API key
 export const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC;
 export const ADMIN_WALLET = import.meta.env.VITE_ADMIN_WALLET || 'Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE';
+// Admin users by X username (case-insensitive)
+export const ADMIN_USERNAMES = ['kasperwtrcolor'];
+
 
 // Validation - warn if required env vars are missing
 if (!SOLANA_RPC) {

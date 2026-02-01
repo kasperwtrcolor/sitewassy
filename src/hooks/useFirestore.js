@@ -16,16 +16,34 @@ import {
     increment
 } from 'firebase/firestore';
 
-// Achievement definitions
+// Achievement definitions - 15 total achievements
 const ACHIEVEMENTS = {
-    first_payment: { id: 'first_payment', name: 'First Blood', desc: 'Send your first payment', icon: '🎯' },
-    first_claim: { id: 'first_claim', name: 'Claim Master', desc: 'Claim your first payment', icon: '💎' },
-    authorized: { id: 'authorized', name: 'Trusted', desc: 'Authorize the vault', icon: '🔐' },
-    big_spender: { id: 'big_spender', name: 'Big Spender', desc: 'Send over $100', icon: '💸' },
-    collector: { id: 'collector', name: 'Collector', desc: 'Claim over $100', icon: '🏆' },
-    whale: { id: 'whale', name: 'Whale', desc: 'Send over $1000', icon: '🐋' },
-    veteran: { id: 'veteran', name: 'Veteran', desc: 'Complete 10 transactions', icon: '⭐' }
+    // Core progression
+    first_payment: { id: 'first_payment', name: 'First Blood', desc: 'Send your first payment', icon: '🎯', points: 10 },
+    first_claim: { id: 'first_claim', name: 'Claim Master', desc: 'Claim your first payment', icon: '💎', points: 10 },
+    authorized: { id: 'authorized', name: 'Trusted', desc: 'Authorize the vault', icon: '🔐', points: 5 },
+
+    // Volume milestones
+    big_spender: { id: 'big_spender', name: 'Big Spender', desc: 'Send over $100', icon: '💸', points: 25 },
+    collector: { id: 'collector', name: 'Collector', desc: 'Claim over $100', icon: '🏆', points: 25 },
+    whale: { id: 'whale', name: 'Whale', desc: 'Send over $1000', icon: '🐋', points: 100 },
+    mega_whale: { id: 'mega_whale', name: 'Mega Whale', desc: 'Send over $10,000', icon: '🐳', points: 500 },
+
+    // Activity milestones
+    veteran: { id: 'veteran', name: 'Veteran', desc: 'Complete 10 transactions', icon: '⭐', points: 50 },
+    multi_sender: { id: 'multi_sender', name: 'Generous', desc: 'Send to 5 different users', icon: '🎁', points: 30 },
+
+    // Daily login & streaks
+    daily_login: { id: 'daily_login', name: 'Dedicated', desc: 'Log in today', icon: '📅', points: 1 },
+    streak_7: { id: 'streak_7', name: 'Weekly Warrior', desc: '7-day login streak', icon: '🔥', points: 20 },
+    streak_30: { id: 'streak_30', name: 'Monthly Master', desc: '30-day login streak', icon: '💫', points: 100 },
+
+    // Social & special
+    social_sharer: { id: 'social_sharer', name: 'Influencer', desc: 'Share a payment on X', icon: '📣', points: 15 },
+    early_adopter: { id: 'early_adopter', name: 'Pioneer', desc: 'Join in first 1000 users', icon: '🚀', points: 50 },
+    lottery_winner: { id: 'lottery_winner', name: 'Lucky', desc: 'Win the weekly lottery', icon: '🎰', points: 100 }
 };
+
 
 export function useFirestore(walletAddress, xUsername) {
     const [userProfile, setUserProfile] = useState(null);
@@ -56,7 +74,15 @@ export function useFirestore(walletAddress, xUsername) {
                     delegationAmount: 0,
                     lastAuthorizedAt: null
                 },
-                achievements: []
+                achievements: [],
+                // Login streak tracking
+                loginStreak: {
+                    current: 0,
+                    lastLoginDate: null,
+                    longestStreak: 0
+                },
+                // Track unique recipients for multi_sender achievement
+                uniqueRecipients: []
             };
             await setDoc(userRef, newProfile);
             return newProfile;
@@ -64,6 +90,7 @@ export function useFirestore(walletAddress, xUsername) {
 
         return userSnap.data();
     }, [walletAddress, xUsername]);
+
 
     // Listen to user profile changes (real-time)
     useEffect(() => {
@@ -137,6 +164,10 @@ export function useFirestore(walletAddress, xUsername) {
             if (stats.totalSent >= 1000) {
                 await checkAndUnlockAchievement('whale');
             }
+            if (stats.totalSent >= 10000) {
+                await checkAndUnlockAchievement('mega_whale');
+            }
+
             if ((stats.totalSent || 0) + (stats.totalClaimed || 0) >= 10) {
                 await checkAndUnlockAchievement('veteran');
             }
@@ -286,6 +317,206 @@ export function useFirestore(walletAddress, xUsername) {
         }
     }, [walletAddress]);
 
+    // Record daily login and update streak
+    const recordDailyLogin = useCallback(async () => {
+        if (!walletAddress) return false;
+
+        try {
+            const userRef = doc(db, 'users', walletAddress);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) return false;
+
+            const data = userSnap.data();
+            const today = new Date().toDateString();
+            const lastLoginDate = data.loginStreak?.lastLoginDate;
+            const currentStreak = data.loginStreak?.current || 0;
+            const longestStreak = data.loginStreak?.longestStreak || 0;
+
+            // Already logged in today
+            if (lastLoginDate === today) {
+                return true;
+            }
+
+            // Calculate new streak
+            let newStreak = 1;
+            if (lastLoginDate) {
+                const lastDate = new Date(lastLoginDate);
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                // If last login was yesterday, continue streak
+                if (lastDate.toDateString() === yesterday.toDateString()) {
+                    newStreak = currentStreak + 1;
+                }
+            }
+
+            // Update streak data
+            await updateDoc(userRef, {
+                'loginStreak.current': newStreak,
+                'loginStreak.lastLoginDate': today,
+                'loginStreak.longestStreak': Math.max(longestStreak, newStreak),
+                'stats.points': increment(1) // 1 point for daily login
+            });
+
+            // Check for daily login achievement
+            await checkAndUnlockAchievement('daily_login');
+
+            // Check streak achievements
+            if (newStreak >= 7) {
+                await checkAndUnlockAchievement('streak_7');
+            }
+            if (newStreak >= 30) {
+                await checkAndUnlockAchievement('streak_30');
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error recording daily login:', error);
+            return false;
+        }
+    }, [walletAddress]);
+
+    // Record a share to X
+    const recordShare = useCallback(async () => {
+        if (!walletAddress) return false;
+
+        try {
+            await checkAndUnlockAchievement('social_sharer');
+            return true;
+        } catch (error) {
+            console.error('Error recording share:', error);
+            return false;
+        }
+    }, [walletAddress]);
+
+    // ==================
+    // LOTTERY FUNCTIONS
+    // ==================
+
+    // State for current lottery
+    const [currentLottery, setCurrentLottery] = useState(null);
+
+    // Get current week's lottery ID
+    const getCurrentLotteryId = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const weekNum = Math.ceil((now - new Date(year, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
+        return `lottery_${year}_${weekNum}`;
+    };
+
+    // Fetch or create current lottery
+    const fetchCurrentLottery = useCallback(async () => {
+        try {
+            const lotteryId = getCurrentLotteryId();
+            const lotteryRef = doc(db, 'lotteries', lotteryId);
+            const lotterySnap = await getDoc(lotteryRef);
+
+            if (lotterySnap.exists()) {
+                setCurrentLottery({ id: lotteryId, ...lotterySnap.data() });
+            } else {
+                // Create new lottery for this week
+                const newLottery = {
+                    weekStart: serverTimestamp(),
+                    weekEnd: null,
+                    prizeAmount: 50, // Default prize
+                    status: 'active',
+                    entries: [],
+                    winner: null,
+                    claimStatus: 'pending',
+                    claimTxId: null
+                };
+                await setDoc(lotteryRef, newLottery);
+                setCurrentLottery({ id: lotteryId, ...newLottery });
+            }
+        } catch (error) {
+            console.error('Error fetching lottery:', error);
+        }
+    }, []);
+
+    // Set lottery prize (admin only)
+    const setLotteryPrize = useCallback(async (amount) => {
+        try {
+            const lotteryId = getCurrentLotteryId();
+            const lotteryRef = doc(db, 'lotteries', lotteryId);
+            await updateDoc(lotteryRef, { prizeAmount: amount });
+            await fetchCurrentLottery();
+            return true;
+        } catch (error) {
+            console.error('Error setting lottery prize:', error);
+            return false;
+        }
+    }, [fetchCurrentLottery]);
+
+    // Draw lottery winner (admin only)
+    const drawLotteryWinner = useCallback(async (eligibleUsers) => {
+        try {
+            const lotteryId = getCurrentLotteryId();
+            const lotteryRef = doc(db, 'lotteries', lotteryId);
+
+            // Filter users who have sent payments
+            const sendersWithEntries = eligibleUsers
+                .filter(u => (u.total_sent || 0) > 0)
+                .map(u => ({
+                    username: u.x_username,
+                    walletAddress: u.wallet_address,
+                    entries: Math.floor((u.total_sent || 0) / 10) + 1 // 1 entry + 1 per $10 sent
+                }));
+
+            if (sendersWithEntries.length === 0) {
+                return { success: false, error: 'No eligible users found' };
+            }
+
+            // Build weighted entry pool
+            const entryPool = [];
+            sendersWithEntries.forEach(user => {
+                for (let i = 0; i < user.entries; i++) {
+                    entryPool.push(user);
+                }
+            });
+
+            // Random selection
+            const winnerIndex = Math.floor(Math.random() * entryPool.length);
+            const winner = entryPool[winnerIndex];
+
+            // Update lottery with winner
+            await updateDoc(lotteryRef, {
+                status: 'completed',
+                winner: {
+                    username: winner.username,
+                    walletAddress: winner.walletAddress
+                },
+                entries: sendersWithEntries,
+                weekEnd: serverTimestamp()
+            });
+
+            // Award lottery_winner achievement
+            if (winner.walletAddress) {
+                const winnerRef = doc(db, 'users', winner.walletAddress);
+                const winnerSnap = await getDoc(winnerRef);
+                if (winnerSnap.exists()) {
+                    const achievements = winnerSnap.data()?.achievements || [];
+                    if (!achievements.includes('lottery_winner')) {
+                        await updateDoc(winnerRef, {
+                            achievements: [...achievements, 'lottery_winner']
+                        });
+                    }
+                }
+            }
+
+            await fetchCurrentLottery();
+            return { success: true, winner };
+        } catch (error) {
+            console.error('Error drawing lottery winner:', error);
+            return { success: false, error: error.message };
+        }
+    }, [fetchCurrentLottery]);
+
+    // Load lottery on mount
+    useEffect(() => {
+        fetchCurrentLottery();
+    }, [fetchCurrentLottery]);
+
     return {
         userProfile,
         leaderboard,
@@ -294,8 +525,16 @@ export function useFirestore(walletAddress, xUsername) {
         updateAuthorization,
         recordPaymentSent,
         recordClaim,
+        recordDailyLogin,
+        recordShare,
         fetchLeaderboard,
         updateUsername,
-        ACHIEVEMENTS
+        ACHIEVEMENTS,
+        // Lottery
+        currentLottery,
+        fetchCurrentLottery,
+        setLotteryPrize,
+        drawLotteryWinner
     };
+
 }
