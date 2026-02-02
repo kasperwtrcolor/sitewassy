@@ -58,8 +58,14 @@ export function LotteryModal({
 
     // Calculate user's entries - check wallet AND username
     const userStats = eligibleUsers.find(u => {
-        const walletMatch = (u.wallet_address || u.walletAddress) === userWallet;
-        const usernameMatch = xUsername && (u.x_username === xUsername || u.xUsername === xUsername);
+        const uWallet = (u.wallet_address || u.walletAddress || '').toLowerCase();
+        const myWallet = (userWallet || '').toLowerCase();
+        const walletMatch = uWallet && myWallet && uWallet === myWallet;
+
+        const uName = (u.x_username || u.xUsername || '').toLowerCase().replace('@', '');
+        const myName = (xUsername || '').toLowerCase().replace('@', '');
+        const usernameMatch = uName && myName && uName === myName;
+
         return walletMatch || usernameMatch;
     });
     const userEntries = userStats
@@ -72,8 +78,19 @@ export function LotteryModal({
     );
 
     // Is user the winner?
-    const isWinner = lottery.winner?.walletAddress === userWallet ||
-        lottery.winner?.username === xUsername;
+    const isWinner = (() => {
+        if (!lottery?.winner) return false;
+
+        const wWallet = (lottery.winner.walletAddress || '').toLowerCase();
+        const myWallet = (userWallet || '').toLowerCase();
+        const walletMatch = wWallet && myWallet && wWallet === myWallet;
+
+        const wName = (lottery.winner.username || '').toLowerCase().replace('@', '');
+        const myName = (xUsername || '').toLowerCase().replace('@', '');
+        const usernameMatch = wName && myName && wName === myName;
+
+        return walletMatch || usernameMatch;
+    })();
     const canClaim = isWinner && lottery.status === 'completed';
 
     return (
