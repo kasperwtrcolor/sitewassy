@@ -370,7 +370,7 @@ function WassyPayApp() {
             onActivateLottery={activateLottery}
             onSetLotteryPrize={setLotteryPrizeApi}
             onDrawLottery={async () => {
-              const result = await drawLotteryWinner(allUsers);
+              const result = await drawLotteryWinner();
               if (result.success) {
                 setSuccess(`🎉 Winner: @${result.winner.username}!`);
               } else {
