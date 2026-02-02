@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import '../index.css';
 
 export function LotteryModal({
@@ -93,6 +94,48 @@ export function LotteryModal({
     })();
     const canClaim = isWinner && lottery.status === 'completed';
 
+    // Celebration for winner
+    useEffect(() => {
+        if (show && isWinner && (lottery?.status === 'completed' || lottery?.status === 'claimed')) {
+            const end = Date.now() + (3 * 1000);
+            const colors = ['#fb7185', '#a855f7', '#fbbf24', '#34d399'];
+
+            (function frame() {
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    }, [show, isWinner, lottery?.id]);
+
+    // Share on X - Winner announcement
+    const shareWinnerAnnouncement = () => {
+        if (!lottery?.winner) return;
+        const text = `🎉 @${lottery.winner.username} just won $${lottery.prizeAmount} USDC in the @bot_wassy lottery! 🎰\n\nSend payments to earn entries for the next draw!\n\n#WassyBot #Solana #Crypto`;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    // Share on X - Winner's personal share
+    const shareMyWinnings = () => {
+        const text = `🏆 I just won $${lottery?.prizeAmount} USDC in the @bot_wassy lottery! 🎰\n\n💰 Prize automatically transferred to my wallet!\n\nSend payments to earn entries for the next draw 👇\n\n#WassyBot #Solana #USDC`;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div
@@ -135,6 +178,35 @@ export function LotteryModal({
                         }
                     </div>
                 </div>
+
+                {/* Winner Actions */}
+                {lottery.winner && (
+                    <div style={{
+                        padding: '12px 20px',
+                        borderBottom: '1px solid var(--border-medium)',
+                        display: 'flex',
+                        gap: '8px',
+                        flexWrap: 'wrap',
+                        background: 'rgba(212, 175, 55, 0.05)'
+                    }}>
+                        <button
+                            onClick={shareWinnerAnnouncement}
+                            className="btn"
+                            style={{ flex: 1, padding: '8px', minWidth: '120px', fontSize: '0.8rem' }}
+                        >
+                            🐦 Share Winner
+                        </button>
+                        {isWinner && (
+                            <button
+                                onClick={shareMyWinnings}
+                                className="btn btn-gold"
+                                style={{ flex: 1, padding: '8px', minWidth: '120px', fontSize: '0.8rem' }}
+                            >
+                                🎉 Share My Win
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {/* Winner Claim Section */}
                 {canClaim && (

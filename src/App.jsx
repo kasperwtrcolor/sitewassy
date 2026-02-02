@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { createSolanaRpc, createSolanaRpcSubscriptions } from '@solana/kit';
 import { PRIVY_APP_ID, SOLANA_RPC } from './constants';
@@ -283,6 +284,13 @@ function WassyPayApp() {
               👤 PROFILE
             </button>
             <button
+              onClick={() => setCurrentPage('lottery')}
+              className={`btn ${currentPage === 'lottery' ? 'btn-primary' : ''}`}
+              style={{ padding: '8px 14px', fontSize: '0.7rem' }}
+            >
+              🎰 LOTTERY
+            </button>
+            <button
               onClick={() => setShowLeaderboard(true)}
               className="btn"
               style={{ padding: '8px 14px', fontSize: '0.7rem' }}
@@ -382,6 +390,14 @@ function WassyPayApp() {
               const result = await drawLotteryWinner();
               if (result.success) {
                 setSuccess(`🎉 Winner: @${result.winner.username}!`);
+
+                // Blast confetti!
+                confetti({
+                  particleCount: 150,
+                  spread: 70,
+                  origin: { y: 0.6 },
+                  colors: ['#fb7185', '#a855f7', '#fbbf24', '#34d399']
+                });
               } else {
                 setError(result.error || 'Failed to draw winner');
               }

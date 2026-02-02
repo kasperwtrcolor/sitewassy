@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import '../index.css';
 
 export function LotteryPage({
@@ -103,16 +104,45 @@ export function LotteryPage({
     })();
     const canClaim = isWinner && currentLottery?.status === 'completed';
 
+    // Celebration for winner
+    useEffect(() => {
+        if (isWinner && (currentLottery?.status === 'completed' || currentLottery?.status === 'claimed')) {
+            const end = Date.now() + (3 * 1000);
+            const colors = ['#fb7185', '#a855f7', '#fbbf24', '#34d399'];
+
+            (function frame() {
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    }, [isWinner, currentLottery?.id]);
+
     // Share on X - Winner announcement
     const shareWinnerAnnouncement = () => {
         if (!currentLottery?.winner) return;
-        const text = `🎉 @${currentLottery.winner.username} just won $${currentLottery.prizeAmount} USDC in the @WassyPay lottery! 🎰\n\nSend payments to earn entries for the next draw!\n\n#WassyPay #Solana #Crypto`;
+        const text = `🎉 @${currentLottery.winner.username} just won $${currentLottery.prizeAmount} USDC in the @bot_wassy lottery! 🎰\n\nSend payments to earn entries for the next draw!\n\n#WassyBot #Solana #Crypto`;
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
     };
 
     // Share on X - Winner's personal share
     const shareMyWinnings = () => {
-        const text = `🏆 I just won $${currentLottery?.prizeAmount} USDC in the @WassyPay lottery! 🎰\n\n💰 Prize automatically transferred to my wallet!\n\nSend payments to earn entries for the next draw 👇\n\n#WassyPay #Solana #USDC`;
+        const text = `🏆 I just won $${currentLottery?.prizeAmount} USDC in the @bot_wassy lottery! 🎰\n\n💰 Prize automatically transferred to my wallet!\n\nSend payments to earn entries for the next draw 👇\n\n#WassyBot #Solana #USDC`;
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
     };
 

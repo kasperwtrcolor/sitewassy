@@ -20,7 +20,7 @@ export function LotteryWinnerCard({
     // Share on X
     const handleShareOnX = () => {
         setIsSharing(true);
-        const text = `🎉 I just won $${lottery.prizeAmount} USDC in the @WassyPay lottery! 🎰\n\n💰 Prize claimed and transferred automatically!\n\n#WassyPay #Solana #USDC #CryptoWin`;
+        const text = `🎉 I just won $${lottery.prizeAmount} USDC in the @bot_wassy lottery! 🎰\n\n💰 Prize claimed and transferred automatically!\n\n#WassyBot #Solana #USDC #CryptoWin`;
         const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank', 'width=550,height=420');
         setIsSharing(false);
