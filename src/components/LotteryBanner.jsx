@@ -54,35 +54,24 @@ export function LotteryBanner({
         return () => clearInterval(interval);
     }, [lottery?.endTime, lottery?.status, lottery?.winner]);
 
-    // Show banner for active, completed, or claimed (recent) lotteries
-    if (!lottery || (lottery.status !== 'active' && lottery.status !== 'completed' && lottery.status !== 'claimed')) {
+    // Only show banner for ACTIVE lotteries on homepage
+    if (!lottery || lottery.status !== 'active') {
         return null;
     }
-
-    // Check if user is the winner
-    const isWinner = lottery.winner?.walletAddress === userWallet || lottery.winner?.username === xUsername;
-    const hasWinner = !!lottery.winner;
-
-    // Different background for winner announcement
-    const bannerBg = hasWinner
-        ? 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)'
-        : 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)';
 
     return (
         <div
             className="lottery-banner animate-fade-in"
             onClick={onOpenDetails}
             style={{
-                background: bannerBg,
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
                 borderRadius: '16px',
                 padding: '16px 20px',
                 marginBottom: '20px',
                 cursor: 'pointer',
                 position: 'relative',
                 overflow: 'hidden',
-                boxShadow: hasWinner
-                    ? '0 4px 20px rgba(16, 185, 129, 0.4)'
-                    : '0 4px 20px rgba(245, 158, 11, 0.4)'
+                boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)'
             }}
         >
             {/* Animated background effect */}
@@ -114,7 +103,7 @@ export function LotteryBanner({
                         gap: '8px',
                         marginBottom: '4px'
                     }}>
-                        <span style={{ fontSize: '1.5rem' }}>{hasWinner ? '🏆' : '🎰'}</span>
+                        <span style={{ fontSize: '1.5rem' }}>🎰</span>
                         <span style={{
                             fontSize: '0.7rem',
                             fontWeight: '600',
@@ -124,7 +113,7 @@ export function LotteryBanner({
                             padding: '2px 8px',
                             borderRadius: '4px'
                         }}>
-                            {hasWinner ? 'WINNER ANNOUNCED' : 'LIVE LOTTERY'}
+                            LIVE LOTTERY
                         </span>
                     </div>
                     <div style={{
@@ -145,7 +134,7 @@ export function LotteryBanner({
                         marginBottom: '4px',
                         fontWeight: '500'
                     }}>
-                        {hasWinner ? 'WINNER' : 'DRAW IN'}
+                        DRAW IN
                     </div>
                     <div style={{
                         fontSize: '1.4rem',

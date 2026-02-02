@@ -456,6 +456,23 @@ export function useFirestore(walletAddress, xUsername) {
         }
     }, []);
 
+    // State for lottery history
+    const [lotteryHistory, setLotteryHistory] = useState([]);
+
+    // Fetch lottery history - via backend
+    const fetchLotteryHistory = useCallback(async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/lottery/history`);
+            const data = await response.json();
+
+            if (data.success) {
+                setLotteryHistory(data.history || []);
+            }
+        } catch (error) {
+            console.error('Error fetching lottery history:', error);
+        }
+    }, []);
+
     // Set lottery prize (admin only)
     const setLotteryPrize = useCallback(async (amount) => {
         try {
@@ -540,9 +557,11 @@ export function useFirestore(walletAddress, xUsername) {
         ACHIEVEMENTS,
         // Enhanced Lottery
         currentLottery,
+        lotteryHistory,
         createLottery,
         activateLottery,
         fetchActiveLottery,
+        fetchLotteryHistory,
         setLotteryPrize,
         drawLotteryWinner,
         claimLotteryPrize

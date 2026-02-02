@@ -53,9 +53,11 @@ export function useWassy() {
         ACHIEVEMENTS,
         // Enhanced Lottery
         currentLottery,
+        lotteryHistory,
         createLottery,
         activateLottery,
         fetchActiveLottery,
+        fetchLotteryHistory,
         setLotteryPrize,
         drawLotteryWinner,
         claimLotteryPrize
@@ -518,9 +520,11 @@ export function useWassy() {
 
         // Enhanced Lottery
         currentLottery,
+        lotteryHistory,
         createLottery,
         activateLottery,
         fetchActiveLottery,
+        fetchLotteryHistory,
         setLotteryPrize,
         drawLotteryWinner,
         claimLotteryPrize,

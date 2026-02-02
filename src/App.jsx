@@ -19,8 +19,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { ProfilePage } from './components/ProfilePage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { LotteryBanner } from './components/LotteryBanner';
-import { LotteryModal } from './components/LotteryModal';
-import { LotteryWinnerCard } from './components/LotteryWinnerCard';
+import { LotteryPage } from './components/LotteryPage';
 
 // Note: ACHIEVEMENTS is now provided by useWassy hook from useFirestore.js
 
@@ -62,9 +61,11 @@ function WassyPayApp() {
     userProfile,
     // Enhanced Lottery
     currentLottery,
+    lotteryHistory,
     createLottery,
     activateLottery,
     fetchActiveLottery,
+    fetchLotteryHistory,
     setLotteryPrize: setLotteryPrizeApi,
     drawLotteryWinner,
     claimLotteryPrize
@@ -75,8 +76,6 @@ function WassyPayApp() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [showLotteryModal, setShowLotteryModal] = useState(false);
-  const [showWinnerCard, setShowWinnerCard] = useState(false);
   const [isClaimingPrize, setIsClaimingPrize] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -117,6 +116,13 @@ function WassyPayApp() {
       return () => clearTimeout(timer);
     }
   }, [error, success, setSuccess, setError]);
+
+  // Fetch lottery history when navigating to lottery page
+  useEffect(() => {
+    if (currentPage === 'lottery') {
+      fetchLotteryHistory();
+    }
+  }, [currentPage, fetchLotteryHistory]);
 
   // Last scan timestamp removed - ScanCountdown now calculates dynamically
 
@@ -318,7 +324,7 @@ function WassyPayApp() {
               lottery={currentLottery}
               userWallet={solanaWallet?.address}
               xUsername={xUsername}
-              onOpenDetails={() => setShowLotteryModal(true)}
+              onOpenDetails={() => setCurrentPage('lottery')}
             />
 
             {/* Wallet Card */}
@@ -380,6 +386,30 @@ function WassyPayApp() {
             }}
             onClose={() => setCurrentPage('home')}
           />
+        ) : currentPage === 'lottery' ? (
+          <LotteryPage
+            currentLottery={currentLottery}
+            lotteryHistory={lotteryHistory}
+            eligibleUsers={allUsers?.filter(u => (u.total_sent || 0) > 0) || []}
+            userWallet={solanaWallet?.address}
+            xUsername={xUsername}
+            isClaiming={isClaimingPrize}
+            onClaim={async () => {
+              setIsClaimingPrize(true);
+              try {
+                const result = await claimLotteryPrize();
+                if (result.success) {
+                  setSuccess(`🎉 Prize claimed! Tx: ${result.txSignature?.slice(0, 8)}...`);
+                  fetchActiveLottery(); // Refresh lottery
+                } else {
+                  setError(result.error || 'Failed to claim prize');
+                }
+              } finally {
+                setIsClaimingPrize(false);
+              }
+            }}
+            onBack={() => setCurrentPage('home')}
+          />
         ) : null}
 
 
@@ -401,36 +431,6 @@ function WassyPayApp() {
           show={showLeaderboard}
           onClose={() => setShowLeaderboard(false)}
           users={allUsers}
-        />
-        <LotteryModal
-          show={showLotteryModal}
-          onClose={() => setShowLotteryModal(false)}
-          lottery={currentLottery}
-          eligibleUsers={allUsers?.filter(u => (u.total_sent || 0) > 0) || []}
-          userWallet={solanaWallet?.address}
-          xUsername={xUsername}
-          isClaiming={isClaimingPrize}
-          onClaim={async () => {
-            setIsClaimingPrize(true);
-            try {
-              const result = await claimLotteryPrize();
-              if (result.success) {
-                setSuccess(`🎉 Prize claimed! Tx: ${result.txSignature?.slice(0, 8)}...`);
-                setShowLotteryModal(false);
-                setShowWinnerCard(true); // Show winner share card
-              } else {
-                setError(result.error || 'Failed to claim prize');
-              }
-            } finally {
-              setIsClaimingPrize(false);
-            }
-          }}
-        />
-        <LotteryWinnerCard
-          lottery={currentLottery}
-          xUsername={xUsername}
-          show={showWinnerCard}
-          onClose={() => setShowWinnerCard(false)}
         />
         <AchievementsModal
           show={showAchievements}
