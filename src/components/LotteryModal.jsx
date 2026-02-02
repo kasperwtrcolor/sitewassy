@@ -15,7 +15,15 @@ export function LotteryModal({
 
     // Update countdown every second
     useEffect(() => {
-        if (!lottery?.endTime || lottery.status !== 'active') return;
+        if (!lottery?.endTime) return;
+
+        // If lottery is completed or claimed, show winner info
+        if (lottery.status === 'completed' || lottery.status === 'claimed') {
+            setTimeRemaining(lottery.winner ? `Winner: @${lottery.winner.username}` : 'Winner selected!');
+            return;
+        }
+
+        if (lottery.status !== 'active') return;
 
         const updateTimer = () => {
             const endTime = new Date(lottery.endTime);
@@ -44,14 +52,16 @@ export function LotteryModal({
         updateTimer();
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
-    }, [lottery?.endTime, lottery?.status]);
+    }, [lottery?.endTime, lottery?.status, lottery?.winner]);
 
     if (!show || !lottery) return null;
 
-    // Calculate user's entries
-    const userStats = eligibleUsers.find(u =>
-        u.wallet_address === userWallet || u.walletAddress === userWallet
-    );
+    // Calculate user's entries - check wallet AND username
+    const userStats = eligibleUsers.find(u => {
+        const walletMatch = (u.wallet_address || u.walletAddress) === userWallet;
+        const usernameMatch = xUsername && (u.x_username === xUsername || u.xUsername === xUsername);
+        return walletMatch || usernameMatch;
+    });
     const userEntries = userStats
         ? Math.floor((userStats.total_sent || userStats.totalSent || 0) / 10) + 1
         : 0;

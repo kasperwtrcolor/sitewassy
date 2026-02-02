@@ -313,10 +313,11 @@ function WassyPayApp() {
               <ScanCountdown />
             </div>
 
-            {/* Lottery Banner (shows when active) */}
+            {/* Lottery Banner (shows when active/completed) */}
             <LotteryBanner
               lottery={currentLottery}
               userWallet={solanaWallet?.address}
+              xUsername={xUsername}
               onOpenDetails={() => setShowLotteryModal(true)}
             />
 
