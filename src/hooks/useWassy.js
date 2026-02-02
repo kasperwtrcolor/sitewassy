@@ -51,11 +51,14 @@ export function useWassy() {
         recordShare,
         fetchLeaderboard,
         ACHIEVEMENTS,
-        // Lottery
+        // Enhanced Lottery
         currentLottery,
-        fetchCurrentLottery,
+        createLottery,
+        activateLottery,
+        fetchActiveLottery,
         setLotteryPrize,
-        drawLotteryWinner
+        drawLotteryWinner,
+        claimLotteryPrize
     } = useFirestore(solanaWallet?.address, xUsername);
 
 
@@ -513,11 +516,14 @@ export function useWassy() {
         recordDailyLogin,
         recordShare,
 
-        // Lottery
+        // Enhanced Lottery
         currentLottery,
-        fetchCurrentLottery,
+        createLottery,
+        activateLottery,
+        fetchActiveLottery,
         setLotteryPrize,
         drawLotteryWinner,
+        claimLotteryPrize,
 
         // UI state
         loading: loading || firebaseLoading,

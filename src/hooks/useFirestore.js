@@ -397,61 +397,139 @@ export function useFirestore(walletAddress, xUsername) {
     // State for current lottery
     const [currentLottery, setCurrentLottery] = useState(null);
 
-    // Get current week's lottery ID
-    const getCurrentLotteryId = () => {
+    // Generate unique lottery ID
+    const generateLotteryId = () => {
         const now = new Date();
-        const year = now.getFullYear();
-        const weekNum = Math.ceil((now - new Date(year, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-        return `lottery_${year}_${weekNum}`;
+        return `lottery_${now.getFullYear()}_${now.getMonth() + 1}_${now.getDate()}_${Date.now()}`;
     };
 
-    // Fetch or create current lottery
-    const fetchCurrentLottery = useCallback(async () => {
+    // Create a new lottery (admin only)
+    const createLottery = useCallback(async (prizeAmount, endTime) => {
         try {
-            const lotteryId = getCurrentLotteryId();
+            const lotteryId = generateLotteryId();
             const lotteryRef = doc(db, 'lotteries', lotteryId);
-            const lotterySnap = await getDoc(lotteryRef);
 
-            if (lotterySnap.exists()) {
-                setCurrentLottery({ id: lotteryId, ...lotterySnap.data() });
+            const newLottery = {
+                id: lotteryId,
+                prizeAmount: parseFloat(prizeAmount) || 50,
+                endTime: endTime, // ISO string or Timestamp
+                status: 'draft', // draft → active → completed → claimed
+                createdAt: serverTimestamp(),
+                activatedAt: null,
+                winner: null,
+                totalEntries: 0,
+                participantCount: 0,
+                claimedAt: null,
+                claimTxSignature: null
+            };
+
+            await setDoc(lotteryRef, newLottery);
+            setCurrentLottery({ ...newLottery, id: lotteryId });
+            console.log('🎰 Lottery created:', lotteryId);
+            return { success: true, lotteryId };
+        } catch (error) {
+            console.error('Error creating lottery:', error);
+            return { success: false, error: error.message };
+        }
+    }, []);
+
+    // Activate a lottery (admin only) - starts the countdown
+    const activateLottery = useCallback(async (lotteryId) => {
+        try {
+            const lotteryRef = doc(db, 'lotteries', lotteryId || currentLottery?.id);
+            await updateDoc(lotteryRef, {
+                status: 'active',
+                activatedAt: serverTimestamp()
+            });
+            await fetchActiveLottery();
+            console.log('🎰 Lottery activated:', lotteryId);
+            return { success: true };
+        } catch (error) {
+            console.error('Error activating lottery:', error);
+            return { success: false, error: error.message };
+        }
+    }, [currentLottery]);
+
+    // Fetch the currently active lottery (or most recent)
+    const fetchActiveLottery = useCallback(async () => {
+        try {
+            // Query for active lottery first
+            const activeQuery = query(
+                collection(db, 'lotteries'),
+                where('status', '==', 'active'),
+                orderBy('activatedAt', 'desc'),
+                limit(1)
+            );
+            let lotterySnap = await getDocs(activeQuery);
+
+            // If no active, get most recent completed/draft
+            if (lotterySnap.empty) {
+                const recentQuery = query(
+                    collection(db, 'lotteries'),
+                    orderBy('createdAt', 'desc'),
+                    limit(1)
+                );
+                lotterySnap = await getDocs(recentQuery);
+            }
+
+            if (!lotterySnap.empty) {
+                const doc = lotterySnap.docs[0];
+                setCurrentLottery({ id: doc.id, ...doc.data() });
             } else {
-                // Create new lottery for this week
-                const newLottery = {
-                    weekStart: serverTimestamp(),
-                    weekEnd: null,
-                    prizeAmount: 50, // Default prize
-                    status: 'active',
-                    entries: [],
-                    winner: null,
-                    claimStatus: 'pending',
-                    claimTxId: null
-                };
-                await setDoc(lotteryRef, newLottery);
-                setCurrentLottery({ id: lotteryId, ...newLottery });
+                setCurrentLottery(null);
             }
         } catch (error) {
-            console.error('Error fetching lottery:', error);
+            console.error('Error fetching active lottery:', error);
         }
     }, []);
 
     // Set lottery prize (admin only)
     const setLotteryPrize = useCallback(async (amount) => {
         try {
-            const lotteryId = getCurrentLotteryId();
-            const lotteryRef = doc(db, 'lotteries', lotteryId);
+            if (!currentLottery?.id) return false;
+            const lotteryRef = doc(db, 'lotteries', currentLottery.id);
             await updateDoc(lotteryRef, { prizeAmount: amount });
-            await fetchCurrentLottery();
+            await fetchActiveLottery();
             return true;
         } catch (error) {
             console.error('Error setting lottery prize:', error);
             return false;
         }
-    }, [fetchCurrentLottery]);
+    }, [currentLottery, fetchActiveLottery]);
+
+    // Claim lottery prize (winner only) - calls backend
+    const claimLotteryPrize = useCallback(async (lotteryId) => {
+        if (!walletAddress) return { success: false, error: 'No wallet connected' };
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://wassy-pay-backend.onrender.com'}/api/lottery/claim`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    lotteryId: lotteryId || currentLottery?.id,
+                    winnerWallet: walletAddress
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                await fetchActiveLottery();
+                console.log('🎉 Prize claimed! Tx:', data.txSignature);
+            }
+            return data;
+        } catch (error) {
+            console.error('Error claiming lottery prize:', error);
+            return { success: false, error: error.message };
+        }
+    }, [walletAddress, currentLottery, fetchActiveLottery]);
+
 
     // Draw lottery winner (admin only)
     const drawLotteryWinner = useCallback(async (eligibleUsers) => {
+        if (!currentLottery?.id) return { success: false, error: 'No active lottery' };
+
         try {
-            const lotteryId = getCurrentLotteryId();
+            const lotteryId = currentLottery.id;
             const lotteryRef = doc(db, 'lotteries', lotteryId);
 
             // Filter users who have sent payments AND have valid wallet addresses
@@ -525,12 +603,12 @@ export function useFirestore(walletAddress, xUsername) {
             console.error('Error drawing lottery winner:', error);
             return { success: false, error: error.message };
         }
-    }, [fetchCurrentLottery]);
+    }, [currentLottery, fetchActiveLottery]);
 
     // Load lottery on mount
     useEffect(() => {
-        fetchCurrentLottery();
-    }, [fetchCurrentLottery]);
+        fetchActiveLottery();
+    }, [fetchActiveLottery]);
 
     return {
         userProfile,
@@ -545,11 +623,14 @@ export function useFirestore(walletAddress, xUsername) {
         fetchLeaderboard,
         updateUsername,
         ACHIEVEMENTS,
-        // Lottery
+        // Enhanced Lottery
         currentLottery,
-        fetchCurrentLottery,
+        createLottery,
+        activateLottery,
+        fetchActiveLottery,
         setLotteryPrize,
-        drawLotteryWinner
+        drawLotteryWinner,
+        claimLotteryPrize
     };
 
 }

@@ -18,6 +18,9 @@ import { MobileNav } from './components/MobileNav';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ProfilePage } from './components/ProfilePage';
 import { AdminDashboard } from './components/AdminDashboard';
+import { LotteryBanner } from './components/LotteryBanner';
+import { LotteryModal } from './components/LotteryModal';
+import { LotteryWinnerCard } from './components/LotteryWinnerCard';
 
 // Note: ACHIEVEMENTS is now provided by useWassy hook from useFirestore.js
 
@@ -57,10 +60,14 @@ function WassyPayApp() {
     recordDailyLogin,
     recordShare,
     userProfile,
-    // Lottery
+    // Enhanced Lottery
     currentLottery,
+    createLottery,
+    activateLottery,
+    fetchActiveLottery,
     setLotteryPrize: setLotteryPrizeApi,
-    drawLotteryWinner
+    drawLotteryWinner,
+    claimLotteryPrize
   } = useWassy();
 
 
@@ -68,6 +75,9 @@ function WassyPayApp() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showLotteryModal, setShowLotteryModal] = useState(false);
+  const [showWinnerCard, setShowWinnerCard] = useState(false);
+  const [isClaimingPrize, setIsClaimingPrize] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -303,6 +313,13 @@ function WassyPayApp() {
               <ScanCountdown />
             </div>
 
+            {/* Lottery Banner (shows when active) */}
+            <LotteryBanner
+              lottery={currentLottery}
+              userWallet={solanaWallet?.address}
+              onOpenDetails={() => setShowLotteryModal(true)}
+            />
+
             {/* Wallet Card */}
             <WalletCard
               solanaWallet={solanaWallet}
@@ -349,6 +366,8 @@ function WassyPayApp() {
           <AdminDashboard
             users={allUsers}
             currentLottery={currentLottery}
+            onCreateLottery={createLottery}
+            onActivateLottery={activateLottery}
             onSetLotteryPrize={setLotteryPrizeApi}
             onDrawLottery={async () => {
               const result = await drawLotteryWinner(allUsers);
@@ -381,6 +400,36 @@ function WassyPayApp() {
           show={showLeaderboard}
           onClose={() => setShowLeaderboard(false)}
           users={allUsers}
+        />
+        <LotteryModal
+          show={showLotteryModal}
+          onClose={() => setShowLotteryModal(false)}
+          lottery={currentLottery}
+          eligibleUsers={allUsers?.filter(u => (u.total_sent || 0) > 0) || []}
+          userWallet={solanaWallet?.address}
+          xUsername={xUsername}
+          isClaiming={isClaimingPrize}
+          onClaim={async () => {
+            setIsClaimingPrize(true);
+            try {
+              const result = await claimLotteryPrize();
+              if (result.success) {
+                setSuccess(`🎉 Prize claimed! Tx: ${result.txSignature?.slice(0, 8)}...`);
+                setShowLotteryModal(false);
+                setShowWinnerCard(true); // Show winner share card
+              } else {
+                setError(result.error || 'Failed to claim prize');
+              }
+            } finally {
+              setIsClaimingPrize(false);
+            }
+          }}
+        />
+        <LotteryWinnerCard
+          lottery={currentLottery}
+          xUsername={xUsername}
+          show={showWinnerCard}
+          onClose={() => setShowWinnerCard(false)}
         />
         <AchievementsModal
           show={showAchievements}
