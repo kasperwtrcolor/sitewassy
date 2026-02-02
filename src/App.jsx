@@ -408,6 +408,8 @@ function WassyPayApp() {
                 setIsClaimingPrize(false);
               }
             }}
+            onRefresh={fetchActiveLottery}
+            onFetchHistory={fetchLotteryHistory}
             onBack={() => setCurrentPage('home')}
           />
         ) : null}

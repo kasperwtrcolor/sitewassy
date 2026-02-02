@@ -8,11 +8,19 @@ export function LotteryPage({
     userWallet,
     xUsername,
     onClaim,
+    onRefresh,
+    onFetchHistory,
     isClaiming = false,
     onBack
 }) {
     const [timeRemaining, setTimeRemaining] = useState('');
     const [activeTab, setActiveTab] = useState('current');
+
+    // Refetch data on mount
+    useEffect(() => {
+        onRefresh?.();
+        onFetchHistory?.();
+    }, []);
 
     // Update countdown every second
     useEffect(() => {
@@ -60,8 +68,14 @@ export function LotteryPage({
 
     // Calculate user's entries
     const userStats = eligibleUsers.find(u => {
-        const walletMatch = (u.wallet_address || u.walletAddress) === userWallet;
-        const usernameMatch = xUsername && (u.x_username === xUsername || u.xUsername === xUsername);
+        const uWallet = (u.wallet_address || u.walletAddress || '').toLowerCase();
+        const myWallet = (userWallet || '').toLowerCase();
+        const walletMatch = uWallet && myWallet && uWallet === myWallet;
+
+        const uName = (u.x_username || u.xUsername || '').toLowerCase().replace('@', '');
+        const myName = (xUsername || '').toLowerCase().replace('@', '');
+        const usernameMatch = uName && myName && uName === myName;
+
         return walletMatch || usernameMatch;
     });
     const userEntries = userStats
@@ -74,8 +88,19 @@ export function LotteryPage({
     );
 
     // Is user the winner?
-    const isWinner = currentLottery?.winner?.walletAddress === userWallet ||
-        currentLottery?.winner?.username === xUsername;
+    const isWinner = (() => {
+        if (!currentLottery?.winner) return false;
+
+        const wWallet = (currentLottery.winner.walletAddress || '').toLowerCase();
+        const myWallet = (userWallet || '').toLowerCase();
+        const walletMatch = wWallet && myWallet && wWallet === myWallet;
+
+        const wName = (currentLottery.winner.username || '').toLowerCase().replace('@', '');
+        const myName = (xUsername || '').toLowerCase().replace('@', '');
+        const usernameMatch = wName && myName && wName === myName;
+
+        return walletMatch || usernameMatch;
+    })();
     const canClaim = isWinner && currentLottery?.status === 'completed';
 
     // Share on X - Winner announcement

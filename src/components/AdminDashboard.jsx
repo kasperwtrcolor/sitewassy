@@ -207,7 +207,7 @@ export function AdminDashboard({
                                     <tr key={u.wallet_address || u.x_username} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
                                         <td style={{ padding: '12px' }}>@{u.x_username}</td>
                                         <td className="mono" style={{ padding: '12px', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                                            {u.wallet_address?.substring(0, 6)}...{u.wallet_address?.substring(u.wallet_address.length - 4)}
+                                            {(u.wallet_address || u.walletAddress || '').slice(0, 6)}...{(u.wallet_address || u.walletAddress || '').slice(-4)}
                                         </td>
                                         <td style={{ padding: '12px', textAlign: 'right', color: 'var(--danger)' }}>${(u.total_sent || 0).toFixed(2)}</td>
                                         <td style={{ padding: '12px', textAlign: 'right', color: 'var(--success)' }}>${(u.total_claimed || 0).toFixed(2)}</td>
@@ -284,7 +284,7 @@ export function AdminDashboard({
                                 </button>
                             )}
 
-                            {isLotteryActive && !hasWinner && getTimeRemaining() === 'Ended' && (
+                            {isLotteryActive && !hasWinner && (
                                 <button
                                     onClick={handleDraw}
                                     disabled={isDrawing}
