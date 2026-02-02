@@ -470,6 +470,10 @@ function WassyPayApp() {
               setCurrentPage('home');
               setShowLeaderboard(false);
               break;
+            case 'lottery':
+              setCurrentPage('lottery');
+              setShowLeaderboard(false);
+              break;
             case 'profile':
               setCurrentPage('profile');
               setShowLeaderboard(false);
