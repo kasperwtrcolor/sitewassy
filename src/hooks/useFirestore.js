@@ -399,6 +399,44 @@ export function useFirestore(walletAddress, xUsername) {
 
     const API_URL = import.meta.env.VITE_API_URL || 'https://wassy-pay-backend.onrender.com';
 
+    // Manual fetch fallback for active lottery
+    const fetchActiveLottery = useCallback(async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/lottery/active`);
+            const data = await response.json();
+
+            if (data.success) {
+                setCurrentLottery(data.lottery);
+            }
+        } catch (error) {
+            console.error('Error fetching active lottery:', error);
+        }
+    }, [API_URL]);
+
+    // Listens to active lottery changes (real-time) via Firestore onSnapshot
+    useEffect(() => {
+        const lotteriesRef = collection(db, 'lotteries');
+        const activeQuery = query(
+            lotteriesRef,
+            where('status', 'in', ['active', 'completed']),
+            orderBy('createdAt', 'desc'),
+            limit(1)
+        );
+
+        const unsubscribe = onSnapshot(activeQuery, (snapshot) => {
+            if (!snapshot.empty) {
+                const doc = snapshot.docs[0];
+                setCurrentLottery({ id: doc.id, ...doc.data() });
+            } else {
+                setCurrentLottery(null);
+            }
+        }, (error) => {
+            console.error('Firestore lottery listener error:', error);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     // Create a new lottery (admin only) - via backend
     const createLottery = useCallback(async (prizeAmount, endTime) => {
         try {
@@ -525,43 +563,7 @@ export function useFirestore(walletAddress, xUsername) {
         }
     }, [currentLottery, fetchActiveLottery]);
 
-    // Listen to active lottery changes (real-time)
-    useEffect(() => {
-        const lotteriesRef = collection(db, 'lotteries');
-        const activeQuery = query(
-            lotteriesRef,
-            where('status', 'in', ['active', 'completed']),
-            orderBy('createdAt', 'desc'),
-            limit(1)
-        );
 
-        const unsubscribe = onSnapshot(activeQuery, (snapshot) => {
-            if (!snapshot.empty) {
-                const doc = snapshot.docs[0];
-                setCurrentLottery({ id: doc.id, ...doc.data() });
-            } else {
-                setCurrentLottery(null);
-            }
-        }, (error) => {
-            console.error('Firestore lottery listener error:', error);
-        });
-
-        return () => unsubscribe();
-    }, []);
-
-    // Also keep the manual fetch for redundancy if needed, but it's now mostly handled by the listener
-    const fetchActiveLottery = useCallback(async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/lottery/active`);
-            const data = await response.json();
-
-            if (data.success) {
-                setCurrentLottery(data.lottery);
-            }
-        } catch (error) {
-            console.error('Error fetching active lottery:', error);
-        }
-    }, [API_URL]);
 
     return {
         userProfile,
