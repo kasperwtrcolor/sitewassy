@@ -60,7 +60,7 @@ export function useWassy() {
         fetchLotteryHistory,
         setLotteryPrize,
         drawLotteryWinner,
-        claimLotteryPrize
+        claimLotteryPrize: firebaseClaimLotteryPrize
     } = useFirestore(solanaWallet?.address, xUsername);
 
 
@@ -452,6 +452,16 @@ export function useWassy() {
             setTimeout(() => setError(''), 5000);
         }
     };
+
+    // Wrap lottery claim to refresh balance
+    const claimLotteryPrize = useCallback(async (lotteryId) => {
+        const result = await firebaseClaimLotteryPrize(lotteryId);
+        if (result?.success) {
+            console.log('🔄 Refreshing balance after lottery claim...');
+            await fetchBalance();
+        }
+        return result;
+    }, [firebaseClaimLotteryPrize, fetchBalance]);
 
     // Data fetching effect
     useEffect(() => {
