@@ -147,7 +147,7 @@ export function LotteryPage({
     };
 
     return (
-        <div className="lottery-page" style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+        <div className="lottery-page" style={{ padding: '20px 20px 100px', maxWidth: '600px', margin: '0 auto' }}>
             {/* Header */}
             <div style={{
                 display: 'flex',
