@@ -413,29 +413,46 @@ export function useFirestore(walletAddress, xUsername) {
         }
     }, [API_URL]);
 
-    // Listens to active lottery changes (real-time) via Firestore onSnapshot
+    // Listens to active lottery changes via Firestore (with polling fallback)
     useEffect(() => {
-        const lotteriesRef = collection(db, 'lotteries');
-        const activeQuery = query(
-            lotteriesRef,
-            where('status', 'in', ['active', 'completed']),
-            orderBy('createdAt', 'desc'),
-            limit(1)
-        );
+        let unsubscribe = null;
+        let pollingInterval = null;
 
-        const unsubscribe = onSnapshot(activeQuery, (snapshot) => {
-            if (!snapshot.empty) {
-                const doc = snapshot.docs[0];
-                setCurrentLottery({ id: doc.id, ...doc.data() });
-            } else {
-                setCurrentLottery(null);
-            }
-        }, (error) => {
-            console.error('Firestore lottery listener error:', error);
-        });
+        try {
+            const lotteriesRef = collection(db, 'lotteries');
+            const activeQuery = query(
+                lotteriesRef,
+                where('status', 'in', ['active', 'completed']),
+                orderBy('createdAt', 'desc'),
+                limit(1)
+            );
 
-        return () => unsubscribe();
-    }, []);
+            unsubscribe = onSnapshot(activeQuery, (snapshot) => {
+                if (!snapshot.empty) {
+                    const doc = snapshot.docs[0];
+                    setCurrentLottery({ id: doc.id, ...doc.data() });
+                } else {
+                    setCurrentLottery(null);
+                }
+            }, (error) => {
+                console.error('Firestore lottery listener error (falling back to polling):', error);
+                // Fallback to polling if permissions are missing
+                if (!pollingInterval) {
+                    fetchActiveLottery(); // Initial fetch
+                    pollingInterval = setInterval(fetchActiveLottery, 30000); // 30s poll
+                }
+            });
+        } catch (err) {
+            console.error('Failed to setup Firestore listener, polling instead:', err);
+            fetchActiveLottery();
+            pollingInterval = setInterval(fetchActiveLottery, 30000);
+        }
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+            if (pollingInterval) clearInterval(pollingInterval);
+        };
+    }, [fetchActiveLottery]);
 
     // Create a new lottery (admin only) - via backend
     const createLottery = useCallback(async (prizeAmount, endTime) => {

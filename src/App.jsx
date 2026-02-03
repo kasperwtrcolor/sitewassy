@@ -415,7 +415,9 @@ function WassyPayApp() {
             onClaim={async (id) => {
               setIsClaimingPrize(true);
               try {
-                const result = await claimLotteryPrize(id);
+                // Ensure id is a string (lotteryId) and not a click event
+                const targetId = typeof id === 'string' ? id : currentLottery?.id;
+                const result = await claimLotteryPrize(targetId);
                 if (result.success) {
                   setSuccess(`🎉 Prize claimed! Tx: ${result.txSignature?.slice(0, 8)}...`);
                   fetchActiveLottery(); // Refresh current

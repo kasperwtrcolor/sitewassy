@@ -284,7 +284,7 @@ export function LotteryPage({
                                 </div>
                             </div>
                             <button
-                                onClick={onClaim}
+                                onClick={() => onClaim?.(currentLottery.id)}
                                 disabled={isClaiming}
                                 className="btn btn-gold"
                                 style={{ width: '100%', padding: '15px', fontSize: '1rem' }}
