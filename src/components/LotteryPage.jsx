@@ -441,42 +441,70 @@ export function LotteryPage({
                             <div key={lottery.id || index} className="plate" style={{
                                 padding: '15px 20px',
                                 marginBottom: '15px',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
+                                background: (lottery.winner?.username === xUsername && lottery.status === 'completed')
+                                    ? 'rgba(212, 175, 55, 0.05)'
+                                    : 'var(--bg-plate)'
                             }}>
-                                <div>
-                                    <div style={{
-                                        fontSize: '1.1rem',
-                                        fontWeight: '700',
-                                        color: 'var(--accent-gold)'
-                                    }}>
-                                        ${lottery.prizeAmount} USDC
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div>
+                                        <div style={{
+                                            fontSize: '1.1rem',
+                                            fontWeight: '700',
+                                            color: 'var(--accent-gold)'
+                                        }}>
+                                            ${lottery.prizeAmount} USDC
+                                        </div>
+                                        <div style={{
+                                            fontSize: '0.8rem',
+                                            color: 'var(--text-muted)',
+                                            marginTop: '3px'
+                                        }}>
+                                            {lottery.completedAt
+                                                ? (lottery.completedAt.seconds
+                                                    ? new Date(lottery.completedAt.seconds * 1000).toLocaleDateString()
+                                                    : new Date(lottery.completedAt).toLocaleDateString())
+                                                : 'Recently drawn'}
+                                        </div>
                                     </div>
-                                    <div style={{
-                                        fontSize: '0.8rem',
-                                        color: 'var(--text-muted)',
-                                        marginTop: '3px'
-                                    }}>
-                                        {lottery.completedAt ? new Date(lottery.completedAt.seconds * 1000).toLocaleDateString() : 'Unknown date'}
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{
+                                            fontSize: '0.9rem',
+                                            fontWeight: '600',
+                                            color: lottery.winner?.username === xUsername ? 'var(--accent-gold)' : 'var(--text-primary)'
+                                        }}>
+                                            🏆 @{lottery.winner?.username || 'Unknown'}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '0.75rem',
+                                            color: lottery.status === 'claimed' ? 'var(--status-success)' : 'var(--text-muted)',
+                                            marginTop: '3px'
+                                        }}>
+                                            {lottery.status === 'claimed' ? '✓ Claimed' : 'Unclaimed'}
+                                        </div>
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{
-                                        fontSize: '0.9rem',
-                                        fontWeight: '600',
-                                        color: lottery.winner?.username === xUsername ? 'var(--accent-gold)' : 'var(--text-primary)'
-                                    }}>
-                                        🏆 @{lottery.winner?.username || 'Unknown'}
-                                    </div>
-                                    <div style={{
-                                        fontSize: '0.75rem',
-                                        color: lottery.status === 'claimed' ? 'var(--status-success)' : 'var(--text-muted)',
-                                        marginTop: '3px'
-                                    }}>
-                                        {lottery.status === 'claimed' ? '✓ Claimed' : 'Unclaimed'}
-                                    </div>
-                                </div>
+
+                                {/* Claim button for historical wins */}
+                                {lottery.winner?.username === xUsername && lottery.status === 'completed' && (
+                                    <button
+                                        onClick={() => onClaim?.(lottery.id)}
+                                        disabled={isClaiming}
+                                        className="btn btn-gold"
+                                        style={{
+                                            width: '100%',
+                                            marginTop: '15px',
+                                            padding: '10px',
+                                            fontSize: '0.9rem',
+                                            fontWeight: '700'
+                                        }}
+                                    >
+                                        {isClaiming ? '⏳ Processing...' : '💰 CLAIM HISTORICAL PRIZE'}
+                                    </button>
+                                )}
                             </div>
                         ))
                     ) : (

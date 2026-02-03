@@ -334,7 +334,7 @@ function WassyPayApp() {
               lottery={currentLottery}
               userWallet={solanaWallet?.address}
               xUsername={xUsername}
-              onOpenDetails={() => setShowLotteryModal(true)}
+              onOpenDetails={() => setCurrentPage('lottery')}
             />
 
             {/* Wallet Card */}
@@ -412,13 +412,14 @@ function WassyPayApp() {
             userWallet={solanaWallet?.address}
             xUsername={xUsername}
             isClaiming={isClaimingPrize}
-            onClaim={async () => {
+            onClaim={async (id) => {
               setIsClaimingPrize(true);
               try {
-                const result = await claimLotteryPrize();
+                const result = await claimLotteryPrize(id);
                 if (result.success) {
                   setSuccess(`🎉 Prize claimed! Tx: ${result.txSignature?.slice(0, 8)}...`);
-                  fetchActiveLottery(); // Refresh lottery
+                  fetchActiveLottery(); // Refresh current
+                  fetchLotteryHistory(); // Refresh history
                 } else {
                   setError(result.error || 'Failed to claim prize');
                 }
