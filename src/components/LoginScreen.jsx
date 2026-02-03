@@ -227,7 +227,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                     }}>
                         {/* X Platform */}
                         <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
-                            <img src="/shimmer_3d/x_logo.png" alt="X" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '15px' }} className="float-animation" />
+                            <img src="/shimmer_3d/x_logo.png" alt="X" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '15px' }} />
                             <div className="engraved" style={{ fontSize: '0.6rem' }}>X_PROTOCOL</div>
                         </div>
 
@@ -235,7 +235,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
 
                         {/* Backend */}
                         <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
-                            <img src="/shimmer_3d/scanner.png" alt="Scanner" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '15px' }} className="float-animation" />
+                            <img src="/shimmer_3d/scanner.png" alt="Scanner" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '15px' }} />
                             <div className="engraved" style={{ fontSize: '0.6rem' }}>SCANNER_ENGINE</div>
                         </div>
 
@@ -243,7 +243,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
 
                         {/* Solana */}
                         <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
-                            <img src="/shimmer_3d/solana.png" alt="Solana" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '15px' }} className="float-animation" />
+                            <img src="/shimmer_3d/solana.png" alt="Solana" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '15px' }} />
                             <div className="engraved" style={{ fontSize: '0.6rem' }}>SOL_NETWORK</div>
                         </div>
 
@@ -251,7 +251,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
 
                         {/* USDC */}
                         <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
-                            <img src="/shimmer_3d/usdc.png" alt="USDC" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '15px' }} className="float-animation" />
+                            <img src="/shimmer_3d/usdc.png" alt="USDC" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '15px' }} />
                             <div className="engraved" style={{ fontSize: '0.6rem' }}>USDC_SETTLEMENT</div>
                         </div>
                     </div>
