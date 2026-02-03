@@ -80,19 +80,6 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
 
                     {/* Hero Content */}
                     <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-                        {/* Wassy Mascot Animation */}
-                        <div className="float-animation" style={{ marginBottom: '20px' }}>
-                            <img
-                                src="file:///Users/rasak/.gemini/antigravity/brain/0cf1e39c-b5f4-421d-8b96-e62838fde74e/wassy_mascot_3d_render_1770159208437.png"
-                                alt="Wassy Mascot"
-                                style={{
-                                    width: '180px',
-                                    maxWidth: '40vw',
-                                    filter: theme === 'dark' ? 'drop-shadow(0 0 20px rgba(49, 215, 255, 0.2))' : 'none'
-                                }}
-                            />
-                        </div>
-
                         <h1 className="animate-fade-in delay-1" style={{
                             fontSize: 'clamp(2.5rem, 8vw, 5rem)',
                             fontWeight: 700,
@@ -228,20 +215,45 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                 </div>
 
                 {/* Architecture Visual */}
-                <div className="plate animate-fade-in" style={{ padding: '40px', textAlign: 'center' }}>
-                    <h3 className="engraved" style={{ marginBottom: '30px' }}>// ARCHITECTURE</h3>
+                <div className="plate animate-fade-in" style={{ padding: '60px 40px', textAlign: 'center' }}>
+                    <h3 className="engraved" style={{ marginBottom: '40px' }}>// SYSTEM_ARCHITECTURE</h3>
 
-                    <div className="scroll-fade-in" style={{ position: 'relative', maxWidth: '800px', margin: '0 auto' }}>
-                        <img
-                            src="file:///Users/rasak/.gemini/antigravity/brain/0cf1e39c-b5f4-421d-8b96-e62838fde74e/wassy_architecture_3d_diagram_1770159194892.png"
-                            alt="Wassy Pay Architecture"
-                            style={{
-                                width: '100%',
-                                borderRadius: '16px',
-                                border: '1px solid var(--border-medium)',
-                                boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
-                            }}
-                        />
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 'clamp(10px, 3vw, 20px)',
+                        flexWrap: 'wrap'
+                    }}>
+                        {/* X Platform */}
+                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
+                            <img src="/shimmer_3d/x_logo.png" alt="X" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '15px' }} className="float-animation" />
+                            <div className="engraved" style={{ fontSize: '0.6rem' }}>X_PROTOCOL</div>
+                        </div>
+
+                        <div style={{ color: 'var(--glow)', fontSize: '1.5rem', fontWeight: 'bold' }}>→</div>
+
+                        {/* Backend */}
+                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
+                            <img src="/shimmer_3d/scanner.png" alt="Scanner" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '15px' }} className="float-animation" />
+                            <div className="engraved" style={{ fontSize: '0.6rem' }}>SCANNER_ENGINE</div>
+                        </div>
+
+                        <div style={{ color: 'var(--accent-gold)', fontSize: '1.5rem', fontWeight: 'bold' }}>→</div>
+
+                        {/* Solana */}
+                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
+                            <img src="/shimmer_3d/solana.png" alt="Solana" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '15px' }} className="float-animation" />
+                            <div className="engraved" style={{ fontSize: '0.6rem' }}>SOL_NETWORK</div>
+                        </div>
+
+                        <div style={{ color: 'var(--success)', fontSize: '1.5rem', fontWeight: 'bold' }}>→</div>
+
+                        {/* USDC */}
+                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
+                            <img src="/shimmer_3d/usdc.png" alt="USDC" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '15px' }} className="float-animation" />
+                            <div className="engraved" style={{ fontSize: '0.6rem' }}>USDC_SETTLEMENT</div>
+                        </div>
                     </div>
                 </div>
 
