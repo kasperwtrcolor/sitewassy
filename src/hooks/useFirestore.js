@@ -442,19 +442,7 @@ export function useFirestore(walletAddress, xUsername) {
         }
     }, [currentLottery]);
 
-    // Fetch the currently active lottery - via backend
-    const fetchActiveLottery = useCallback(async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/lottery/active`);
-            const data = await response.json();
 
-            if (data.success) {
-                setCurrentLottery(data.lottery);
-            }
-        } catch (error) {
-            console.error('Error fetching active lottery:', error);
-        }
-    }, []);
 
     // State for lottery history
     const [lotteryHistory, setLotteryHistory] = useState([]);
