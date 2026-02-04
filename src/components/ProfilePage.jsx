@@ -56,36 +56,28 @@ export function ProfilePage({
 
 
     return (
-        <div className="profile-page">
+        <div className="profile-page reveal-element visible">
             {/* Profile Header */}
-            <div className="plate animate-fade-in profile-header">
-                <div className="screw tl"></div>
-                <div className="screw tr"></div>
-
-                <div className="profile-avatar">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                    </svg>
+            <div className="glass-panel animate-fade-in" style={{ textAlign: 'center', marginBottom: '30px' }}>
+                <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// USER_IDENTITY</div>
+                <div style={{ width: '80px', height: '80px', margin: '0 auto 20px', background: 'var(--accent)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: '2rem', fontWeight: 900 }}>
+                    {xUsername ? xUsername[0].toUpperCase() : 'W'}
                 </div>
-                <h2 className="profile-username">@{xUsername}</h2>
-                <div className="profile-points">
-                    <span className="engraved">POINTS</span>
-                    <span className="points-value">{userStats?.points?.toFixed(0) || 0}</span>
+                <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>@{xUsername}</h2>
+                <div className="mono" style={{ display: 'inline-block', padding: '6px 15px', borderRadius: '100px', background: 'var(--bg-inset)', fontSize: '0.8rem' }}>
+                    <span className="text-muted">POINTS_REWARD:</span> <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{userStats?.points?.toFixed(0) || 0}</span>
                 </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="plate animate-fade-in delay-1 profile-actions">
-                <div className="screw tl"></div>
-                <div className="screw tr"></div>
-
-                <h3 className="engraved" style={{ marginBottom: '15px' }}>QUICK ACTIONS</h3>
-                <div className="profile-action-grid">
-                    <button onClick={onCheckPayments} className="btn btn-primary">
-                        🔍 CHECK PAYMENTS
+            <div className="glass-panel animate-fade-in" style={{ marginBottom: '30px' }}>
+                <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// QUICK_ACTIONS</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <button onClick={onCheckPayments} className="btn btn-accent" style={{ borderRadius: '16px' }}>
+                        CHECK_PAYMENTS
                     </button>
-                    <button onClick={onResetTutorial} className="btn">
-                        📚 RESTART TUTORIAL
+                    <button onClick={onResetTutorial} className="btn btn-primary" style={{ borderRadius: '16px' }}>
+                        RESTART_GUIDE
                     </button>
                 </div>
             </div>

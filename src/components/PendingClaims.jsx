@@ -27,20 +27,19 @@ export function PendingClaims({ claims, onClaim, loading }) {
     };
 
     return (
-        <div className="plate claims-card" style={{
+        <div className="glass-panel" style={{
             padding: '30px',
-            marginBottom: '20px',
-            position: 'relative'
+            marginBottom: '20px'
         }}>
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
+                gap: '12px',
                 marginBottom: '20px'
             }}>
-                <span style={{ fontSize: '1.5rem' }}>💸</span>
-                <span className="engraved" style={{ color: 'var(--accent-gold)', fontSize: '0.8rem' }}>
-                    PENDING CLAIMS ({hasClaims ? claims.length : 0})
+                <span className="mono label-subtle" style={{ color: 'var(--accent)' }}>// PENDING_CLAIMS</span>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, background: 'var(--accent)', color: '#000', padding: '2px 8px', borderRadius: '4px' }}>
+                    {hasClaims ? claims.length : 0}
                 </span>
             </div>
 
@@ -80,32 +79,31 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                     {/* Sender Fund Status */}
                                     {senderStatus && (
                                         <div style={{
-                                            marginTop: '10px',
+                                            marginTop: '12px',
                                             fontSize: '0.75rem',
-                                            padding: '6px 10px',
-                                            borderRadius: '6px',
+                                            padding: '8px 12px',
+                                            borderRadius: '8px',
                                             background: senderStatus.ok
-                                                ? 'var(--bg-success)'
-                                                : 'var(--bg-warning)',
-                                            border: senderStatus.ok
-                                                ? 'var(--border-success)'
-                                                : 'var(--border-warning)',
-                                            color: senderStatus.ok ? 'var(--text-on-status)' : 'var(--text-on-status)'
-                                        }}>
-                                            <span style={{ fontWeight: '700' }}>{senderStatus.ok ? '✓' : '⚠'}</span> {senderStatus.message}
+                                                ? 'rgba(16, 185, 129, 0.1)'
+                                                : 'rgba(245, 158, 11, 0.1)',
+                                            border: '1px solid ' + (senderStatus.ok ? 'var(--success)' : 'var(--accent)'),
+                                            color: senderStatus.ok ? 'var(--success)' : 'var(--accent)',
+                                            fontWeight: 600
+                                        }} className="mono">
+                                            {senderStatus.ok ? '✓' : '⚠'} {senderStatus.message.toUpperCase()}
                                         </div>
                                     )}
                                 </div>
                                 <button
                                     onClick={() => onClaim(claim)}
                                     disabled={loading || !canClaim}
-                                    className="btn btn-gold"
+                                    className="btn btn-accent"
                                     style={{
                                         opacity: (loading || !canClaim) ? 0.7 : 1,
-                                        cursor: (loading || !canClaim) ? 'not-allowed' : 'pointer'
+                                        borderRadius: '12px'
                                     }}
                                 >
-                                    {loading ? '⏳ CLAIMING...' : (canClaim ? '💰 CLAIM NOW' : '⏳ WAITING')}
+                                    {loading ? 'CLAIMING...' : (canClaim ? 'CLAIM NOW' : 'WAITING')}
                                 </button>
                             </div>
 

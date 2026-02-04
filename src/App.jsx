@@ -193,14 +193,18 @@ function WassyPayApp() {
 
   // Main dashboard
   return (
-    <div style={{
+    <div className="immersive-dashboard" style={{
       minHeight: '100vh',
       background: 'var(--bg-primary)',
-      backgroundImage: 'radial-gradient(circle at 50% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
       padding: '20px',
       fontFamily: "'Space Grotesk', sans-serif",
       color: 'var(--text-primary)'
     }}>
+      {/* Background Slices - Global */}
+      <div className="strata-bg">
+        <div className="aerogel-slice" style={{ width: '40vw', height: '40vw', top: '-10%', left: '-5%', background: 'var(--accent)' }}></div>
+        <div className="aerogel-slice" style={{ width: '30vw', height: '30vw', bottom: '5%', right: '-10%', background: 'var(--accent-secondary)' }}></div>
+      </div>
       {/* Tutorial Overlay */}
       {showTutorial && <TutorialOverlay onComplete={completeTutorial} />}
 
@@ -223,20 +227,21 @@ function WassyPayApp() {
       {(error || success) && (
         <div className="toast-container" style={{
           position: 'fixed',
-          top: '80px',
-          right: '20px',
+          top: '40px',
+          left: '50%',
+          transform: 'translateX(-50%)',
           zIndex: 9999
         }}>
           {error && (
-            <div className="toast-notification error">
-              <div className="message">⚠ ERROR</div>
-              <div className="sub-message">{error}</div>
+            <div className="toast-notification" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: 'var(--error)' }}>
+              <div className="mono label-subtle" style={{ color: 'var(--error)', marginBottom: '4px' }}>⚠ ERROR_REPORTED</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{error}</div>
             </div>
           )}
           {success && (
-            <div className="toast-notification success">
-              <div className="message">✓ SUCCESS</div>
-              <div className="sub-message">{success}</div>
+            <div className="toast-notification" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: 'var(--success)' }}>
+              <div className="mono label-subtle" style={{ color: 'var(--success)', marginBottom: '4px' }}>✓ PROCESS_COMPLETE</div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{success}</div>
             </div>
           )}
         </div>
@@ -245,74 +250,69 @@ function WassyPayApp() {
       {/* Main Container */}
       <div className="dashboard-container" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 15px' }}>
 
-        {/* Header - Simplified */}
-        <div className="plate animate-fade-in dashboard-header" style={{
-          padding: '15px 20px',
-          marginBottom: '20px',
+        {/* Header - Simplified Glass Nav */}
+        <div className="glass-panel animate-fade-in dashboard-header" style={{
+          padding: '20px 30px',
+          marginBottom: '30px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          position: 'relative'
+          position: 'sticky',
+          top: '20px',
+          zIndex: 50
         }}>
-          <div className="screw tl"></div>
-          <div className="screw tr"></div>
-
           <div style={{
-            fontFamily: "'Fredoka', sans-serif",
+            fontFamily: "'Space Grotesk', sans-serif",
             fontWeight: 700,
-            fontSize: '1.3rem',
-            letterSpacing: '0.02em',
-            color: 'var(--text-primary)'
+            fontSize: '1.4rem',
+            letterSpacing: '-0.02em',
+            color: 'var(--text-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
           }}>
-            Wassy Pay
+            <div style={{ width: '28px', height: '28px', background: 'var(--accent)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: '0.9rem' }}>W</div>
+            Wasey Pay
           </div>
 
           {/* Desktop Navigation */}
-          <div className="desktop-nav" style={{ display: 'flex', gap: '8px' }}>
+          <div className="desktop-nav" style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={() => setCurrentPage('home')}
-              className={`btn ${currentPage === 'home' ? 'btn-primary' : ''}`}
-              style={{ padding: '8px 14px', fontSize: '0.7rem' }}
+              className="btn"
+              style={{ padding: '10px 16px', fontSize: '0.75rem', background: currentPage === 'home' ? 'var(--text-primary)' : 'transparent', color: currentPage === 'home' ? 'var(--bg-primary)' : 'var(--text-primary)' }}
             >
-              🏠 HOME
+              HOME
             </button>
             <button
               onClick={() => setCurrentPage('profile')}
-              className={`btn ${currentPage === 'profile' ? 'btn-primary' : ''}`}
-              style={{ padding: '8px 14px', fontSize: '0.7rem' }}
+              className="btn"
+              style={{ padding: '10px 16px', fontSize: '0.75rem', background: currentPage === 'profile' ? 'var(--text-primary)' : 'transparent', color: currentPage === 'profile' ? 'var(--bg-primary)' : 'var(--text-primary)' }}
             >
-              👤 PROFILE
+              PROFILE
             </button>
             <button
               onClick={() => setCurrentPage('lottery')}
-              className={`btn ${currentPage === 'lottery' ? 'btn-primary' : ''}`}
-              style={{ padding: '8px 14px', fontSize: '0.7rem' }}
-            >
-              🎰 LOTTERY
-            </button>
-            <button
-              onClick={() => setShowLeaderboard(true)}
               className="btn"
-              style={{ padding: '8px 14px', fontSize: '0.7rem' }}
+              style={{ padding: '10px 16px', fontSize: '0.75rem', background: currentPage === 'lottery' ? 'var(--text-primary)' : 'transparent', color: currentPage === 'lottery' ? 'var(--bg-primary)' : 'var(--text-primary)' }}
             >
-              🏆 LEADERS
+              LOTTERY
             </button>
             {isAdmin && (
               <button
                 onClick={() => setCurrentPage('admin')}
-                className={`btn ${currentPage === 'admin' ? 'btn-primary' : ''}`}
-                style={{ padding: '8px 14px', fontSize: '0.7rem', color: 'var(--accent-gold)' }}
+                className="btn"
+                style={{ padding: '10px 16px', fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700 }}
               >
-                👑 ADMIN
+                ADMIN
               </button>
             )}
           </div>
 
-
           <button
             onClick={logout}
-            className="btn"
-            style={{ padding: '8px 16px', fontSize: '0.75rem' }}
+            className="btn btn-primary"
+            style={{ padding: '10px 20px', fontSize: '0.75rem' }}
           >
             LOGOUT
           </button>

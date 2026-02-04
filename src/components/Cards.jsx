@@ -54,7 +54,6 @@ export function PaymentTicker({ payments }) {
     );
 }
 
-// Countdown Timer - next bot scan
 export function ScanCountdown() {
     const [timeLeft, setTimeLeft] = useState('');
 
@@ -91,26 +90,25 @@ export function ScanCountdown() {
     }, []);
 
     return (
-        <div className="plate" style={{
-            padding: '15px 20px',
+        <div className="glass-panel" style={{
+            padding: '20px',
             marginBottom: '20px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
         }}>
             <div>
-                <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '4px' }}>
+                <div className="mono label-subtle" style={{ fontSize: '0.6rem', marginBottom: '4px' }}>
                     // NEXT_PAYMENT_SCAN
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Payments are scanned every 30 minutes
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    Scanned every 30 minutes
                 </div>
             </div>
             <div className="mono" style={{
                 fontSize: '1.5rem',
                 fontWeight: '700',
-                color: 'var(--glow)',
-                textShadow: 'var(--glow-shadow)'
+                color: 'var(--accent)',
             }}>
                 ⏱️ {timeLeft}
             </div>
@@ -125,24 +123,24 @@ export function StatsCard({ userStats }) {
     const points = userStats?.points || 0;
 
     return (
-        <div className="plate stats-card" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
-            <div className="engraved" style={{ marginBottom: '20px' }}>// YOUR_STATS</div>
+        <div className="glass-panel" style={{ padding: '30px', marginBottom: '20px' }}>
+            <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// YOUR_STATS</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
-                    <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>SENT</div>
-                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--danger)' }}>
+                    <div className="mono label-subtle" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>SENT</div>
+                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--error)' }}>
                         ${sent.toFixed(2)}
                     </div>
                 </div>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
-                    <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>CLAIMED</div>
+                    <div className="mono label-subtle" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>CLAIMED</div>
                     <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--success)' }}>
                         ${claimed.toFixed(2)}
                     </div>
                 </div>
                 <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>
-                    <div className="engraved" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>POINTS</div>
-                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--accent-gold)' }}>
+                    <div className="mono label-subtle" style={{ fontSize: '0.55rem', marginBottom: '8px' }}>POINTS</div>
+                    <div className="mono" style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--accent)' }}>
                         {points.toFixed(0)}
                     </div>
                 </div>
@@ -153,18 +151,18 @@ export function StatsCard({ userStats }) {
 
 export function HowToPayCard() {
     return (
-        <div className="plate howto-card" style={{ padding: '30px', marginBottom: '20px', position: 'relative' }}>
-            <div className="engraved" style={{ marginBottom: '20px' }}>// HOW_TO_PAY</div>
+        <div className="glass-panel" style={{ padding: '30px', marginBottom: '20px' }}>
+            <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// HOW_TO_PAY</div>
             <div className="inset-panel" style={{ textAlign: 'center', padding: '20px', marginBottom: '15px' }}>
                 <span className="mono" style={{ fontSize: '1rem' }}>
-                    <span style={{ color: 'var(--glow)' }}>@bot_wassy</span>
+                    <span style={{ color: 'var(--accent-secondary)' }}>@bot_wassy</span>
                     <span style={{ color: 'var(--text-muted)' }}> send </span>
-                    <span style={{ color: 'var(--accent-gold)' }}>@friend</span>
+                    <span style={{ color: 'var(--accent)' }}>@friend</span>
                     <span style={{ color: 'var(--success)' }}> $5</span>
                 </span>
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.6 }}>
-                Post on X with the format above. Payments are scanned every 30 minutes.
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.6 }}>
+                Post on X with the format above to send USDC.
             </p>
         </div>
     );

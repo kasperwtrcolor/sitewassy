@@ -219,31 +219,48 @@ export function TutorialOverlay({ onComplete }) {
             )}
 
             {/* Explainer floater */}
-            <div className="tutorial-floater" style={getFloaterStyle()}>
-                <div className="tutorial-step-indicator">
+            <div className="glass-panel tutorial-floater visible" style={{
+                ...getFloaterStyle(),
+                position: 'fixed',
+                padding: '30px',
+                width: '320px',
+                zIndex: 10001,
+                borderRadius: '24px',
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                border: '1px solid var(--glass-border)',
+                background: 'var(--glass)',
+                boxShadow: 'var(--shadow-lg)'
+            }}>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
                     {TUTORIAL_STEPS.map((_, i) => (
                         <div
                             key={i}
-                            className={`step-dot ${i === currentStep ? 'active' : ''} ${i < currentStep ? 'completed' : ''}`}
+                            style={{
+                                height: '4px',
+                                flex: 1,
+                                borderRadius: '2px',
+                                background: i === currentStep ? 'var(--accent)' : 'var(--border-medium)',
+                                transition: 'var(--transition)'
+                            }}
                         />
                     ))}
                 </div>
 
-                <h3 className="tutorial-title">{step?.title}</h3>
-                <p className="tutorial-description">{step?.description}</p>
+                <h3 className="mono" style={{ fontSize: '1.2rem', marginBottom: '12px', color: 'var(--text-primary)' }}>{step?.title.toUpperCase().replace(/[^A-Z_]/g, '_').replace(/^_+|_+$/g, '')}</h3>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '25px' }}>{step?.description}</p>
 
-                <div className="tutorial-actions">
-                    <button onClick={handleSkip} className="tutorial-skip-btn">
-                        Skip Tour
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <button onClick={handleSkip} className="mono" style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '0.7rem', cursor: 'pointer', padding: '5px' }}>
+                        SKIP_TOUR
                     </button>
-                    <div className="tutorial-nav">
+                    <div style={{ display: 'flex', gap: '10px' }}>
                         {currentStep > 0 && (
-                            <button onClick={handlePrev} className="tutorial-prev-btn">
-                                ← Back
+                            <button onClick={handlePrev} className="btn" style={{ padding: '8px 15px', fontSize: '0.75rem', borderRadius: '10px' }}>
+                                BACK
                             </button>
                         )}
-                        <button onClick={handleNext} className="tutorial-next-btn">
-                            {isLastStep ? '✓ Got it!' : 'Next →'}
+                        <button onClick={handleNext} className="btn btn-accent" style={{ padding: '8px 15px', fontSize: '0.75rem', borderRadius: '10px' }}>
+                            {isLastStep ? 'FINISH' : 'NEXT'}
                         </button>
                     </div>
                 </div>

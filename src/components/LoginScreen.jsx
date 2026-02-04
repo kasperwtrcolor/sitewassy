@@ -1,317 +1,260 @@
 import { useState, useEffect, useRef } from 'react';
 import '../index.css';
-import { TermsModal } from './Cards';
-import { ThemeToggle } from './ThemeToggle';
 
 export function LoginScreen({ onLogin, theme, onToggleTheme }) {
     const [showTerms, setShowTerms] = useState(false);
-    const howItWorksRef = useRef(null);
 
-    // Scroll animation observer
+    // Immersive Scroll Animation Logic
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            },
-            { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-        );
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -10% 0px'
+        };
 
-        // Observe all scroll-animated elements
-        const elements = document.querySelectorAll('.scroll-fade-in, .scroll-slide-left, .scroll-slide-right');
-        elements.forEach((el) => observer.observe(el));
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                } else {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, observerOptions);
 
-        return () => observer.disconnect();
+        document.querySelectorAll('.reveal-element').forEach(el => observer.observe(el));
+
+        // Parallax & Dynamic Scaling on Scroll
+        const handleScroll = () => {
+            const scrolled = window.pageYOffset;
+            const slices = document.querySelectorAll('.aerogel-slice');
+
+            slices.forEach((slice, index) => {
+                const speed = (index + 1) * 0.2;
+                slice.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.05}deg)`;
+            });
+
+            const sections = document.querySelectorAll('section');
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const viewHeight = window.innerHeight;
+                const distanceToCenter = Math.abs(rect.top + rect.height / 2 - viewHeight / 2);
+                const maxDistance = viewHeight;
+                const progress = Math.min(distanceToCenter / maxDistance, 1);
+
+                const scale = 1 - (progress * 0.1);
+                const opacity = 1 - (progress * 1.2);
+
+                const element = section.querySelector('.reveal-element');
+                if (element && section.id !== 'hero') {
+                    element.style.transform = `scale(${scale}) translateY(${progress * 40}px)`;
+                    element.style.opacity = Math.max(opacity, 0);
+                }
+            });
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('scroll', handleScroll);
+        };
     }, []);
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: 'var(--bg-primary)',
-            backgroundImage: 'radial-gradient(circle at 50% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
-            padding: '40px 20px',
-            fontFamily: "'Space Grotesk', sans-serif",
-            overflow: 'hidden'
-        }}>
-            {/* Theme Toggle */}
-            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-
-            <div className="dashboard-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 15px' }}>
-
-                {/* Main Hero Plate */}
-                <div className="plate animate-fade-in" style={{ padding: '60px 40px', marginBottom: '40px', position: 'relative' }}>
-                    {/* Screws */}
-                    <div className="screw tl"></div>
-                    <div className="screw tr"></div>
-                    <div className="screw bl"></div>
-                    <div className="screw br"></div>
-
-                    {/* Background Label */}
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '-50px',
-                        right: '-20px',
-                        fontSize: '12rem',
-                        fontWeight: '900',
-                        color: theme === 'dark' ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.02)',
-                        pointerEvents: 'none',
-                        userSelect: 'none'
-                    }}>WASSY</div>
-
-                    {/* Header */}
-                    <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '10px' }}>
-                        <div style={{
-                            fontFamily: "'Fredoka', sans-serif",
-                            fontWeight: 700,
-                            fontSize: '1.4rem',
-                            letterSpacing: '0.02em',
-                            color: 'var(--text-primary)'
-                        }}>
-                            Wassy Pay
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', fontSize: '10px', letterSpacing: '2px', color: '#31d7ff' }}>
-                            <span className="status-light" style={{ marginRight: '8px' }}></span>
-                            SOLANA_MAINNET
-                        </div>
-                    </div>
-
-                    {/* Hero Content */}
-                    <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-                        <h1 className="animate-fade-in delay-1" style={{
-                            fontSize: 'clamp(2.5rem, 8vw, 5rem)',
-                            fontWeight: 700,
-                            lineHeight: 0.9,
-                            marginBottom: '20px',
-                            color: 'var(--text-primary)',
-                            fontFamily: "'JetBrains Mono', monospace"
-                        }}>
-                            SOCIAL PAYMENTS<br />
-                            <span style={{ color: '#d4af37' }}>REIMAGINED</span>
-                        </h1>
-
-                        <p className="animate-fade-in delay-2" style={{
-                            color: 'var(--text-secondary)',
-                            fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)',
-                            maxWidth: '600px',
-                            margin: '0 auto 30px',
-                            lineHeight: 1.6,
-                            padding: '0 10px'
-                        }}>
-                            Send USDC to anyone on X with a simple post. No banks, no accounts, no friction.
-                            Just tag <span style={{ color: '#31d7ff' }}>@bot_wassy</span> and your payment flows through Solana.
-                        </p>
-
-                        {/* Command Preview */}
-                        <div className="animate-scale delay-3" style={{
-                            background: 'var(--bg-inset)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '12px',
-                            padding: 'clamp(12px, 3vw, 20px) clamp(15px, 4vw, 30px)',
-                            display: 'inline-block',
-                            marginBottom: '30px',
-                            boxShadow: theme === 'dark' ? 'inset 4px 4px 8px rgba(0,0,0,0.6), inset -2px -2px 5px rgba(255,255,255,0.02)' : 'none',
-                            maxWidth: '100%',
-                            wordBreak: 'break-word'
-                        }}>
-                            <span className="mono" style={{ fontSize: 'clamp(0.85rem, 2.5vw, 1.1rem)', color: 'var(--text-secondary)' }}>
-                                <span style={{ color: 'var(--glow)' }}>@bot_wassy</span> send <span style={{ color: 'var(--accent-gold)' }}>@friend</span> <span style={{ color: 'var(--success)' }}>$100</span>
-                            </span>
-                        </div>
-
-                        <br />
-
-                        <button onClick={onLogin} className="btn btn-gold animate-fade-in delay-4" style={{ fontSize: 'clamp(0.85rem, 2.5vw, 1rem)', padding: 'clamp(14px, 3vw, 18px) clamp(32px, 8vw, 48px)' }}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '10px', verticalAlign: 'middle' }}>
-                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                            </svg>
-                            Login with X
-                        </button>
-                    </div>
-                </div>
-
-                {/* How It Works Section */}
-                <div style={{ marginBottom: '40px' }}>
-                    <h2 className="engraved scroll-fade-in" style={{ textAlign: 'center', marginBottom: '30px', fontSize: '0.8rem' }}>
-            // HOW_IT_WORKS
-                    </h2>
-
-                    <div className="grid-2">
-                        {/* Left Column - Flow Steps */}
-                        <div>
-                            {/* Step 1: FUND */}
-                            <div className="flow-step scroll-slide-left scroll-delay-1">
-                                <div className="step-number">1</div>
-                                <div className="step-content">
-                                    <h4 style={{ color: 'var(--glow)', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>FUND</h4>
-                                    <p style={{ color: 'var(--text-secondary)' }}>Connect your X account and Solana wallet. Deposit USDC to start sending payments.</p>
-                                </div>
-                            </div>
-
-                            {/* Step 2: TAG */}
-                            <div className="flow-step scroll-slide-left scroll-delay-2">
-                                <div className="step-number">2</div>
-                                <div className="step-content">
-                                    <h4 style={{ color: 'var(--accent-gold)', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>TAG</h4>
-                                    <p style={{ color: 'var(--text-secondary)' }}>Post on X: "@bot_wassy send @username $amount" — that's it. No apps, no forms.</p>
-                                </div>
-                            </div>
-
-                            {/* Step 3: CLAIM */}
-                            <div className="flow-step scroll-slide-left scroll-delay-3">
-                                <div className="step-number">3</div>
-                                <div className="step-content">
-                                    <h4 style={{ color: 'var(--success)', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>CLAIM</h4>
-                                    <p style={{ color: 'var(--text-secondary)' }}>Recipient sees the payment, clicks claim, and USDC transfers instantly on Solana.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right Column - Features */}
-                        <div className="plate animate-slide-right delay-2" style={{ padding: '30px' }}>
-                            <h3 className="engraved" style={{ marginBottom: '20px' }}>// PROTOCOL_FEATURES</h3>
-
-                            <div className="ledger-item">
-                                <span className="label">Settlement Layer</span>
-                                <span className="value highlight">Solana Mainnet</span>
-                            </div>
-
-                            <div className="ledger-item">
-                                <span className="label">Currency</span>
-                                <span className="value" style={{ color: '#d4af37' }}>USDC (SPL Token)</span>
-                            </div>
-
-                            <div className="ledger-item">
-                                <span className="label">Scan Interval</span>
-                                <span className="value">Every 30 minutes</span>
-                            </div>
-
-                            <div className="ledger-item">
-                                <span className="label">Security</span>
-                                <span className="value">Non-custodial delegation</span>
-                            </div>
-
-                            <div className="ledger-item">
-                                <span className="label">Spam Protection</span>
-                                <span className="value">Duplicate + RT filtering</span>
-                            </div>
-
-                            <div style={{
-                                marginTop: '20px',
-                                padding: '15px',
-                                background: 'var(--bg-inset)',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border-subtle)'
-                            }}>
-                                <p className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                                    Funds stay in YOUR wallet until claimed. You authorize a spending limit, and the protocol
-                                    handles transfers when payments are verified on X.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Architecture Visual */}
-                <div className="plate animate-fade-in" style={{ padding: '60px 40px', textAlign: 'center' }}>
-                    <h3 className="engraved" style={{ marginBottom: '40px' }}>// SYSTEM_ARCHITECTURE</h3>
-
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 'clamp(10px, 3vw, 20px)',
-                        flexWrap: 'wrap'
-                    }}>
-                        {/* X Platform */}
-                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
-                            <img src="/shimmer_3d/x_logo.png" alt="X" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '15px' }} />
-                            <div className="engraved" style={{ fontSize: '0.6rem' }}>X_PROTOCOL</div>
-                        </div>
-
-                        <div style={{ color: 'var(--glow)', fontSize: '1.5rem', fontWeight: 'bold' }}>→</div>
-
-                        {/* Backend */}
-                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
-                            <img src="/shimmer_3d/scanner.png" alt="Scanner" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '15px' }} />
-                            <div className="engraved" style={{ fontSize: '0.6rem' }}>SCANNER_ENGINE</div>
-                        </div>
-
-                        <div style={{ color: 'var(--accent-gold)', fontSize: '1.5rem', fontWeight: 'bold' }}>→</div>
-
-                        {/* Solana */}
-                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
-                            <img src="/shimmer_3d/solana.png" alt="Solana" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '15px' }} />
-                            <div className="engraved" style={{ fontSize: '0.6rem' }}>SOL_NETWORK</div>
-                        </div>
-
-                        <div style={{ color: 'var(--success)', fontSize: '1.5rem', fontWeight: 'bold' }}>→</div>
-
-                        {/* USDC */}
-                        <div className="inset-panel" style={{ textAlign: 'center', minWidth: '140px', flex: '1', maxWidth: '200px' }}>
-                            <img src="/shimmer_3d/usdc.png" alt="USDC" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '15px' }} />
-                            <div className="engraved" style={{ fontSize: '0.6rem' }}>USDC_SETTLEMENT</div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                    <a
-                        href="https://twitter.com/bot_wassy"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: 'var(--glow)', textDecoration: 'none' }}
-                    >
-                        @bot_wassy
-                    </a>
-                    <span style={{ margin: '0 15px' }}>•</span>
-                    Built on Solana
-                    <span style={{ margin: '0 15px' }}>•</span>
-                    © 2026
-                    <div style={{ marginTop: '15px' }}>
-                        <button
-                            onClick={() => setShowTerms(true)}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'var(--text-muted)',
-                                cursor: 'pointer',
-                                fontSize: '0.8rem',
-                                textDecoration: 'underline'
-                            }}
-                        >
-                            Terms & Conditions
-                        </button>
-                    </div>
-                </div>
+        <div className="immersive-container">
+            {/* Background Slices */}
+            <div className="strata-bg">
+                <div className="aerogel-slice" style={{ width: '60vw', height: '60vw', top: '-10%', left: '-10%', background: 'var(--accent)' }}></div>
+                <div className="aerogel-slice" style={{ width: '40vw', height: '40vw', bottom: '10%', right: '-5%', background: 'var(--accent-secondary)' }}></div>
             </div>
 
-            {/* Terms Modal */}
-            <TermsModal show={showTerms} onClose={() => setShowTerms(false)} />
+            {/* Navigation */}
+            <nav style={{
+                position: 'fixed',
+                top: 0,
+                width: '100%',
+                padding: '1.5rem 2rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                zIndex: 100,
+                backdropFilter: 'blur(10px)',
+                background: 'rgba(var(--bg-primary-rgb), 0.5)',
+                borderBottom: '1px solid var(--border-subtle)'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 700, fontSize: '1.2rem' }}>
+                    <div style={{ width: '32px', height: '32px', background: 'var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: '#000', fontWeight: 900 }}>W</div>
+                    WASSY PAY
+                </div>
+                <div className="mono text-muted" style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="status-light"></span> SOLANA_MAINNET
+                </div>
+                <button
+                    onClick={onToggleTheme}
+                    className="btn"
+                    style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', fontSize: '0.75rem', padding: '8px 16px' }}
+                >
+                    {theme === 'dark' ? 'LIGHT MODE' : 'DARK MODE'}
+                </button>
+            </nav>
+
+            <main>
+                {/* Hero Section */}
+                <section id="hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 20px' }}>
+                    <div className="reveal-element visible">
+                        <p className="mono label-subtle" style={{ marginBottom: '1rem' }}>// SOCIAL PAYMENTS REIMAGINED</p>
+                        <h1 style={{ fontSize: 'clamp(3rem, 10vw, 7rem)', lineHeight: 0.9, marginBottom: '1.5rem' }}>WASSY PAY</h1>
+                        <p className="text-secondary" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.4rem)', maxWidth: '600px', margin: '0 auto 3rem' }}>
+                            Send USDC to anyone on X with a simple post. No banks, no accounts, no friction.
+                        </p>
+
+                        <div style={{ position: 'relative', width: '280px', height: '280px', margin: '0 auto 4rem' }}>
+                            <div className="glass-panel" style={{ width: '100%', height: '100%', borderRadius: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 40px 100px var(--glow)' }}>
+                                <div style={{ width: '120px', height: '70px', background: '#111', borderRadius: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                                    <div style={{ width: '12px', height: '12px', background: 'var(--accent)', borderRadius: '50%', boxShadow: '0 0 10px var(--accent)' }}></div>
+                                    <div style={{ width: '12px', height: '12px', background: 'var(--accent)', borderRadius: '50%', boxShadow: '0 0 10px var(--accent)' }}></div>
+                                </div>
+                                <div style={{ fontSize: '2rem', marginTop: '20px', fontWeight: 900, color: 'var(--text-primary)' }}>X</div>
+                            </div>
+                            <div className="mono glass-panel" style={{ position: 'absolute', top: '-10px', right: '-80px', padding: '10px 15px', borderRadius: '12px', background: 'var(--accent-secondary)', color: '#fff', fontSize: '0.7rem', border: 'none', boxShadow: '0 10px 30px rgba(29, 155, 240, 0.3)' }}>
+                                @bot_wassy send @friend $100
+                            </div>
+                            <div className="mono glass-panel" style={{ position: 'absolute', bottom: '20px', left: '-80px', padding: '10px 15px', borderRadius: '12px', background: 'var(--success)', color: '#fff', fontSize: '0.7rem', border: 'none', boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)' }}>
+                                @bot_wassy claim
+                            </div>
+                        </div>
+
+                        <button onClick={onLogin} className="btn btn-primary" style={{ padding: '16px 48px', fontSize: '1.1rem' }}>
+                            LOGIN WITH X
+                        </button>
+                    </div>
+                </section>
+
+                {/* How it Works Strata */}
+                <section id="how-it-works" style={{ padding: '100px 20px' }}>
+                    <div className="container reveal-element" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                        <h2 className="mono label-subtle" style={{ marginBottom: '4rem', textAlign: 'center' }}>// HOW_IT_WORKS</h2>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                            <div className="glass-panel" style={{ display: 'grid', gridTemplateColumns: 'minmax(60px, auto) 1fr 1.5fr', gap: '40px', alignItems: 'start' }}>
+                                <div style={{ fontSize: '4rem', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>1</div>
+                                <div>
+                                    <h3 style={{ marginBottom: '8px' }}>FUND</h3>
+                                    <p className="mono text-muted">INITIATE_WALLET_LINK</p>
+                                </div>
+                                <p className="text-secondary">Connect your X account and Solana wallet. Deposit USDC to start sending payments instantly without leaving your timeline.</p>
+                            </div>
+
+                            <div className="glass-panel" style={{ display: 'grid', gridTemplateColumns: 'minmax(60px, auto) 1fr 1.5fr', gap: '40px', alignItems: 'start' }}>
+                                <div style={{ fontSize: '4rem', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>2</div>
+                                <div>
+                                    <h3 style={{ marginBottom: '8px' }}>TAG</h3>
+                                    <p className="mono text-muted">COMMAND_POST_TRIGGER</p>
+                                </div>
+                                <p className="text-secondary">Post on X: <span style={{ color: 'var(--accent-secondary)', fontWeight: 600 }}>"@bot_wassy send @username $amount"</span> — that's it. No apps to download, no forms to fill.</p>
+                            </div>
+
+                            <div className="glass-panel" style={{ display: 'grid', gridTemplateColumns: 'minmax(60px, auto) 1fr 1.5fr', gap: '40px', alignItems: 'start' }}>
+                                <div style={{ fontSize: '4rem', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>3</div>
+                                <div>
+                                    <h3 style={{ marginBottom: '8px' }}>CLAIM</h3>
+                                    <p className="mono text-muted">SETTLEMENT_COMPLETION</p>
+                                </div>
+                                <p className="text-secondary">Recipient sees the payment notification, clicks claim, and USDC transfers instantly on the Solana blockchain.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Features Grid */}
+                <section style={{ padding: '100px 20px' }}>
+                    <div className="container reveal-element" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                        <h2 className="mono label-subtle" style={{ marginBottom: '4rem' }}>// PROTOCOL_FEATURES</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1px', background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)' }}>
+                            <div className="glass-panel" style={{ borderRadius: 0, border: 'none' }}>
+                                <p className="mono label-subtle" style={{ marginBottom: '1rem' }}>SETTLEMENT LAYER</p>
+                                <h3 style={{ color: 'var(--text-primary)' }}>Solana Mainnet</h3>
+                            </div>
+                            <div className="glass-panel" style={{ borderRadius: 0, border: 'none' }}>
+                                <p className="mono label-subtle" style={{ marginBottom: '1rem' }}>CURRENCY</p>
+                                <h3 style={{ color: 'var(--accent)' }}>USDC (SPL Token)</h3>
+                            </div>
+                            <div className="glass-panel" style={{ borderRadius: 0, border: 'none' }}>
+                                <p className="mono label-subtle" style={{ marginBottom: '1rem' }}>SCAN INTERVAL</p>
+                                <h3 style={{ color: 'var(--text-primary)' }}>30 Minutes</h3>
+                            </div>
+                            <div className="glass-panel" style={{ borderRadius: 0, border: 'none' }}>
+                                <p className="mono label-subtle" style={{ marginBottom: '1rem' }}>SECURITY</p>
+                                <h3 style={{ color: 'var(--text-primary)' }}>Non-custodial delegation</h3>
+                            </div>
+                        </div>
+
+                        <div className="glass-panel" style={{ marginTop: '4rem', padding: '40px', background: 'var(--accent)', color: '#000', border: 'none' }}>
+                            <h3 style={{ marginBottom: '10px' }}>Funds stay in YOUR wallet until claimed.</h3>
+                            <p style={{ fontWeight: 500, opacity: 0.9 }}>You authorize a spending limit, and the protocol handles transfers only when payments are verified on X. Total sovereignty.</p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Architecture & Flow */}
+                <section style={{ padding: '100px 20px' }}>
+                    <div className="container reveal-element" style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
+                        <h2 className="mono label-subtle" style={{ marginBottom: '4rem' }}>// SYSTEM_ARCHITECTURE</h2>
+                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <div className="glass-panel" style={{ padding: '15px 30px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 700 }}>X_PROTOCOL</div>
+                            <div style={{ color: 'var(--text-muted)' }}>→</div>
+                            <div className="glass-panel" style={{ padding: '15px 30px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 700 }}>SCANNER_ENGINE</div>
+                            <div style={{ color: 'var(--text-muted)' }}>→</div>
+                            <div className="glass-panel" style={{ padding: '15px 30px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 700 }}>SOL_NETWORK</div>
+                            <div style={{ color: 'var(--text-muted)' }}>→</div>
+                            <div className="glass-panel" style={{ padding: '15px 30px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 700 }}>USDC_SETTLEMENT</div>
+                        </div>
+                        <div style={{ marginTop: '60px', opacity: 0.5 }} className="mono">
+                            @bot_wassy • Built on Solana • © 2026
+                        </div>
+                    </div>
+                </section>
+
+                {/* Terms Box */}
+                <section style={{ padding: '100px 20px', display: showTerms ? 'flex' : 'none' }}>
+                    <div className="container reveal-element glass-panel" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'left', maxHeight: '70vh', overflowY: 'auto' }}>
+                        <h2 className="mono label-subtle" style={{ marginBottom: '2rem' }}>// TERMS_AND_CONDITIONS</h2>
+
+                        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                            <h4 style={{ color: 'var(--accent)', marginTop: '20px', marginBottom: '8px' }}>1. Service Description</h4>
+                            <p>WassyPay is a non-custodial social payment service built on Solana. Users maintain full control of their wallets and funds at all times.</p>
+
+                            <h4 style={{ color: 'var(--accent)', marginTop: '20px', marginBottom: '8px' }}>2. No Financial Advice</h4>
+                            <p>This service does not provide financial, investment, or legal advice. Users are responsible for their own financial decisions.</p>
+
+                            <h4 style={{ color: 'var(--accent)', marginTop: '20px', marginBottom: '8px' }}>3. Risk Acknowledgment</h4>
+                            <p>Cryptocurrency transactions are irreversible. Users acknowledge the risks associated with blockchain transactions including but not limited to: network fees, transaction failures, and price volatility.</p>
+
+                            <h4 style={{ color: 'var(--accent)', marginTop: '20px', marginBottom: '8px' }}>4. User Responsibility</h4>
+                            <p>Users are responsible for securing their wallet credentials, ensuring sufficient funds, and verifying recipient addresses before sending.</p>
+                        </div>
+
+                        <button onClick={() => setShowTerms(false)} className="btn btn-primary" style={{ width: '100%', marginTop: '3rem' }}>
+                            I UNDERSTAND
+                        </button>
+                    </div>
+                </section>
+
+                <div style={{ textAlign: 'center', paddingBottom: '60px' }}>
+                    <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem', textDecoration: 'underline' }}>
+                        Terms & Conditions
+                    </button>
+                </div>
+            </main>
         </div>
     );
 }
 
 export function LoadingScreen({ theme, onToggleTheme }) {
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: 'var(--bg-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: "'Space Grotesk', sans-serif"
-        }}>
-            {/* Theme Toggle */}
-            <button className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-                {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
-            <div className="animate-scale" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '20px' }}>◎</div>
-                <div style={{ color: 'var(--glow)', fontSize: '0.8rem', letterSpacing: '0.2em' }}>INITIALIZING...</div>
+        <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Space Grotesk', sans-serif" }}>
+            <div className="animate-fade" style={{ textAlign: 'center' }}>
+                <div className="tx-spinner" style={{ width: '40px', height: '40px', margin: '0 auto 20px' }}></div>
+                <div className="mono" style={{ color: 'var(--accent-secondary)', fontSize: '0.8rem', letterSpacing: '0.2em' }}>INITIALIZING_SECURE_LAYER...</div>
             </div>
         </div>
     );
