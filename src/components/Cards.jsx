@@ -151,7 +151,7 @@ export function StatsCard({ userStats }) {
 
 export function HowToPayCard() {
     return (
-        <div className="glass-panel" style={{ padding: '30px', marginBottom: '20px' }}>
+        <div className="glass-panel howto-card" style={{ padding: '30px', marginBottom: '20px' }}>
             <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// HOW_TO_PAY</div>
             <div className="inset-panel" style={{ textAlign: 'center', padding: '20px', marginBottom: '15px' }}>
                 <span className="mono" style={{ fontSize: '1rem' }}>
