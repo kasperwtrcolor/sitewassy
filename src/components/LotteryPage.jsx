@@ -110,9 +110,18 @@ export function LotteryPage({
                             <div className="glass-panel" style={{ background: 'rgba(16, 185, 129, 0.1)', borderColor: 'var(--success)', textAlign: 'center', marginBottom: '30px', padding: '30px' }}>
                                 <h3 className="mono" style={{ color: 'var(--success)', marginBottom: '10px' }}>CONGRATULATIONS_WINNER</h3>
                                 <p style={{ marginBottom: '20px' }}>You have won the jackpot! Your prize is ready for settlement.</p>
-                                <button onClick={() => onClaim?.(currentLottery.id)} disabled={isClaiming} className="btn btn-accent" style={{ width: '100%' }}>
+                                <button onClick={() => onClaim?.(currentLottery.id)} disabled={isClaiming} className="btn btn-accent" style={{ width: '100%', marginBottom: '15px' }}>
                                     {isClaiming ? 'PROCESSING...' : 'CLAIM_JACKPOT'}
                                 </button>
+                                <a
+                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I JUST WON THE $${currentLottery.prizeAmount} WASSY PAY JACKPOT! 🏆\n\nSocial payments on Solana are real. ◎\n\nClaim your payments at wassypay.fun @bot_wassy`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-primary"
+                                    style={{ width: '100%', textDecoration: 'none', background: 'var(--accent-secondary)' }}
+                                >
+                                    SHARE_JACKPOT_WIN
+                                </a>
                             </div>
                         )}
 
@@ -126,6 +135,20 @@ export function LotteryPage({
                                 <h3 style={{ fontSize: '2rem' }}>{totalEntries > 0 ? ((userEntries / totalEntries) * 100).toFixed(1) : 0}%</h3>
                             </div>
                         </div>
+
+                        {userEntries > 0 && !isWinner && (
+                            <div style={{ marginBottom: '40px' }}>
+                                <a
+                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I've got ${userEntries} entries in the $${currentLottery.prizeAmount} @bot_wassy lottery! 🎟️\n\nEvery $10 sent on Wassy Pay adds up to more chances to win. \n\nCheck your entries at wassypay.fun`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn"
+                                    style={{ width: '100%', background: 'var(--bg-inset)', border: '1px solid var(--border-medium)', textDecoration: 'none' }}
+                                >
+                                    🐦 SHARE_YOUR_ENTRIES
+                                </a>
+                            </div>
+                        )}
 
                         <div className="mono label-subtle" style={{ marginBottom: '20px' }}>RECENT_PARTICIPANTS</div>
                         <div style={{ background: 'var(--bg-inset)', borderRadius: '16px', overflow: 'hidden' }}>

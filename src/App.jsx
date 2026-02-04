@@ -13,7 +13,7 @@ import { PendingClaims } from './components/PendingClaims';
 import { PendingOutgoing } from './components/PendingOutgoing';
 import { PaymentHistory } from './components/PaymentHistory';
 import { StatsCard, HowToPayCard, Footer, PaymentTicker, ScanCountdown, TermsModal } from './components/Cards';
-import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal, ShareSuccessModal } from './components/Modals';
+import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal, ShareSuccessModal, LotteryWinModal } from './components/Modals';
 import { TutorialOverlay, useTutorial } from './components/TutorialOverlay';
 import { MobileNav } from './components/MobileNav';
 import { ThemeToggle } from './components/ThemeToggle';
@@ -84,6 +84,8 @@ function WassyPayApp() {
   const [showHistory, setShowHistory] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showLotteryWinModal, setShowLotteryWinModal] = useState(false);
+  const [lotteryWinAmount, setLotteryWinAmount] = useState(0);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [lastClaimedPayment, setLastClaimedPayment] = useState(null);
 
@@ -211,12 +213,27 @@ function WassyPayApp() {
       {/* Confetti Animation */}
       {renderConfetti()}
 
-      {/* Claiming Overlay */}
-      {isClaiming && (
-        <div className="claiming-overlay">
+      {/* Transaction Overlay - global for all transactions */}
+      {(loading || isAuthorizing || isClaiming || isClaimingPrize) && (
+        <div className="claiming-overlay" style={{ zIndex: 10000 }}>
           <div className="claiming-spinner"></div>
-          <div style={{ color: '#fff', fontSize: '1.2rem' }}>Processing claim...</div>
-          <div style={{ color: '#888', fontSize: '0.9rem', marginTop: '10px' }}>Submitting transaction to Solana</div>
+          <div style={{
+            color: '#fff',
+            fontSize: '1.5rem',
+            fontFamily: "'Fredoka', sans-serif",
+            fontWeight: 700,
+            letterSpacing: '0.05em'
+          }}>
+            PROCESSING_TRANSACTION
+          </div>
+          <div style={{
+            color: 'var(--accent)',
+            fontSize: '0.8rem',
+            marginTop: '15px',
+            letterSpacing: '0.2em'
+          }} className="mono">
+            VERIFYING_SECURE_VAULT_LAYER...
+          </div>
         </div>
       )}
 
@@ -424,6 +441,14 @@ function WassyPayApp() {
                   setSuccess(`🎉 Prize claimed! Tx: ${result.txSignature?.slice(0, 8)}...`);
                   fetchActiveLottery(); // Refresh current
                   fetchLotteryHistory(); // Refresh history
+
+                  // Set win amount and show modal
+                  setLotteryWinAmount(currentLottery?.prizeAmount || 0);
+                  setShowLotteryWinModal(true);
+
+                  // Trigger confetti!
+                  setShowConfetti(true);
+                  setTimeout(() => setShowConfetti(false), 5000);
                 } else {
                   setError(result.error || 'Failed to claim prize');
                 }
@@ -506,6 +531,12 @@ function WassyPayApp() {
         <TermsModal
           show={showTerms}
           onClose={() => setShowTerms(false)}
+        />
+        <LotteryWinModal
+          show={showLotteryWinModal}
+          onClose={() => setShowLotteryWinModal(false)}
+          prizeAmount={lotteryWinAmount}
+          theme={theme}
         />
       </div>
 
