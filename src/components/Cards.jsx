@@ -90,7 +90,7 @@ export function ScanCountdown() {
     }, []);
 
     return (
-        <div className="glass-panel" style={{
+        <div className="glass-panel scan-countdown" style={{
             padding: '20px',
             marginBottom: '20px',
             display: 'flex',

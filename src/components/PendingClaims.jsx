@@ -27,7 +27,7 @@ export function PendingClaims({ claims, onClaim, loading }) {
     };
 
     return (
-        <div className="glass-panel" style={{
+        <div className="glass-panel claims-card" style={{
             padding: '30px',
             marginBottom: '20px'
         }}>

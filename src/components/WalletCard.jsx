@@ -30,7 +30,7 @@ export function WalletCard({
     }
 
     return (
-        <div className="glass-panel" style={{ padding: '30px', marginBottom: '20px' }}>
+        <div className="glass-panel wallet-card" style={{ padding: '30px', marginBottom: '20px' }}>
             <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// WALLET_STATUS</div>
 
             {/* Balance Display */}
