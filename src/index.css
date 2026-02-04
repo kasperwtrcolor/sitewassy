@@ -355,3 +355,30 @@ h4 {
     padding: 30px 20px;
   }
 }
+
+/* Tutorial Enhancements */
+@keyframes spotlightPulse {
+  0% {
+    box-shadow: 0 0 20px var(--accent), inset 0 0 10px var(--accent);
+    border-color: var(--accent);
+  }
+
+  50% {
+    box-shadow: 0 0 60px var(--accent), inset 0 0 30px var(--accent);
+    border-color: #fff;
+  }
+
+  100% {
+    box-shadow: 0 0 20px var(--accent), inset 0 0 10px var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+.spotlight-border {
+  animation: spotlightPulse 2s infinite ease-in-out;
+}
+
+.tutorial-active-section {
+  filter: brightness(1.2) !important;
+  transition: filter 0.5s ease;
+}

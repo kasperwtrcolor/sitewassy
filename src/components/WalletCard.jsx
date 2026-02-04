@@ -96,9 +96,16 @@ export function WalletCard({
                                 onClick={() => onAuthorize(delegationAmount)}
                                 disabled={isAuthorizing}
                                 className="btn btn-primary"
-                                style={{ padding: '10px 15px', borderRadius: '12px' }}
+                                style={{ padding: '0', width: '45px', height: '45px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                                title="Update Spending Limit"
                             >
-                                {isAuthorizing ? '...' : 'UPDATE'}
+                                {isAuthorizing ? (
+                                    <div className="tx-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
+                                ) : (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                )}
                             </button>
                         </div>
                     </div>

@@ -80,6 +80,16 @@ export function LotteryPage({
                 <button onClick={() => setActiveTab('history')} className="btn" style={{ flex: 1, background: activeTab === 'history' ? 'var(--text-primary)' : 'transparent', color: activeTab === 'history' ? 'var(--bg-primary)' : 'var(--text-primary)' }}>HISTORY</button>
             </div>
 
+            {/* Explanation Section */}
+            <div className="glass-panel" style={{ padding: '20px', marginBottom: '30px', background: 'rgba(var(--accent-rgb), 0.05)', borderStyle: 'dashed' }}>
+                <div className="mono label-subtle" style={{ marginBottom: '10px', color: 'var(--accent)' }}>// HOW_IT_WORKS</div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                    Every user earns <strong style={{ color: 'var(--text-primary)' }}>1 base entry</strong> for participating.
+                    Earn <strong style={{ color: 'var(--accent)' }}>1 additional entry</strong> for every $10 sent through Wassy Pay.
+                    The more payments you send, the higher your odds of winning the jackpot!
+                </p>
+            </div>
+
             {activeTab === 'current' && currentLottery ? (
                 <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
                     <div style={{
@@ -130,18 +140,36 @@ export function LotteryPage({
                 </div>
             ) : activeTab === 'history' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {lotteryHistory.map((lottery, i) => (
-                        <div key={i} className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                                <h3 className="mono" style={{ color: 'var(--accent)' }}>${lottery.prizeAmount}</h3>
-                                <p className="mono label-subtle" style={{ marginTop: '5px' }}>SETTLED_ON_CHAIN</p>
+                    {lotteryHistory.map((lottery, i) => {
+                        const isWinnerH = lottery.winner &&
+                            (lottery.winner.walletAddress?.toLowerCase() === userWallet?.toLowerCase() ||
+                                lottery.winner.username?.toLowerCase().replace('@', '') === xUsername?.toLowerCase().replace('@', ''));
+                        const canClaimH = isWinnerH && lottery.status === 'completed';
+
+                        return (
+                            <div key={i} className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <h3 className="mono" style={{ color: 'var(--accent)' }}>${lottery.prizeAmount}</h3>
+                                    <p className="mono label-subtle" style={{ marginTop: '5px' }}>{lottery.status === 'claimed' ? 'PAYMENT_SETTLED' : 'DRAW_COMPLETED'}</p>
+                                </div>
+                                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+                                    <div className="mono" style={{ fontWeight: 700 }}>@{lottery.winner?.username}</div>
+                                    {canClaimH ? (
+                                        <button
+                                            onClick={() => onClaim?.(lottery.id)}
+                                            disabled={isClaiming}
+                                            className="btn btn-accent"
+                                            style={{ padding: '6px 12px', fontSize: '0.7rem' }}
+                                        >
+                                            {isClaiming ? 'WAITING...' : 'CLAIM_PRIZE'}
+                                        </button>
+                                    ) : (
+                                        <div className="text-muted" style={{ fontSize: '0.8rem' }}>{lottery.status === 'claimed' ? 'CLAIMED' : 'UNCLAIMED'}</div>
+                                    )}
+                                </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <div className="mono" style={{ fontWeight: 700 }}>@{lottery.winner?.username}</div>
-                                <div className="text-muted" style={{ fontSize: '0.8rem' }}>{lottery.status === 'claimed' ? 'CLAIMED' : 'UNCLAIMED'}</div>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             ) : (
                 <div className="glass-panel" style={{ textAlign: 'center', padding: '60px' }}>

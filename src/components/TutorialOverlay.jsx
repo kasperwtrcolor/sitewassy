@@ -57,6 +57,11 @@ export function TutorialOverlay({ onComplete }) {
         }
 
         if (element) {
+            // Remove from previous elements
+            document.querySelectorAll('.tutorial-active-section').forEach(el => el.classList.remove('tutorial-active-section'));
+            // Add to current
+            element.classList.add('tutorial-active-section');
+
             // Scroll element into view smoothly
             element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 
@@ -93,6 +98,7 @@ export function TutorialOverlay({ onComplete }) {
 
     const handleNext = () => {
         if (isLastStep) {
+            document.querySelectorAll('.tutorial-active-section').forEach(el => el.classList.remove('tutorial-active-section'));
             onComplete();
             return;
         }
@@ -107,6 +113,7 @@ export function TutorialOverlay({ onComplete }) {
     };
 
     const handleSkip = () => {
+        document.querySelectorAll('.tutorial-active-section').forEach(el => el.classList.remove('tutorial-active-section'));
         onComplete();
     };
 
@@ -171,6 +178,29 @@ export function TutorialOverlay({ onComplete }) {
 
     return (
         <div className="tutorial-overlay">
+            {/* Tutorial Status Banner */}
+            <div className="mono animate-fade-in" style={{
+                position: 'fixed',
+                top: '20px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10002,
+                background: 'var(--accent)',
+                color: '#000',
+                padding: '10px 25px',
+                borderRadius: '100px',
+                fontSize: '0.7rem',
+                fontWeight: 900,
+                boxShadow: '0 0 30px var(--accent)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                border: '2px solid rgba(255,255,255,0.5)'
+            }}>
+                <span className="tx-spinner" style={{ width: '12px', height: '12px', borderColor: '#000', borderTopColor: 'transparent' }}></span>
+                TUTORIAL_MODE_ACTIVE
+            </div>
+
             {/* Dark overlay with spotlight cutout */}
             <svg className="tutorial-backdrop" style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
                 <defs>
@@ -210,10 +240,11 @@ export function TutorialOverlay({ onComplete }) {
                         width: targetRect.width,
                         height: targetRect.height,
                         borderRadius: '12px',
-                        border: '2px solid var(--glow)',
-                        boxShadow: 'var(--glow-shadow)',
+                        border: '4px solid var(--accent)',
+                        boxShadow: '0 0 50px var(--accent), inset 0 0 30px var(--accent)',
                         pointerEvents: 'none',
-                        transition: 'all 0.4s ease-out'
+                        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        zIndex: 10000
                     }}
                 />
             )}

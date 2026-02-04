@@ -85,16 +85,23 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                     <div style={{ width: '32px', height: '32px', background: 'var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: '#000', fontWeight: 900 }}>W</div>
                     WASSY PAY
                 </div>
-                <div className="mono text-muted" style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="status-light"></span> SOLANA_MAINNET
+                <div className="mono" style={{ fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 700, letterSpacing: '0.05em' }}>
+                    // SOCIAL PAYMENTS REIMAGINED
                 </div>
-                <button
-                    onClick={onToggleTheme}
-                    className="btn"
-                    style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', fontSize: '0.75rem', padding: '8px 16px' }}
-                >
-                    {theme === 'dark' ? 'LIGHT MODE' : 'DARK MODE'}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <a href="https://x.com/bot_wassy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }} title="Follow @bot_wassy">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                        </svg>
+                    </a>
+                    <button
+                        onClick={onToggleTheme}
+                        className="btn"
+                        style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', fontSize: '0.75rem', padding: '8px 16px' }}
+                    >
+                        {theme === 'dark' ? 'LIGHT_MODE' : 'DARK_MODE'}
+                    </button>
+                </div>
             </nav>
 
             <main>
