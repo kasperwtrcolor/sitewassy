@@ -176,7 +176,7 @@ export function Footer({ onShowTerms }) {
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <a
-                    href="https://twitter.com/bot_wassy"
+                    href="https://x.com/bot_wassy"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', textDecoration: 'none' }}

@@ -83,11 +83,8 @@ export function ProfilePage({
             </div>
 
             {/* Achievements */}
-            <div className="plate animate-fade-in delay-2 profile-badges">
-                <div className="screw tl"></div>
-                <div className="screw tr"></div>
-
-                <h3 className="engraved" style={{ marginBottom: '15px' }}>BADGES</h3>
+            <div className="glass-panel animate-fade-in" style={{ marginBottom: '30px' }}>
+                <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// BADGES_UNLOCKED</div>
                 <div className="badges-grid">
                     {ACHIEVEMENTS.map(achievement => {
                         const isUnlocked = unlockedAchievements.includes(achievement.id);
@@ -97,8 +94,8 @@ export function ProfilePage({
                                 className={`badge-item ${isUnlocked ? 'unlocked' : 'locked'}`}
                                 title={achievement.desc}
                             >
-                                <span className="badge-icon">{achievement.icon}</span>
-                                <span className="badge-name">{achievement.name}</span>
+                                <span style={{ fontSize: '2rem', marginBottom: '8px' }}>{achievement.icon}</span>
+                                <span className="mono" style={{ fontSize: '0.65rem', fontWeight: 700, textAlign: 'center' }}>{achievement.name.toUpperCase()}</span>
                             </div>
                         );
                     })}
@@ -106,23 +103,26 @@ export function ProfilePage({
             </div>
 
             {/* Stats */}
-            <div className="plate animate-fade-in delay-3 profile-stats">
-                <div className="screw tl"></div>
-                <div className="screw tr"></div>
-
-                <h3 className="engraved" style={{ marginBottom: '15px' }}>STATS</h3>
+            <div className="glass-panel animate-fade-in" style={{ marginBottom: '30px' }}>
+                <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// PERFORMANCE_METRICS</div>
                 <div className="stats-grid">
                     <div className="stat-item">
-                        <span className="stat-value">${(userStats?.totalDeposited || 0).toFixed(2)}</span>
-                        <span className="stat-label">Deposited</span>
+                        <div className="mono label-subtle" style={{ fontSize: '0.6rem', marginBottom: '10px' }}>TOTAL_SENT</div>
+                        <div className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--accent)' }}>
+                            ${(userStats?.totalSent || 0).toFixed(2)}
+                        </div>
                     </div>
                     <div className="stat-item">
-                        <span className="stat-value">${(userStats?.totalSent || 0).toFixed(2)}</span>
-                        <span className="stat-label">Sent</span>
+                        <div className="mono label-subtle" style={{ fontSize: '0.6rem', marginBottom: '10px' }}>TOTAL_CLAIMED</div>
+                        <div className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--success)' }}>
+                            ${(userStats?.totalClaimed || 0).toFixed(2)}
+                        </div>
                     </div>
                     <div className="stat-item">
-                        <span className="stat-value">${(userStats?.totalClaimed || 0).toFixed(2)}</span>
-                        <span className="stat-label">Claimed</span>
+                        <div className="mono label-subtle" style={{ fontSize: '0.6rem', marginBottom: '10px' }}>VOLUME_REWARD</div>
+                        <div className="mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--accent-secondary)' }}>
+                            {(userStats?.points || 0).toFixed(0)}
+                        </div>
                     </div>
                 </div>
             </div>

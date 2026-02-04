@@ -291,7 +291,9 @@ export function useTutorial() {
 
     const resetTutorial = useCallback(() => {
         localStorage.removeItem('wassypay_tutorial_completed');
-        setShowTutorial(true);
+        // Ensure state update triggers even if already on homepage
+        setShowTutorial(false);
+        setTimeout(() => setShowTutorial(true), 100);
     }, []);
 
     return {

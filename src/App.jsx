@@ -261,8 +261,8 @@ function WassyPayApp() {
           top: '20px',
           zIndex: 50
         }}>
-          <div style={{
-            fontFamily: "'Space Grotesk', sans-serif",
+          <div className="desktop-only" style={{
+            fontFamily: "'Fredoka', sans-serif",
             fontWeight: 700,
             fontSize: '1.4rem',
             letterSpacing: '-0.02em',
@@ -272,7 +272,7 @@ function WassyPayApp() {
             gap: '10px'
           }}>
             <div style={{ width: '28px', height: '28px', background: 'var(--accent)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: '0.9rem' }}>W</div>
-            Wasey Pay
+            Wassy Pay
           </div>
 
           {/* Desktop Navigation */}
@@ -508,36 +508,38 @@ function WassyPayApp() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <MobileNav
-        activeItem={currentPage}
-        isAdmin={isAdmin}
-        onNavigate={(id) => {
-          switch (id) {
-            case 'home':
-              setCurrentPage('home');
-              setShowLeaderboard(false);
-              break;
-            case 'lottery':
-              setCurrentPage('lottery');
-              setShowLeaderboard(false);
-              break;
-            case 'profile':
-              setCurrentPage('profile');
-              setShowLeaderboard(false);
-              break;
-            case 'leaders':
-              setShowLeaderboard(true);
-              break;
-            case 'admin':
-              if (isAdmin) {
-                setCurrentPage('admin');
+      <div className="mobile-only">
+        <MobileNav
+          activeItem={currentPage}
+          isAdmin={isAdmin}
+          onNavigate={(id) => {
+            switch (id) {
+              case 'home':
+                setCurrentPage('home');
                 setShowLeaderboard(false);
-              }
-              break;
-          }
-        }}
-        accentColor={theme === 'light' ? '#a855f7' : '#31d7ff'}
-      />
+                break;
+              case 'lottery':
+                setCurrentPage('lottery');
+                setShowLeaderboard(false);
+                break;
+              case 'profile':
+                setCurrentPage('profile');
+                setShowLeaderboard(false);
+                break;
+              case 'leaders':
+                setShowLeaderboard(true);
+                break;
+              case 'admin':
+                if (isAdmin) {
+                  setCurrentPage('admin');
+                  setShowLeaderboard(false);
+                }
+                break;
+            }
+          }}
+          accentColor={theme === 'light' ? '#a855f7' : '#31d7ff'}
+        />
+      </div>
 
 
     </div>
