@@ -97,11 +97,9 @@ export function AdminDashboard({
     ];
 
     return (
-        <div className="admin-dashboard">
+        <div className="admin-dashboard animate-fade-in">
             {/* Header */}
-            <div className="plate" style={{ padding: '20px', marginBottom: '20px' }}>
-                <div className="screw tl"></div>
-                <div className="screw tr"></div>
+            <div className="glass-panel" style={{ padding: '25px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h2 style={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 700, color: 'var(--accent-gold)' }}>
                         👑 Admin Dashboard
@@ -128,10 +126,8 @@ export function AdminDashboard({
 
             {/* Overview Tab */}
             {activeTab === 'overview' && (
-                <div className="plate" style={{ padding: '25px' }}>
-                    <div className="screw tl"></div>
-                    <div className="screw tr"></div>
-                    <h3 className="engraved" style={{ marginBottom: '20px' }}>📊 APP METRICS</h3>
+                <div className="glass-panel" style={{ padding: '25px', marginBottom: '20px' }}>
+                    <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// APP_METRICS</div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
                         <div className="inset-panel" style={{ padding: '15px', textAlign: 'center' }}>
@@ -166,10 +162,8 @@ export function AdminDashboard({
 
             {/* Users Tab */}
             {activeTab === 'users' && (
-                <div className="plate" style={{ padding: '25px' }}>
-                    <div className="screw tl"></div>
-                    <div className="screw tr"></div>
-                    <h3 className="engraved" style={{ marginBottom: '20px' }}>👥 ALL USERS</h3>
+                <div className="glass-panel" style={{ padding: '25px', marginBottom: '20px' }}>
+                    <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// USER_DATABASE</div>
 
                     {/* Search */}
                     <div style={{ marginBottom: '20px' }}>
@@ -229,10 +223,8 @@ export function AdminDashboard({
 
             {/* Enhanced Lottery Tab */}
             {activeTab === 'lottery' && (
-                <div className="plate" style={{ padding: '25px' }}>
-                    <div className="screw tl"></div>
-                    <div className="screw tr"></div>
-                    <h3 className="engraved" style={{ marginBottom: '20px' }}>🎰 LOTTERY MANAGEMENT</h3>
+                <div className="glass-panel" style={{ padding: '25px', marginBottom: '20px' }}>
+                    <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// LOTTERY_MANAGEMENT</div>
 
                     {/* Current Lottery Status */}
                     {currentLottery && (

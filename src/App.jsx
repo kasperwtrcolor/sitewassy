@@ -206,7 +206,7 @@ function WassyPayApp() {
         <div className="aerogel-slice" style={{ width: '30vw', height: '30vw', bottom: '5%', right: '-10%', background: 'var(--accent-secondary)' }}></div>
       </div>
       {/* Tutorial Overlay */}
-      {showTutorial && <TutorialOverlay onComplete={completeTutorial} />}
+      {showTutorial && currentPage === 'home' && <TutorialOverlay onComplete={completeTutorial} />}
 
       {/* Confetti Animation */}
       {renderConfetti()}
@@ -221,7 +221,9 @@ function WassyPayApp() {
       )}
 
       {/* Theme Toggle */}
-      <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      <div style={{ position: 'relative', zIndex: 2000 }}>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </div>
 
       {/* Global Toast Notifications - visible on all pages */}
       {(error || success) && (
@@ -251,7 +253,7 @@ function WassyPayApp() {
       <div className="dashboard-container" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 15px' }}>
 
         {/* Header - Simplified Glass Nav */}
-        <div className="glass-panel animate-fade-in dashboard-header" style={{
+        <div className="glass-panel animate-fade-in dashboard-header desktop-only" style={{
           padding: '20px 30px',
           marginBottom: '30px',
           display: 'flex',

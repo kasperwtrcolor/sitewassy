@@ -19,7 +19,8 @@ export function ThemeToggle({ theme, onToggle }) {
                 alignItems: 'center',
                 gap: '8px',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                zIndex: 1000
             }}
         >
             <div className="mono" style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '100px', background: !isDark ? 'var(--accent)' : 'transparent', color: !isDark ? '#000' : 'var(--text-muted)', fontWeight: 700, transition: 'var(--transition)' }}>LIGHT</div>
