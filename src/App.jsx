@@ -427,7 +427,8 @@ function WassyPayApp() {
           <LotteryPage
             currentLottery={currentLottery}
             lotteryHistory={lotteryHistory}
-            eligibleUsers={allUsers?.filter(u => (u.total_sent || 0) > 0) || []}
+            eligibleUsers={allUsers || []}
+            userStats={userStats}
             userWallet={solanaWallet?.address}
             xUsername={xUsername}
             isClaiming={isClaimingPrize}

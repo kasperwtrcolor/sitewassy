@@ -6,6 +6,7 @@ export function LotteryPage({
     currentLottery,
     lotteryHistory = [],
     eligibleUsers = [],
+    userStats,
     userWallet,
     xUsername,
     onClaim,
@@ -52,13 +53,20 @@ export function LotteryPage({
         return () => clearInterval(interval);
     }, [currentLottery?.endTime, currentLottery?.status, currentLottery?.winner]);
 
-    const userStats = eligibleUsers.find(u => {
+    // Calculate user entries - prioritize direct userStats prop from hook, fallback to list search
+    const myTotalSent = userStats?.totalSent || userStats?.total_sent || 0;
+    const userEntries = Math.floor(myTotalSent / 10) + 1;
+
+    // Calculate total entries including the current user even if they aren't in the eligibleUsers list yet
+    const baseTotalEntries = eligibleUsers.reduce((sum, u) => {
+        // Skip current user in the list reduction to avoid double counting
         const uWallet = (u.wallet_address || u.walletAddress || '').toLowerCase();
         const myWallet = (userWallet || '').toLowerCase();
-        return uWallet && myWallet && uWallet === myWallet;
-    });
-    const userEntries = userStats ? Math.floor((userStats.total_sent || userStats.totalSent || 0) / 10) + 1 : 0;
-    const totalEntries = eligibleUsers.reduce((sum, u) => sum + Math.floor((u.total_sent || u.totalSent || 0) / 10) + 1, 0);
+        if (uWallet && myWallet && uWallet === myWallet) return sum;
+        return sum + Math.floor((u.total_sent || u.totalSent || 0) / 10) + 1;
+    }, 0);
+
+    const totalEntries = baseTotalEntries + userEntries;
 
     const isWinner = currentLottery?.winner &&
         (currentLottery.winner.walletAddress?.toLowerCase() === userWallet?.toLowerCase() ||
