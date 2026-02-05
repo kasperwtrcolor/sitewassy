@@ -76,8 +76,8 @@ export function ProfilePage({
                     <button onClick={onCheckPayments} className="btn btn-accent" style={{ borderRadius: '16px' }}>
                         CHECK_PAYMENTS
                     </button>
-                    <button onClick={onResetTutorial} className="btn btn-primary" style={{ borderRadius: '16px' }}>
-                        RESTART_GUIDE
+                    <button onClick={onResetTutorial} className="btn btn-primary mobile-fit-btn" style={{ borderRadius: '16px' }}>
+                        TUTORIAL
                     </button>
                 </div>
             </div>

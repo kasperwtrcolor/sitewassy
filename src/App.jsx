@@ -237,34 +237,71 @@ function WassyPayApp() {
         </div>
       )}
 
+      {/* Mobile Top Header */}
+      <div className="mobile-only" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        padding: '15px 20px',
+        background: 'rgba(var(--bg-primary-rgb), 0.8)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid var(--border-subtle)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 500
+      }}>
+        <div style={{
+          fontFamily: "'Fredoka', sans-serif",
+          fontWeight: 700,
+          fontSize: '1.1rem',
+          color: 'var(--text-primary)'
+        }}>
+          WASSY PAY
+        </div>
+        <button
+          onClick={logout}
+          className="btn btn-primary"
+          style={{ padding: '6px 15px', fontSize: '0.65rem' }}
+        >
+          LOGOUT
+        </button>
+      </div>
+
+      {/* Bottom spacer for mobile header */}
+      <div className="mobile-only" style={{ height: '60px' }}></div>
+
       {/* Theme Toggle */}
       <div style={{ position: 'relative', zIndex: 2000 }}>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </div>
 
       {/* Global Toast Notifications - visible on all pages */}
-      {(error || success) && (
-        <div className="toast-container" style={{
-          position: 'fixed',
-          top: '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 9999
-        }}>
-          {error && (
-            <div className="toast-notification" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: 'var(--error)' }}>
-              <div className="mono label-subtle" style={{ color: 'var(--error)', marginBottom: '4px' }}>⚠ ERROR_REPORTED</div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{error}</div>
-            </div>
-          )}
-          {success && (
-            <div className="toast-notification" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: 'var(--success)' }}>
-              <div className="mono label-subtle" style={{ color: 'var(--success)', marginBottom: '4px' }}>✓ PROCESS_COMPLETE</div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{success}</div>
-            </div>
-          )}
-        </div>
-      )}
+      {
+        (error || success) && (
+          <div className="toast-container" style={{
+            position: 'fixed',
+            top: '40px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999
+          }}>
+            {error && (
+              <div className="toast-notification" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: 'var(--error)' }}>
+                <div className="mono label-subtle" style={{ color: 'var(--error)', marginBottom: '4px' }}>⚠ ERROR_REPORTED</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{error}</div>
+              </div>
+            )}
+            {success && (
+              <div className="toast-notification" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: 'var(--success)' }}>
+                <div className="mono label-subtle" style={{ color: 'var(--success)', marginBottom: '4px' }}>✓ PROCESS_COMPLETE</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{success}</div>
+              </div>
+            )}
+          </div>
+        )
+      }
 
       {/* Main Container */}
       <div className="dashboard-container" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 15px' }}>
@@ -285,12 +322,8 @@ function WassyPayApp() {
             fontWeight: 700,
             fontSize: '1.4rem',
             letterSpacing: '-0.02em',
-            color: 'var(--text-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
+            color: 'var(--text-primary)'
           }}>
-            <div style={{ width: '28px', height: '28px', background: 'var(--accent)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: '0.9rem' }}>W</div>
             Wassy Pay
           </div>
 
@@ -576,7 +609,7 @@ function WassyPayApp() {
       </div>
 
 
-    </div>
+    </div >
   );
 }
 

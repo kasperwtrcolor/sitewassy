@@ -81,12 +81,8 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                 background: 'rgba(var(--bg-primary-rgb), 0.5)',
                 borderBottom: '1px solid var(--border-subtle)'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 700, fontSize: '1.2rem' }}>
-                    <div style={{ width: '32px', height: '32px', background: 'var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyCenter: 'center', color: '#000', fontWeight: 900 }}>W</div>
+                <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-primary)' }}>
                     WASSY PAY
-                </div>
-                <div className="mono" style={{ fontSize: '0.65rem', color: 'var(--accent)', fontWeight: 700, letterSpacing: '0.05em' }}>
-                    // SOCIAL PAYMENTS REIMAGINED
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <a href="https://x.com/bot_wassy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }} title="Follow @bot_wassy">
@@ -108,7 +104,6 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                 {/* Hero Section */}
                 <section id="hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 20px' }}>
                     <div className="reveal-element visible">
-                        <p className="mono label-subtle" style={{ marginBottom: '1rem' }}>// SOCIAL PAYMENTS REIMAGINED</p>
                         <h1 style={{ fontSize: 'clamp(3rem, 10vw, 7rem)', lineHeight: 0.9, marginBottom: '1.5rem' }}>WASSY PAY</h1>
                         <p className="text-secondary" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.4rem)', maxWidth: '600px', margin: '0 auto 3rem' }}>
                             Send USDC to anyone on X with a simple post. No banks, no accounts, no friction.
@@ -142,31 +137,49 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                         <h2 className="mono label-subtle" style={{ marginBottom: '4rem', textAlign: 'center' }}>// HOW_IT_WORKS</h2>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                            <div className="glass-panel" style={{ display: 'grid', gridTemplateColumns: 'minmax(60px, auto) 1fr 1.5fr', gap: '40px', alignItems: 'start' }}>
-                                <div style={{ fontSize: '4rem', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>1</div>
-                                <div>
+                            <div className="glass-panel how-it-works-grid">
+                                <div className="step-number">1</div>
+                                <div className="step-title">
                                     <h3 style={{ marginBottom: '8px' }}>FUND</h3>
                                     <p className="mono text-muted">INITIATE_WALLET_LINK</p>
                                 </div>
-                                <p className="text-secondary">Connect your X account and Solana wallet. Deposit USDC to start sending payments instantly without leaving your timeline.</p>
+                                <p className="step-desc text-secondary">Connect your X account and Solana wallet. Deposit USDC to start sending payments instantly without leaving your timeline.</p>
                             </div>
 
-                            <div className="glass-panel" style={{ display: 'grid', gridTemplateColumns: 'minmax(60px, auto) 1fr 1.5fr', gap: '40px', alignItems: 'start' }}>
-                                <div style={{ fontSize: '4rem', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>2</div>
-                                <div>
+                            <div className="glass-panel how-it-works-grid">
+                                <div className="step-number">2</div>
+                                <div className="step-title">
                                     <h3 style={{ marginBottom: '8px' }}>TAG</h3>
                                     <p className="mono text-muted">COMMAND_POST_TRIGGER</p>
                                 </div>
-                                <p className="text-secondary">Post on X: <span style={{ color: 'var(--accent-secondary)', fontWeight: 600 }}>"@bot_wassy send @username $amount"</span> — that's it. No apps to download, no forms to fill.</p>
+                                <p className="step-desc text-secondary">Post on X: <span style={{ color: 'var(--accent-secondary)', fontWeight: 600 }}>"@bot_wassy send @username $amount"</span> — that's it. No apps to download, no forms to fill.</p>
                             </div>
 
-                            <div className="glass-panel" style={{ display: 'grid', gridTemplateColumns: 'minmax(60px, auto) 1fr 1.5fr', gap: '40px', alignItems: 'start' }}>
-                                <div style={{ fontSize: '4rem', fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>3</div>
-                                <div>
+                            <div className="glass-panel how-it-works-grid">
+                                <div className="step-number">3</div>
+                                <div className="step-title">
                                     <h3 style={{ marginBottom: '8px' }}>CLAIM</h3>
                                     <p className="mono text-muted">SETTLEMENT_COMPLETION</p>
                                 </div>
-                                <p className="text-secondary">Recipient sees the payment notification, clicks claim, and USDC transfers instantly on the Solana blockchain.</p>
+                                <p className="step-desc text-secondary">Recipient sees the payment notification, clicks claim, and USDC transfers instantly on the Solana blockchain.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Poster Carousel */}
+                <section style={{ padding: '80px 20px', overflow: 'hidden' }}>
+                    <div className="container reveal-element" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                        <h2 className="mono label-subtle" style={{ marginBottom: '4rem', textAlign: 'center' }}>// $WASSY_CAMPAIGN</h2>
+                        <div className="poster-carousel-container">
+                            <div className="poster-track">
+                                <img src="/posters/poster1.png" alt="Wassy Poster 1" />
+                                <img src="/posters/poster2.png" alt="Wassy Poster 2" />
+                                <img src="/posters/poster3.png" alt="Wassy Poster 3" />
+                                {/* Duplicate for seamless loop if needed, but for now simple revolve */}
+                                <img src="/posters/poster1.png" alt="Wassy Poster 1 clone" />
+                                <img src="/posters/poster2.png" alt="Wassy Poster 2 clone" />
+                                <img src="/posters/poster3.png" alt="Wassy Poster 3 clone" />
                             </div>
                         </div>
                     </div>
