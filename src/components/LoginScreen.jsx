@@ -109,18 +109,18 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             Send USDC to anyone on X with a simple post. No banks, no accounts, no friction.
                         </p>
 
-                        <div style={{ position: 'relative', width: '280px', height: '280px', margin: '0 auto 4rem' }}>
+                        <div style={{ position: 'relative', width: 'clamp(200px, 60vw, 280px)', height: 'clamp(200px, 60vw, 280px)', margin: '0 auto 4rem' }}>
                             <div className="glass-panel" style={{ width: '100%', height: '100%', borderRadius: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 40px 100px var(--glow)' }}>
                                 <div style={{ width: '120px', height: '70px', background: '#111', borderRadius: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
-                                    <div style={{ width: '12px', height: '12px', background: 'var(--accent)', borderRadius: '50%', boxShadow: '0 0 10px var(--accent)' }}></div>
-                                    <div style={{ width: '12px', height: '12px', background: 'var(--accent)', borderRadius: '50%', boxShadow: '0 0 10px var(--accent)' }}></div>
+                                    <div className="mascot-eye"></div>
+                                    <div className="mascot-eye"></div>
                                 </div>
                                 <div style={{ fontSize: '2rem', marginTop: '20px', fontWeight: 900, color: 'var(--text-primary)' }}>X</div>
                             </div>
-                            <div className="mono glass-panel" style={{ position: 'absolute', top: '-10px', right: '-80px', padding: '10px 15px', borderRadius: '12px', background: 'var(--accent-secondary)', color: '#fff', fontSize: '0.7rem', border: 'none', boxShadow: '0 10px 30px rgba(29, 155, 240, 0.3)' }}>
+                            <div className="mono glass-panel hero-floater-right" style={{ position: 'absolute', top: '-10px', right: '-40px', padding: '10px 15px', borderRadius: '12px', background: 'var(--accent-secondary)', color: '#fff', fontSize: '0.7rem', border: 'none', boxShadow: '0 10px 30px rgba(29, 155, 240, 0.3)', zIndex: 10 }}>
                                 @bot_wassy send @friend $100
                             </div>
-                            <div className="mono glass-panel" style={{ position: 'absolute', bottom: '20px', left: '-80px', padding: '10px 15px', borderRadius: '12px', background: 'var(--success)', color: '#fff', fontSize: '0.7rem', border: 'none', boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)' }}>
+                            <div className="mono glass-panel hero-floater-left" style={{ position: 'absolute', bottom: '20px', left: '-40px', padding: '10px 15px', borderRadius: '12px', background: 'var(--success)', color: '#fff', fontSize: '0.7rem', border: 'none', boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)', zIndex: 10 }}>
                                 @bot_wassy claim
                             </div>
                         </div>
@@ -176,10 +176,12 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                                 <img src="/posters/poster1.png" alt="Wassy Poster 1" />
                                 <img src="/posters/poster2.png" alt="Wassy Poster 2" />
                                 <img src="/posters/poster3.png" alt="Wassy Poster 3" />
-                                {/* Duplicate for seamless loop if needed, but for now simple revolve */}
+                                <img src="/posters/poster4.png" alt="Wassy Poster 4" />
+                                {/* Duplicate for seamless loop */}
                                 <img src="/posters/poster1.png" alt="Wassy Poster 1 clone" />
                                 <img src="/posters/poster2.png" alt="Wassy Poster 2 clone" />
                                 <img src="/posters/poster3.png" alt="Wassy Poster 3 clone" />
+                                <img src="/posters/poster4.png" alt="Wassy Poster 4 clone" />
                             </div>
                         </div>
                     </div>

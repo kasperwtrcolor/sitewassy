@@ -473,3 +473,38 @@ h4 {
   right: 0;
   background: linear-gradient(to left, var(--bg-primary), transparent);
 }
+
+/* Eye Blink Animation */
+.mascot-eye {
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent);
+  animation: eyeBlink 4s infinite;
+}
+
+@keyframes eyeBlink {
+  0%, 90%, 100% { 
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  95% { 
+    background: #000;
+    box-shadow: none;
+  }
+}
+
+/* Hero Floater Mobile Fixes */
+@media (max-width: 768px) {
+  .hero-floater-right {
+    right: 0 !important;
+    top: -20px !important;
+    font-size: 0.6rem !important;
+  }
+  .hero-floater-left {
+    left: 0 !important;
+    bottom: -10px !important;
+    font-size: 0.6rem !important;
+  }
+}
