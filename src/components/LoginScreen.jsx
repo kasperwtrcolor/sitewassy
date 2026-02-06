@@ -177,11 +177,13 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                                 <img src="/posters/poster2.png" alt="Wassy Poster 2" />
                                 <img src="/posters/poster3.png" alt="Wassy Poster 3" />
                                 <img src="/posters/poster4.png" alt="Wassy Poster 4" />
+                                <img src="/posters/poster5.png" alt="Wassy Poster 5" />
                                 {/* Duplicate for seamless loop */}
                                 <img src="/posters/poster1.png" alt="Wassy Poster 1 clone" />
                                 <img src="/posters/poster2.png" alt="Wassy Poster 2 clone" />
                                 <img src="/posters/poster3.png" alt="Wassy Poster 3 clone" />
                                 <img src="/posters/poster4.png" alt="Wassy Poster 4 clone" />
+                                <img src="/posters/poster5.png" alt="Wassy Poster 5 clone" />
                             </div>
                         </div>
                     </div>
