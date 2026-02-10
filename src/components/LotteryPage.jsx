@@ -53,17 +53,17 @@ export function LotteryPage({
         return () => clearInterval(interval);
     }, [currentLottery?.endTime, currentLottery?.status, currentLottery?.winner]);
 
-    // Calculate user entries - prioritize direct userStats prop from hook, fallback to list search
+    // Calculate user entries - precisely 1 if they have sent any amount
     const myTotalSent = userStats?.totalSent || userStats?.total_sent || 0;
-    const userEntries = Math.floor(myTotalSent / 10) + 1;
+    const userEntries = myTotalSent > 0 ? 1 : 0;
 
-    // Calculate total entries including the current user even if they aren't in the eligibleUsers list yet
+    // Calculate total entries - each eligible user counts as 1 entry
     const baseTotalEntries = eligibleUsers.reduce((sum, u) => {
         // Skip current user in the list reduction to avoid double counting
         const uWallet = (u.wallet_address || u.walletAddress || '').toLowerCase();
         const myWallet = (userWallet || '').toLowerCase();
         if (uWallet && myWallet && uWallet === myWallet) return sum;
-        return sum + Math.floor((u.total_sent || u.totalSent || 0) / 10) + 1;
+        return sum + ((u.total_sent || u.totalSent || 0) > 0 ? 1 : 0);
     }, 0);
 
     const totalEntries = baseTotalEntries + userEntries;
@@ -92,9 +92,8 @@ export function LotteryPage({
             <div className="glass-panel" style={{ padding: '20px', marginBottom: '30px', background: 'rgba(var(--accent-rgb), 0.05)', borderStyle: 'dashed' }}>
                 <div className="mono label-subtle" style={{ marginBottom: '10px', color: 'var(--accent)' }}>// HOW_IT_WORKS</div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                    Every user earns <strong style={{ color: 'var(--text-primary)' }}>1 base entry</strong> for participating.
-                    Earn <strong style={{ color: 'var(--accent)' }}>1 additional entry</strong> for every $10 sent through Wassy Pay.
-                    The more payments you send, the higher your odds of winning the jackpot!
+                    Every user who sends a payment qualifies for <strong style={{ color: 'var(--text-primary)' }}>1 entry</strong> in the draw.
+                    The lottery uses a fair "one person, one vote" system—meaning your odds depend on the total number of participants, not the size of your payment.
                 </p>
             </div>
 
@@ -133,27 +132,30 @@ export function LotteryPage({
                             </div>
                         )}
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
                             <div className="inset-panel" style={{ textAlign: 'center' }}>
-                                <p className="mono label-subtle">YOUR_ENTRIES</p>
-                                <h3 style={{ fontSize: '2rem', color: 'var(--accent)' }}>{userEntries}</h3>
+                                <p className="mono label-subtle">QUALIFICATION_DEADLINE</p>
+                                <h3 style={{ fontSize: '1rem', color: 'var(--accent)' }}>
+                                    {currentLottery.endTime ? new Date(currentLottery.endTime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'TBD'}
+                                </h3>
                             </div>
                             <div className="inset-panel" style={{ textAlign: 'center' }}>
                                 <p className="mono label-subtle">EST_WIN_CHANCE</p>
-                                <h3 style={{ fontSize: '2rem' }}>{totalEntries > 0 ? ((userEntries / totalEntries) * 100).toFixed(1) : 0}%</h3>
+                                <h3 style={{ fontSize: '1.2rem' }}>{totalEntries > 0 ? ((userEntries / totalEntries) * 100).toFixed(1) : 0}%</h3>
+                                <p className="mono label-subtle" style={{ fontSize: '0.6rem', marginTop: '5px' }}>({userEntries}/{totalEntries} PARTICIPANTS)</p>
                             </div>
                         </div>
 
                         {userEntries > 0 && !isWinner && (
                             <div style={{ marginBottom: '40px' }}>
                                 <a
-                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I've got ${userEntries} entries in the $${currentLottery.prizeAmount} @bot_wassy lottery! 🎟️\n\nEvery $10 sent on Wassy Pay adds up to more chances to win. \n\nCheck your entries at wassypay.fun`)}`}
+                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I'm qualified for the $${currentLottery.prizeAmount} @bot_wassy lottery! 🎟️\n\nEvery participant gets 1 entry—one payment is all it takes to win. \n\nSee the deadline at wassypay.fun`)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="btn"
                                     style={{ width: '100%', background: 'var(--bg-inset)', border: '1px solid var(--border-medium)', textDecoration: 'none' }}
                                 >
-                                    🐦 SHARE_YOUR_ENTRIES
+                                    🐦 SHARE_YOUR_QUALIFICATION
                                 </a>
                             </div>
                         )}
@@ -163,7 +165,7 @@ export function LotteryPage({
                             {eligibleUsers.slice(0, 10).map((u, i) => (
                                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
                                     <span className="mono">@{u.x_username || u.xUsername}</span>
-                                    <span className="text-muted">{Math.floor((u.total_sent || u.totalSent || 0) / 10) + 1} ENTRIES</span>
+                                    <span className="text-muted">1 ENTRY</span>
                                 </div>
                             ))}
                         </div>

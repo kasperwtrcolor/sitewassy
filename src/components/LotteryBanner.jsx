@@ -129,6 +129,15 @@ export function LotteryBanner({
                 {/* Right side - Countdown or Winner */}
                 <div style={{ textAlign: 'right' }}>
                     <div style={{
+                        fontSize: '0.6rem',
+                        opacity: 0.8,
+                        marginBottom: '2px',
+                        fontWeight: '600',
+                        textTransform: 'uppercase'
+                    }}>
+                        QUALIFY BY: {lottery.endTime ? new Date(lottery.endTime).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'TBD'}
+                    </div>
+                    <div style={{
                         fontSize: '0.7rem',
                         opacity: 0.9,
                         marginBottom: '4px',
@@ -159,7 +168,7 @@ export function LotteryBanner({
                 color: 'white'
             }}>
                 <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>
-                    💸 Send payments to earn entries!
+                    💸 Send a payment to qualify for the draw!
                 </span>
                 <span style={{
                     fontSize: '0.75rem',

@@ -45,10 +45,8 @@ export function AdminDashboard({
     // Eligible users count (users who have sent payments)
     const eligibleUsers = users?.filter(u => (u.total_sent || 0) > 0) || [];
 
-    // Total entries calculation
-    const totalEntries = eligibleUsers.reduce((sum, u) =>
-        sum + Math.floor((u.total_sent || 0) / 10) + 1, 0
-    );
+    // Total entries calculation - each eligible user counts as 1 entry
+    const totalEntries = eligibleUsers.length;
 
     // Lottery status helpers
     const lotteryStatus = currentLottery?.status || 'none';
@@ -384,7 +382,7 @@ export function AdminDashboard({
                                 }}>
                                     <span>@{u.x_username}</span>
                                     <span style={{ color: 'var(--accent-gold)' }}>
-                                        {Math.floor((u.total_sent || 0) / 10) + 1} entries
+                                        1 entry
                                     </span>
                                 </div>
                             ))}
@@ -399,7 +397,7 @@ export function AdminDashboard({
                     {/* Info */}
                     <div style={{ marginTop: '20px', padding: '15px', background: 'var(--bg-warning)', borderRadius: '8px' }}>
                         <div style={{ color: 'var(--text-on-status)', fontSize: '0.8rem' }}>
-                            ℹ️ <strong>How it works:</strong> Users earn 1 base entry + 1 additional entry per $10 sent.
+                            ℹ️ <strong>How it works:</strong> Users qualify for 1 entry by sending any payment.
                             The lottery must be activated for users to see it on the homepage.
                             Winner can be drawn after the end time.
                         </div>
