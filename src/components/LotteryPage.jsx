@@ -13,7 +13,8 @@ export function LotteryPage({
     onRefresh,
     onFetchHistory,
     isClaiming = false,
-    onBack
+    onBack,
+    lotteryParticipants = []
 }) {
     const [timeRemaining, setTimeRemaining] = useState('');
     const [activeTab, setActiveTab] = useState('current');
@@ -75,7 +76,7 @@ export function LotteryPage({
 
     // Properly filter eligible users and count them
     // Prioritize dedicated participants list from useWassy
-    const allEligibleFromProps = (props.lotteryParticipants || eligibleUsers || []).filter(u =>
+    const allEligibleFromProps = (lotteryParticipants || eligibleUsers || []).filter(u =>
         (u.total_sent || 0) > 0 || u.has_sent || u.totalSent > 0
     );
 
