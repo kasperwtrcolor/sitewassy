@@ -50,6 +50,7 @@ function WassyPayApp() {
     claimPayment,
     fetchPendingClaims,
     allUsers,
+    lotteryParticipants,
     handleFundWallet,
     handleExportWallet,
     loading,
