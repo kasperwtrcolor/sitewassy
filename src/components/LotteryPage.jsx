@@ -55,7 +55,8 @@ export function LotteryPage({
 
     // Calculate user entries - precisely 1 if they have sent any amount
     const myTotalSent = userStats?.totalSent || userStats?.total_sent || 0;
-    const userEntries = myTotalSent > 0 ? 1 : 0;
+    const hasSent = userStats?.hasSent || false;
+    const userEntries = (myTotalSent > 0 || hasSent) ? 1 : 0;
 
     // Calculate total entries - each eligible user counts as 1 entry
     const baseTotalEntries = eligibleUsers.reduce((sum, u) => {
@@ -63,7 +64,7 @@ export function LotteryPage({
         const uWallet = (u.wallet_address || u.walletAddress || '').toLowerCase();
         const myWallet = (userWallet || '').toLowerCase();
         if (uWallet && myWallet && uWallet === myWallet) return sum;
-        return sum + ((u.total_sent || u.totalSent || 0) > 0 ? 1 : 0);
+        return sum + ((u.total_sent || u.totalSent || 0) > 0 || u.has_sent ? 1 : 0);
     }, 0);
 
     const totalEntries = baseTotalEntries + userEntries;

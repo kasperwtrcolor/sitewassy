@@ -65,7 +65,7 @@ export function useWassy() {
 
 
     // State for backend stats (from backend_users collection via API)
-    const [backendStats, setBackendStats] = useState({ totalSent: 0, totalClaimed: 0 });
+    const [backendStats, setBackendStats] = useState({ totalSent: 0, totalClaimed: 0, hasSent: false });
 
     // Fetch backend stats from backend_users collection via the leaderboard API
     useEffect(() => {
@@ -84,7 +84,8 @@ export function useWassy() {
                         setBackendStats({
                             totalSent: myStats.total_sent || 0,
                             totalClaimed: myStats.total_claimed || 0,
-                            points: myStats.points || 0
+                            points: myStats.points || 0,
+                            hasSent: myStats.has_sent || false
                         });
                     }
                 }
@@ -104,6 +105,7 @@ export function useWassy() {
         totalDeposited: 0, // Not used anymore
         totalSent: backendStats.totalSent || userProfile?.stats?.totalSent || 0,
         totalClaimed: backendStats.totalClaimed || userProfile?.stats?.totalClaimed || 0,
+        hasSent: backendStats.hasSent || (userProfile?.stats?.totalSent > 0) || false,
         points: backendStats.points || userProfile?.stats?.points || 0
     };
 

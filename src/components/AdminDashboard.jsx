@@ -43,7 +43,7 @@ export function AdminDashboard({
     ) || [];
 
     // Eligible users count (users who have sent payments)
-    const eligibleUsers = users?.filter(u => (u.total_sent || 0) > 0) || [];
+    const eligibleUsers = users?.filter(u => (u.total_sent || 0) > 0 || u.has_sent) || [];
 
     // Total entries calculation - each eligible user counts as 1 entry
     const totalEntries = eligibleUsers.length;
