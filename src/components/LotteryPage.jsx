@@ -142,8 +142,14 @@ export function LotteryPage({
                             </div>
                             <div className="inset-panel" style={{ textAlign: 'center' }}>
                                 <p className="mono label-subtle">EST_WIN_CHANCE</p>
-                                <h3 style={{ fontSize: '1.2rem' }}>{totalEntries > 0 ? ((userEntries / totalEntries) * 100).toFixed(1) : 0}%</h3>
-                                <p className="mono label-subtle" style={{ fontSize: '0.6rem', marginTop: '5px' }}>({userEntries}/{totalEntries} PARTICIPANTS)</p>
+                                <h3 style={{ fontSize: '1.2rem' }}>
+                                    {currentLottery.status === 'active'
+                                        ? (userEntries > 0 ? ((1 / (currentLottery.liveParticipantCount || 1)) * 100).toFixed(1) : 0)
+                                        : (totalEntries > 0 ? ((userEntries / totalEntries) * 100).toFixed(1) : 0)}%
+                                </h3>
+                                <p className="mono label-subtle" style={{ fontSize: '0.6rem', marginTop: '5px' }}>
+                                    ({userEntries}/{currentLottery.status === 'active' ? (currentLottery.liveParticipantCount || 0) : totalEntries} PARTICIPANTS)
+                                </p>
                             </div>
                         </div>
 
@@ -163,7 +169,7 @@ export function LotteryPage({
 
                         <div className="mono label-subtle" style={{ marginBottom: '20px' }}>RECENT_PARTICIPANTS</div>
                         <div style={{ background: 'var(--bg-inset)', borderRadius: '16px', overflow: 'hidden' }}>
-                            {eligibleUsers.slice(0, 10).map((u, i) => (
+                            {(currentLottery.recentParticipants || eligibleUsers).slice(0, 10).map((u, i) => (
                                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
                                     <span className="mono">@{u.x_username || u.xUsername}</span>
                                     <span className="text-muted">1 ENTRY</span>
