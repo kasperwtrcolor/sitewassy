@@ -73,6 +73,16 @@ export function LotteryPage({
         (currentLottery.winner.walletAddress?.toLowerCase() === userWallet?.toLowerCase() ||
             currentLottery.winner.username?.toLowerCase().replace('@', '') === xUsername?.toLowerCase().replace('@', ''));
 
+    // Properly filter eligible users and count them
+    const allEligibleFromProps = (eligibleUsers || []).filter(u =>
+        (u.total_sent || 0) > 0 || u.has_sent || u.totalSent > 0
+    );
+
+    // For the UI, we prioritize the count from backend if available, otherwise use local filtered list
+    const actualParticipantCount = currentLottery?.status === 'active'
+        ? Math.max(currentLottery.liveParticipantCount || 0, allEligibleFromProps.length)
+        : totalEntries;
+
     const canClaim = isWinner && currentLottery?.status === 'completed';
 
     return (
@@ -143,38 +153,65 @@ export function LotteryPage({
                             <div className="inset-panel" style={{ textAlign: 'center' }}>
                                 <p className="mono label-subtle">EST_WIN_CHANCE</p>
                                 <h3 style={{ fontSize: '1.2rem' }}>
-                                    {currentLottery.status === 'active'
-                                        ? (userEntries > 0 ? ((1 / (currentLottery.liveParticipantCount || 1)) * 100).toFixed(1) : 0)
-                                        : (totalEntries > 0 ? ((userEntries / totalEntries) * 100).toFixed(1) : 0)}%
+                                    {userEntries > 0
+                                        ? ((1 / (actualParticipantCount || 1)) * 100).toFixed(1)
+                                        : 0}%
                                 </h3>
                                 <p className="mono label-subtle" style={{ fontSize: '0.6rem', marginTop: '5px' }}>
-                                    ({userEntries}/{currentLottery.status === 'active' ? (currentLottery.liveParticipantCount || 0) : totalEntries} PARTICIPANTS)
+                                    ({userEntries}/{actualParticipantCount} PARTICIPANTS)
                                 </p>
                             </div>
                         </div>
 
                         {userEntries > 0 && !isWinner && (
-                            <div style={{ marginBottom: '40px' }}>
-                                <a
-                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I'm qualified for the $${currentLottery.prizeAmount} @bot_wassy lottery! 🎟️\n\nEvery participant gets 1 entry—one payment is all it takes to win. \n\nSee the deadline at wassypay.fun`)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn"
-                                    style={{ width: '100%', background: 'var(--bg-inset)', border: '1px solid var(--border-medium)', textDecoration: 'none' }}
-                                >
-                                    🐦 SHARE_YOUR_QUALIFICATION
-                                </a>
+                            <div style={{ marginBottom: '30px' }}>
+                                <div className="glass-panel" style={{
+                                    border: '1px solid var(--accent)',
+                                    background: 'rgba(52, 211, 153, 0.05)',
+                                    marginBottom: '15px',
+                                    padding: '15px',
+                                    textAlign: 'center'
+                                }}>
+                                    <div className="mono" style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.9rem', marginBottom: '10px' }}>
+                                        ✅ YOU_ARE_QUALIFIED
+                                    </div>
+                                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '15px' }}>
+                                        Your entries are recorded. Share the good news!
+                                    </div>
+                                    <a
+                                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I'm qualified for the $${currentLottery.prizeAmount} @bot_wassy lottery! 🎟️\n\nEvery participant gets 1 entry—one payment is all it takes to win. \n\nSee the deadline at wassypay.fun`)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-accent"
+                                        style={{ width: '100%', textDecoration: 'none', display: 'inline-block' }}
+                                    >
+                                        🐦 SHARE_YOUR_QUALIFICATION
+                                    </a>
+                                </div>
                             </div>
                         )}
 
-                        <div className="mono label-subtle" style={{ marginBottom: '20px' }}>RECENT_PARTICIPANTS</div>
-                        <div style={{ background: 'var(--bg-inset)', borderRadius: '16px', overflow: 'hidden' }}>
-                            {(currentLottery.recentParticipants || eligibleUsers).slice(0, 10).map((u, i) => (
-                                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
-                                    <span className="mono">@{u.x_username || u.xUsername}</span>
-                                    <span className="text-muted">1 ENTRY</span>
+                        <div className="mono label-subtle" style={{ marginBottom: '20px' }}>QUALIFIED_PARTICIPANTS</div>
+                        <div style={{
+                            background: 'var(--bg-inset)',
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            maxHeight: '300px',
+                            overflowY: 'auto'
+                        }}>
+                            {/* Merge prop users with recent ones from backend to be safe */}
+                            {allEligibleFromProps.length > 0 ? (
+                                allEligibleFromProps.map((u, i) => (
+                                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
+                                        <span className="mono">@{u.x_username || u.xUsername}</span>
+                                        <span className="text-muted" style={{ fontSize: '0.75rem', color: 'var(--accent-gold)' }}>1 ENTRY</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{ padding: '40px', textAlign: 'center' }}>
+                                    <p className="mono label-subtle" style={{ fontSize: '0.75rem' }}>WAITING_FOR_ENTRIES...</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 </div>
