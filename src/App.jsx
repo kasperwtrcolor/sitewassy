@@ -461,6 +461,7 @@ function WassyPayApp() {
             currentLottery={currentLottery}
             lotteryHistory={lotteryHistory}
             eligibleUsers={allUsers || []}
+            lotteryParticipants={lotteryParticipants || []}
             userStats={userStats}
             userWallet={solanaWallet?.address}
             xUsername={xUsername}

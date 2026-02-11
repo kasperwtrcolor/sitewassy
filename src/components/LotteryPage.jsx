@@ -74,7 +74,8 @@ export function LotteryPage({
             currentLottery.winner.username?.toLowerCase().replace('@', '') === xUsername?.toLowerCase().replace('@', ''));
 
     // Properly filter eligible users and count them
-    const allEligibleFromProps = (eligibleUsers || []).filter(u =>
+    // Prioritize dedicated participants list from useWassy
+    const allEligibleFromProps = (props.lotteryParticipants || eligibleUsers || []).filter(u =>
         (u.total_sent || 0) > 0 || u.has_sent || u.totalSent > 0
     );
 

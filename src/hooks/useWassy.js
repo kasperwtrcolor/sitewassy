@@ -36,6 +36,7 @@ export function useWassy() {
     const [pendingClaims, setPendingClaims] = useState([]);
     const [pendingOutgoing, setPendingOutgoing] = useState([]); // Payments user sent that aren't claimed yet
     const [allUsers, setAllUsers] = useState([]);
+    const [lotteryParticipants, setLotteryParticipants] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -275,6 +276,19 @@ export function useWassy() {
         }
     }, []);
 
+    // Fetch dedicated lottery participants (all users with has_sent: true)
+    const fetchLotteryParticipants = useCallback(async () => {
+        try {
+            const response = await fetch(`${API}/api/lottery/participants`);
+            if (response.ok) {
+                const data = await response.json();
+                setLotteryParticipants(data.participants || []);
+            }
+        } catch (err) {
+            console.error('Error fetching lottery participants:', err);
+        }
+    }, []);
+
     // Claim a payment
     const claimPayment = async (claim) => {
         setError('');
@@ -472,11 +486,13 @@ export function useWassy() {
         fetchPayments();
         fetchPendingClaims();
         fetchAllUsers();
+        fetchLotteryParticipants();
 
         const interval = setInterval(() => {
             fetchPayments();
             fetchPendingClaims();
             fetchAllUsers();
+            fetchLotteryParticipants();
         }, 120000); // Every 2 minutes (was 30s)
 
         return () => clearInterval(interval);
@@ -516,6 +532,7 @@ export function useWassy() {
 
         // Admin
         allUsers,
+        lotteryParticipants,
 
         // Actions
         handleFundWallet,
