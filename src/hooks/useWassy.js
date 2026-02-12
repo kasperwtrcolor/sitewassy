@@ -3,7 +3,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useWallets, useSignAndSendTransaction, useExportWallet } from '@privy-io/react-auth/solana';
 // Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
-import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
+import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 import { API, USDC_MINT, WASSY_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_USERNAMES } from '../constants';
 import { useFirestore } from './useFirestore';
 
@@ -183,10 +183,10 @@ export function useWassy() {
             }
         }
 
-        // Fetch WASSY balance
+        // Fetch WASSY balance (Token-2022)
         try {
             const wassyMint = new PublicKey(WASSY_MINT);
-            const ata = await getAssociatedTokenAddress(wassyMint, walletPubkey);
+            const ata = await getAssociatedTokenAddress(wassyMint, walletPubkey, false, TOKEN_2022_PROGRAM_ID);
             const tokenAccountInfo = await connection.getTokenAccountBalance(ata);
             const wassyBal = parseFloat(tokenAccountInfo.value.uiAmount || 0);
             setWassyBalance(wassyBal);
