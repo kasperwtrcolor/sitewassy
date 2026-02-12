@@ -385,10 +385,14 @@ export function useWassy() {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = walletPubkey;
 
-            // Use serialized transaction as it was working before
+            // Use serialized transaction with improved formatting for sponsorship
             const result = await signAndSendTransaction({
-                transaction: transaction.serialize({ requireAllSignatures: false }),
+                transaction: Uint8Array.from(transaction.serialize({
+                    requireAllSignatures: false,
+                    verifySignatures: false
+                })),
                 wallet: solanaWallet,
+                chain: 'solana:mainnet',
                 options: {
                     sponsor: true
                 }
