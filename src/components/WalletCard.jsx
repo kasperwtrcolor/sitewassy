@@ -12,7 +12,8 @@ export function WalletCard({
     onFundWallet,
     onExportWallet,
 }) {
-    const needsGas = solBalance < 0.005;
+    // Gas sponsorship is enabled, no need for manual SOL check for authorization
+    const needsGas = false;
 
     if (!solanaWallet) {
         return (
@@ -139,11 +140,11 @@ export function WalletCard({
 
                     <button
                         onClick={() => onAuthorize(delegationAmount)}
-                        disabled={isAuthorizing || solBalance === 0}
+                        disabled={isAuthorizing}
                         className="btn btn-accent"
                         style={{ width: '100%', borderRadius: '12px' }}
                     >
-                        {isAuthorizing ? 'AUTHORIZING...' : (solBalance === 0 ? 'GAS REQUIRED' : 'AUTHORIZE VAULT')}
+                        {isAuthorizing ? 'AUTHORIZING...' : 'AUTHORIZE VAULT'}
                     </button>
                 </div>
             )}
