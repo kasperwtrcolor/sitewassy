@@ -35,6 +35,7 @@ function WassyPayApp() {
     solanaWallet,
     walletsReady,
     walletBalance,
+    wassyBalance,
     solBalance,
     hasEmbeddedWallet,
     xUsername,
@@ -394,6 +395,7 @@ function WassyPayApp() {
             <WalletCard
               solanaWallet={solanaWallet}
               walletBalance={walletBalance}
+              wassyBalance={wassyBalance}
               solBalance={solBalance}
               isDelegated={isDelegated}
               delegationAmount={delegationAmount}

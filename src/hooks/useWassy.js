@@ -4,7 +4,7 @@ import { useWallets, useSignAndSendTransaction, useExportWallet } from '@privy-i
 // Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
-import { API, USDC_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_USERNAMES } from '../constants';
+import { API, USDC_MINT, WASSY_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_USERNAMES } from '../constants';
 import { useFirestore } from './useFirestore';
 
 export function useWassy() {
@@ -29,6 +29,7 @@ export function useWassy() {
 
     // State
     const [walletBalance, setWalletBalance] = useState(0);
+    const [wassyBalance, setWassyBalance] = useState(0);
     const [solBalance, setSolBalance] = useState(0); // SOL balance for gas fees
     const [isDelegated, setIsDelegated] = useState(false);
     const [delegationAmount, setDelegationAmount] = useState(1000);
@@ -179,6 +180,22 @@ export function useWassy() {
             } else {
                 console.error('Error fetching USDC balance:', err);
                 // Don't reset to 0 on network errors, keep previous value
+            }
+        }
+
+        // Fetch WASSY balance
+        try {
+            const wassyMint = new PublicKey(WASSY_MINT);
+            const ata = await getAssociatedTokenAddress(wassyMint, walletPubkey);
+            const tokenAccountInfo = await connection.getTokenAccountBalance(ata);
+            const wassyBal = parseFloat(tokenAccountInfo.value.uiAmount || 0);
+            setWassyBalance(wassyBal);
+        } catch (err) {
+            if (err.message?.includes('could not find account') ||
+                err.name === 'TokenAccountNotFoundError') {
+                setWassyBalance(0);
+            } else {
+                console.error('Error fetching WASSY balance:', err);
             }
         }
     }, [solanaWallet?.address]);
@@ -517,6 +534,7 @@ export function useWassy() {
         walletsReady,
         walletBalance,
         solBalance,
+        wassyBalance,
         hasEmbeddedWallet,
 
         // User info

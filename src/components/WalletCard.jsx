@@ -3,6 +3,7 @@ import '../index.css';
 export function WalletCard({
     solanaWallet,
     walletBalance,
+    wassyBalance,
     solBalance,
     isDelegated,
     delegationAmount,
@@ -37,10 +38,34 @@ export function WalletCard({
             {/* Balance Display */}
             <div className="inset-panel" style={{ marginBottom: '25px' }}>
                 <div className="mono label-subtle" style={{ marginBottom: '8px', fontSize: '0.6rem' }}>CONNECTED_BALANCE</div>
-                <div className="mono" style={{ fontSize: '2.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+
+                {/* USDC Balance */}
+                <div className="mono" style={{ fontSize: '2.5rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '5px' }}>
                     ${walletBalance.toFixed(2)}
                     <span className="text-muted" style={{ fontSize: '1rem', marginLeft: '10px' }}>USDC</span>
                 </div>
+
+                {/* WASSY Balance */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                    <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        border: '2px solid var(--accent)',
+                        background: 'var(--bg-inset)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <img src="/favicon.jpg" alt="WASSY" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div className="mono" style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--accent)' }}>
+                        {new Intl.NumberFormat().format(Math.floor(wassyBalance))}
+                        <span style={{ fontSize: '0.7rem', marginLeft: '5px', opacity: 0.8 }}>$WASSY</span>
+                    </div>
+                </div>
+
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px', borderTop: '1px solid var(--border-subtle)', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }} className="mono">
                     <span>{walletBalance.toFixed(4)} USDC_NATIVE</span>
                     <span style={{ color: needsGas ? 'var(--error)' : 'var(--text-muted)' }}>GAS: {solBalance.toFixed(4)} SOL</span>

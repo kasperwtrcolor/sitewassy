@@ -4,6 +4,7 @@ export const API = import.meta.env.VITE_API_URL || "https://wassy-pay-backend.on
 export const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID;
 export const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS || "Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE";
 export const USDC_MINT = import.meta.env.VITE_USDC_MINT || "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+export const WASSY_MINT = "9ExrBv3hVJBue6yiZwpBHtEjZ7WqfhnUT7g4YQ9Vpump";
 // IMPORTANT: Set VITE_SOLANA_RPC in Vercel to your Helius API key
 export const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC;
 export const ADMIN_WALLET = import.meta.env.VITE_ADMIN_WALLET || 'Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE';
