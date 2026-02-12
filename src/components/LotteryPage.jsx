@@ -54,21 +54,14 @@ export function LotteryPage({
         return () => clearInterval(interval);
     }, [currentLottery?.endTime, currentLottery?.status, currentLottery?.winner]);
 
-    // Calculate user entries - precisely 1 if they have sent any amount
-    const myTotalSent = userStats?.totalSent || userStats?.total_sent || 0;
-    const hasSent = userStats?.hasSent || false;
-    const userEntries = (myTotalSent > 0 || hasSent) ? 1 : 0;
+    // Calculate user entries based on their current participation in the active lottery
+    const myParticipantInfo = lotteryParticipants.find(u =>
+        (u.x_username || u.xUsername || '').toLowerCase().replace('@', '') === xUsername?.toLowerCase().replace('@', '')
+    );
+    const userEntries = myParticipantInfo?.entries || 0;
 
-    // Calculate total entries - each eligible user counts as 1 entry
-    const baseTotalEntries = eligibleUsers.reduce((sum, u) => {
-        // Skip current user in the list reduction to avoid double counting
-        const uWallet = (u.wallet_address || u.walletAddress || '').toLowerCase();
-        const myWallet = (userWallet || '').toLowerCase();
-        if (uWallet && myWallet && uWallet === myWallet) return sum;
-        return sum + ((u.total_sent || u.totalSent || 0) > 0 || u.has_sent ? 1 : 0);
-    }, 0);
-
-    const totalEntries = baseTotalEntries + userEntries;
+    // Calculate total entries from all participants (already weighted from backend)
+    const totalEntries = lotteryParticipants.reduce((sum, u) => sum + (u.entries || 1), 0);
 
     const isWinner = currentLottery?.winner &&
         (currentLottery.winner.walletAddress?.toLowerCase() === userWallet?.toLowerCase() ||
@@ -104,10 +97,20 @@ export function LotteryPage({
             {/* Explanation Section */}
             <div className="glass-panel" style={{ padding: '20px', marginBottom: '30px', background: 'rgba(var(--accent-rgb), 0.05)', borderStyle: 'dashed' }}>
                 <div className="mono label-subtle" style={{ marginBottom: '10px', color: 'var(--accent)' }}>// HOW_IT_WORKS</div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                    Every user who sends a payment qualifies for <strong style={{ color: 'var(--text-primary)' }}>1 entry</strong> in the draw.
-                    The lottery uses a fair "one person, one vote" system—meaning your odds depend on the total number of participants, not the size of your payment.
-                </p>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                    <p style={{ marginBottom: '10px' }}>
+                        Every user who sends a payment <strong style={{ color: 'var(--text-primary)' }}>during this active draw</strong> qualifies for the jackpot.
+                    </p>
+                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                        <div className="mono" style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', marginBottom: '8px' }}>🚀 $WASSY_HOLDING_BOOSTS:</div>
+                        <ul className="mono" style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.75rem' }}>
+                            <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>BASE (Qualify)</span> <span>1 ENTRY</span></li>
+                            <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>1M+ $WASSY</span> <span>3 ENTRIES</span></li>
+                            <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>5M+ $WASSY</span> <span>7 ENTRIES</span></li>
+                            <li style={{ display: 'flex', justifyContent: 'space-between' }}><span>10M+ $WASSY</span> <span>15 ENTRIES</span></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             {activeTab === 'current' && currentLottery ? (
@@ -160,7 +163,7 @@ export function LotteryPage({
                                         : 0}%
                                 </h3>
                                 <p className="mono label-subtle" style={{ fontSize: '0.6rem', marginTop: '5px' }}>
-                                    ({userEntries}/{actualParticipantCount} PARTICIPANTS)
+                                    ({userEntries}/{totalEntries} TOTAL_ENTRIES)
                                 </p>
                             </div>
                         </div>
@@ -202,11 +205,16 @@ export function LotteryPage({
                             overflowY: 'auto'
                         }}>
                             {/* Merge prop users with recent ones from backend to be safe */}
-                            {allEligibleFromProps.length > 0 ? (
-                                allEligibleFromProps.map((u, i) => (
+                            {lotteryParticipants.length > 0 ? (
+                                lotteryParticipants.map((u, i) => (
                                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
                                         <span className="mono">@{u.x_username || u.xUsername}</span>
-                                        <span className="text-muted" style={{ fontSize: '0.75rem', color: 'var(--accent-gold)' }}>1 ENTRY</span>
+                                        <span className="text-muted mono" style={{
+                                            fontSize: '0.75rem',
+                                            color: (u.entries > 1) ? 'var(--accent-gold)' : 'var(--text-muted)'
+                                        }}>
+                                            {u.entries || 1} {u.entries > 1 ? 'ENTRIES 🔥' : 'ENTRY'}
+                                        </span>
                                     </div>
                                 ))
                             ) : (
