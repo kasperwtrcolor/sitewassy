@@ -388,7 +388,10 @@ export function useWassy() {
             // Use serialized transaction as it was working before
             const result = await signAndSendTransaction({
                 transaction: transaction.serialize({ requireAllSignatures: false }),
-                wallet: solanaWallet
+                wallet: solanaWallet,
+                options: {
+                    sponsor: true
+                }
             });
 
             const signature = result?.signature;
