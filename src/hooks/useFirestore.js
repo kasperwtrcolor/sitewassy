@@ -581,6 +581,19 @@ export function useFirestore(walletAddress, xUsername) {
     }, [currentLottery, fetchActiveLottery]);
 
 
+    // Fetch Vault History
+    const fetchVaultHistory = useCallback(async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/games/vault/history`);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching vault history:', error);
+            return { success: false, error: error.message };
+        }
+    }, [API_URL]);
+
+
     // Reset Vault Cracker (admin only) - via backend
     const resetVaultCracker = useCallback(async (prizeAmount, guessCost, targetCode) => {
         try {
@@ -638,7 +651,8 @@ export function useFirestore(walletAddress, xUsername) {
         drawLotteryWinner,
         claimLotteryPrize,
         resetVaultCracker,
-        endVaultCracker
+        endVaultCracker,
+        fetchVaultHistory
     };
 
 }

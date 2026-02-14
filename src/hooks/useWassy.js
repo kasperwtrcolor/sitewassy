@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useWallets, useSignAndSendTransaction, useExportWallet } from '@privy-io/react-auth/solana';
 // Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
-import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { Connection, PublicKey, Transaction, ComputeBudgetProgram } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 import { API, USDC_MINT, WASSY_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_USERNAMES } from '../constants';
 import { useFirestore } from './useFirestore';
@@ -33,6 +33,8 @@ export function useWassy() {
     const [solBalance, setSolBalance] = useState(0); // SOL balance for gas fees
     const [isDelegated, setIsDelegated] = useState(false);
     const [delegationAmount, setDelegationAmount] = useState(1000);
+    const [isWassyDelegated, setIsWassyDelegated] = useState(false);
+    const [wassyDelegationAmount, setWassyDelegationAmount] = useState(1000000);
     const [payments, setPayments] = useState([]);
     const [pendingClaims, setPendingClaims] = useState([]);
     const [pendingOutgoing, setPendingOutgoing] = useState([]); // Payments user sent that aren't claimed yet
@@ -64,7 +66,8 @@ export function useWassy() {
         drawLotteryWinner,
         claimLotteryPrize: firebaseClaimLotteryPrize,
         resetVaultCracker,
-        endVaultCracker
+        endVaultCracker,
+        fetchVaultHistory
     } = useFirestore(solanaWallet?.address, xUsername);
 
 
@@ -226,11 +229,18 @@ export function useWassy() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    setIsDelegated(data.is_delegated || false);
-                    setDelegationAmount(data.delegation_amount || 1000);
+                    if (data.success) {
+                        setIsDelegated(!!data.is_delegated);
+                        setDelegationAmount(data.delegation_amount || 0);
+                        setIsWassyDelegated(!!data.is_wassy_delegated);
+                        setWassyDelegationAmount(data.wassy_delegation_amount || 0);
+                        return data;
+                    }
+                    return { success: false };
                 }
-            } catch (err) {
-                console.error('Error registering user:', err);
+            } catch (e) {
+                console.error("registerUser error:", e);
+                return { success: false };
             }
         };
 
@@ -354,8 +364,21 @@ export function useWassy() {
         }
     };
 
-    // Authorize delegation
+    // Authorize delegation (USDC)
     const authorizeDelegation = async (amount) => {
+        return await handleAuthorization(amount, false);
+    };
+
+    // Authorize WASSY delegation
+    const authorizeWassyDelegation = async (amount) => {
+        return await handleAuthorization(amount, true);
+    };
+
+    const handleAuthorization = async (amount, isWassy = false) => {
+        const tokenLabel = isWassy ? 'WASSY' : 'USDC';
+        const mintAddress = isWassy ? WASSY_MINT : USDC_MINT;
+        const programId = isWassy ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
+
         if (!solanaWallet?.address || !VAULT_ADDRESS) {
             setError('Wallet or vault address not configured');
             return false;
@@ -369,27 +392,27 @@ export function useWassy() {
             const connection = new Connection(SOLANA_RPC);
             const walletPubkey = new PublicKey(solanaWallet.address);
             const vaultPubkey = new PublicKey(VAULT_ADDRESS);
-            const usdcMint = new PublicKey(USDC_MINT);
+            const mintPubkey = new PublicKey(mintAddress);
 
-            const userATA = await getAssociatedTokenAddress(usdcMint, walletPubkey);
+            const userATA = await getAssociatedTokenAddress(mintPubkey, walletPubkey, false, programId);
             const accountInfo = await connection.getAccountInfo(userATA);
 
             const transaction = new Transaction();
+            transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50000 }));
 
-            // 1. If user doesn't have a USDC token account, add instruction to create it
             if (!accountInfo) {
-                console.log('Adding instruction to create USDC ATA...');
+                console.log(`Adding instruction to create ${tokenLabel} ATA...`);
                 transaction.add(
                     createAssociatedTokenAccountInstruction(
-                        walletPubkey, // payer
-                        userATA,      // ata
-                        walletPubkey, // owner
-                        usdcMint      // mint
+                        walletPubkey,
+                        userATA,
+                        walletPubkey,
+                        mintPubkey,
+                        programId
                     )
                 );
             }
 
-            // 2. Add the approve instruction
             const amountLamports = Math.floor(amount * 1_000_000);
             transaction.add(createApproveInstruction(
                 userATA,
@@ -397,14 +420,13 @@ export function useWassy() {
                 walletPubkey,
                 amountLamports,
                 [],
-                TOKEN_PROGRAM_ID
+                programId
             ));
 
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = walletPubkey;
 
-            // Use serialized transaction with improved formatting for sponsorship
             const result = await signAndSendTransaction({
                 transaction: Uint8Array.from(transaction.serialize({
                     requireAllSignatures: false,
@@ -412,39 +434,35 @@ export function useWassy() {
                 })),
                 wallet: solanaWallet,
                 chain: 'solana:mainnet',
-                options: {
-                    sponsor: true
-                }
+                options: { sponsor: true }
             });
 
             const signature = result?.signature;
 
-            // Call backend to record authorization
             await fetch(`${API}/api/authorize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     wallet: solanaWallet.address,
                     amount: amount,
-                    signature: signature ? 'confirmed' : 'unknown'
+                    signature: signature ? 'confirmed' : 'unknown',
+                    is_wassy: isWassy
                 })
             });
 
-            // Update Firebase for real-time stats
-            await updateFirebaseAuth(amount);
+            if (isWassy) {
+                setIsWassyDelegated(true);
+                setWassyDelegationAmount(amount);
+            } else {
+                await updateFirebaseAuth(amount);
+                setIsDelegated(true);
+                setDelegationAmount(amount);
+            }
 
-            // Update UI state
-            setIsDelegated(true);
-            setDelegationAmount(amount);
-            setSuccess(`✓ Authorized ${amount} USDC! You can now make payments.`);
-
-            // Refresh balance to show updated state
+            setSuccess(`✓ Authorized ${amount.toLocaleString()} ${tokenLabel}!`);
             await fetchBalance();
-
             return true;
-
         } catch (err) {
-            // Sanitize error to avoid leaking RPC URL
             const cleanMessage = err.message?.split('?api-key')[0] || 'Unknown error';
             setError(`Failed: ${cleanMessage}`);
             return false;
@@ -547,6 +565,8 @@ export function useWassy() {
         // Delegation
         isDelegated,
         delegationAmount,
+        isWassyDelegated,
+        wassyDelegationAmount,
         setDelegationAmount,
         authorizeDelegation,
 
@@ -587,6 +607,8 @@ export function useWassy() {
         claimLotteryPrize,
         resetVaultCracker,
         endVaultCracker,
+        fetchVaultHistory,
+        authorizeWassyDelegation,
 
         // UI state
         loading: loading || firebaseLoading,

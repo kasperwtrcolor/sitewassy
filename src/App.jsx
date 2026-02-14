@@ -75,7 +75,10 @@ function WassyPayApp() {
     claimLotteryPrize,
     fetchBalance,
     resetVaultCracker,
-    endVaultCracker
+    endVaultCracker,
+    fetchVaultHistory,
+    isWassyDelegated,
+    authorizeWassyDelegation
   } = useWassy();
 
 
@@ -475,6 +478,9 @@ function WassyPayApp() {
             xUsername={xUsername}
             wassyBalance={wassyBalance}
             fetchWassyBalance={fetchBalance}
+            isWassyDelegated={isWassyDelegated}
+            onAuthorizeWassy={authorizeWassyDelegation}
+            onFetchVaultHistory={fetchVaultHistory}
             isClaiming={isClaimingPrize}
             onClaim={async (id) => {
               setIsClaimingPrize(true);
@@ -502,7 +508,7 @@ function WassyPayApp() {
               }
             }}
             onRefresh={fetchActiveLottery}
-            onFetchHistory={fetchLotteryHistory}
+            onFetchLotteryHistory={fetchLotteryHistory}
             onBack={() => setCurrentPage('home')}
           />
         ) : null}

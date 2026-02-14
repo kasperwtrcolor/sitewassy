@@ -14,7 +14,10 @@ export function GamesPage({
     fetchWassyBalance,
     onClaim,
     onRefresh,
-    onFetchHistory,
+    onFetchLotteryHistory,
+    onFetchVaultHistory,
+    isWassyDelegated,
+    onAuthorizeWassy,
     isClaiming = false,
     onBack,
     lotteryParticipants = []
@@ -25,7 +28,7 @@ export function GamesPage({
 
     useEffect(() => {
         onRefresh?.();
-        onFetchHistory?.();
+        onFetchLotteryHistory?.();
     }, []);
 
     useEffect(() => {
@@ -124,8 +127,8 @@ export function GamesPage({
                 <>
                     {/* Tabs */}
                     <div className="glass-panel" style={{ display: 'flex', gap: '10px', padding: '10px', borderRadius: '100px', marginBottom: '30px' }}>
-                        <button onClick={() => setActiveTab('current')} className="btn" style={{ flex: 1, background: activeTab === 'current' ? 'var(--text-primary)' : 'transparent', color: activeTab === 'current' ? 'var(--bg-primary)' : 'var(--text-primary)' }}>ACTIVE_DRAW</button>
-                        <button onClick={() => setActiveTab('history')} className="btn" style={{ flex: 1, background: activeTab === 'history' ? 'var(--text-primary)' : 'transparent', color: activeTab === 'history' ? 'var(--bg-primary)' : 'var(--text-primary)' }}>HISTORY</button>
+                        <button onClick={() => { setActiveTab('current'); onFetchLotteryHistory?.(); }} className="btn" style={{ flex: 1, background: activeTab === 'current' ? 'var(--text-primary)' : 'transparent', color: activeTab === 'current' ? 'var(--bg-primary)' : 'var(--text-primary)' }}>ACTIVE_DRAW</button>
+                        <button onClick={() => { setActiveTab('history'); onFetchLotteryHistory?.(); }} className="btn" style={{ flex: 1, background: activeTab === 'history' ? 'var(--text-primary)' : 'transparent', color: activeTab === 'history' ? 'var(--bg-primary)' : 'var(--text-primary)' }}>HISTORY</button>
                     </div>
 
                     {/* Explanation Section */}
@@ -305,6 +308,9 @@ export function GamesPage({
                     xUsername={xUsername}
                     wassyBalance={wassyBalance}
                     fetchWassyBalance={fetchWassyBalance}
+                    isWassyDelegated={isWassyDelegated}
+                    onAuthorizeWassy={onAuthorizeWassy}
+                    onFetchHistory={onFetchVaultHistory}
                 />
             )}
         </div>
