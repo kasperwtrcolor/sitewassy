@@ -581,6 +581,22 @@ export function useFirestore(walletAddress, xUsername) {
     }, [currentLottery, fetchActiveLottery]);
 
 
+    // Reset Vault Cracker (admin only) - via backend
+    const resetVaultCracker = useCallback(async (prizeAmount, guessCost, targetCode) => {
+        try {
+            const response = await fetch(`${API_URL}/api/admin/games/vault/reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prizeAmount, guessCost, targetCode })
+            });
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error resetting vault cracker:', error);
+            return { success: false, error: error.message };
+        }
+    }, [API_URL]);
+
 
     return {
         userProfile,
@@ -604,7 +620,8 @@ export function useFirestore(walletAddress, xUsername) {
         fetchLotteryHistory,
         setLotteryPrize,
         drawLotteryWinner,
-        claimLotteryPrize
+        claimLotteryPrize,
+        resetVaultCracker
     };
 
 }

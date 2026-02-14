@@ -9,7 +9,8 @@ export function AdminDashboard({
     onCreateLottery,
     onActivateLottery,
     onSetLotteryPrize,
-    onDrawLottery
+    onDrawLottery,
+    onResetVaultCracker
 }) {
     const [activeTab, setActiveTab] = useState('overview');
     const [searchTerm, setSearchTerm] = useState('');
@@ -19,6 +20,13 @@ export function AdminDashboard({
     const [newEndTime, setNewEndTime] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [isDrawing, setIsDrawing] = useState(false);
+
+    // Vault Cracker management state
+    const [vaultPrize, setVaultPrize] = useState(50);
+    const [vaultCost, setVaultCost] = useState(50000);
+    const [vaultCode, setVaultCode] = useState('000');
+    const [isResettingVault, setIsResettingVault] = useState(false);
+    const [vaultMessage, setVaultMessage] = useState(null);
 
     // Set default end time to 24 hours from now
     useEffect(() => {
@@ -88,10 +96,28 @@ export function AdminDashboard({
         }
     };
 
+    const handleResetVault = async () => {
+        setIsResettingVault(true);
+        setVaultMessage(null);
+        try {
+            const res = await onResetVaultCracker?.(vaultPrize, vaultCost, vaultCode);
+            if (res.success) {
+                setVaultMessage({ type: 'success', text: 'Vault Cracker reset successfully!' });
+            } else {
+                setVaultMessage({ type: 'error', text: res.message || 'Reset failed' });
+            }
+        } catch (e) {
+            setVaultMessage({ type: 'error', text: 'Error resetting vault' });
+        } finally {
+            setIsResettingVault(false);
+        }
+    };
+
     const tabs = [
         { id: 'overview', label: '📊 Overview' },
         { id: 'users', label: '👥 Users' },
-        { id: 'lottery', label: '🎰 Lottery' }
+        { id: 'lottery', label: '🎰 Lottery' },
+        { id: 'vault', label: '🔐 Vault Cracker' }
     ];
 
     return (
@@ -401,6 +427,83 @@ export function AdminDashboard({
                             The lottery must be activated for users to see it on the homepage.
                             Winner can be drawn after the end time.
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Vault Cracker Tab */}
+            {activeTab === 'vault' && (
+                <div className="glass-panel" style={{ padding: '25px', marginBottom: '20px' }}>
+                    <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// VAULT_CRACKER_CONTROL</div>
+
+                    <div className="inset-panel" style={{ padding: '20px', marginBottom: '20px' }}>
+                        <div className="engraved" style={{ fontSize: '0.7rem', marginBottom: '20px' }}>RESET GAME MECHANISMS</div>
+
+                        <div style={{ display: 'grid', gap: '20px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label className="mono" style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>JACKPOT (USDC)</label>
+                                    <input
+                                        type="number"
+                                        className="input-field"
+                                        value={vaultPrize}
+                                        onChange={(e) => setVaultPrize(parseFloat(e.target.value) || 0)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mono" style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>GUESS_COST ($WASSY)</label>
+                                    <input
+                                        type="number"
+                                        className="input-field"
+                                        value={vaultCost}
+                                        onChange={(e) => setVaultCost(parseFloat(e.target.value) || 0)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mono" style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>SECRET_CODE (3 DIGITS)</label>
+                                <input
+                                    type="text"
+                                    className="input-field mono"
+                                    maxLength="3"
+                                    value={vaultCode}
+                                    onChange={(e) => setVaultCode(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                                    style={{ fontSize: '1.5rem', textAlign: 'center', letterSpacing: '0.5em' }}
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleResetVault}
+                                disabled={isResettingVault || vaultCode.length !== 3}
+                                className="btn btn-accent"
+                                style={{ padding: '15px' }}
+                            >
+                                {isResettingVault ? 'RESETTING...' : 'RESET & ACTIVATE GAME'}
+                            </button>
+
+                            {vaultMessage && (
+                                <div className="mono" style={{
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    fontSize: '0.8rem',
+                                    textAlign: 'center',
+                                    background: vaultMessage.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    color: vaultMessage.type === 'success' ? 'var(--success)' : 'var(--error)'
+                                }}>
+                                    {vaultMessage.text}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="inset-panel" style={{ padding: '20px' }}>
+                        <div className="engraved" style={{ fontSize: '0.7rem', marginBottom: '10px' }}>GAMEPLAY GUIDELINES</div>
+                        <p className="text-muted" style={{ fontSize: '0.75rem', lineHeight: '1.6' }}>
+                            Resetting the game will set a new secret code and update the prize pool.
+                            Users' $WASSY will be deducted on each guess.
+                            The game remains active until the correct code is guessed or you reset it again.
+                        </p>
                     </div>
                 </div>
             )}

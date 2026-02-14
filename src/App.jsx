@@ -19,9 +19,9 @@ import { MobileNav } from './components/MobileNav';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ProfilePage } from './components/ProfilePage';
 import { AdminDashboard } from './components/AdminDashboard';
-import { LotteryBanner } from './components/LotteryBanner';
+import { GamesBanner } from './components/GamesBanner';
 import { LotteryModal } from './components/LotteryModal';
-import { LotteryPage } from './components/LotteryPage';
+import { GamesPage } from './components/GamesPage';
 
 // Note: ACHIEVEMENTS is now provided by useWassy hook from useFirestore.js
 
@@ -72,7 +72,8 @@ function WassyPayApp() {
     fetchLotteryHistory,
     setLotteryPrize: setLotteryPrizeApi,
     drawLotteryWinner,
-    claimLotteryPrize
+    claimLotteryPrize,
+    fetchBalance
   } = useWassy();
 
 
@@ -124,9 +125,9 @@ function WassyPayApp() {
     }
   }, [error, success, setSuccess, setError]);
 
-  // Fetch lottery history when navigating to lottery page
+  // Fetch lottery history when navigating to games page
   useEffect(() => {
-    if (currentPage === 'lottery') {
+    if (currentPage === 'games') {
       fetchLotteryHistory();
     }
   }, [currentPage, fetchLotteryHistory]);
@@ -346,11 +347,11 @@ function WassyPayApp() {
               PROFILE
             </button>
             <button
-              onClick={() => setCurrentPage('lottery')}
+              onClick={() => setCurrentPage('games')}
               className="btn"
-              style={{ padding: '10px 16px', fontSize: '0.75rem', background: currentPage === 'lottery' ? 'var(--text-primary)' : 'transparent', color: currentPage === 'lottery' ? 'var(--bg-primary)' : 'var(--text-primary)' }}
+              style={{ padding: '10px 16px', fontSize: '0.75rem', background: currentPage === 'games' ? 'var(--text-primary)' : 'transparent', color: currentPage === 'games' ? 'var(--bg-primary)' : 'var(--text-primary)' }}
             >
-              LOTTERY
+              GAMES
             </button>
             {isAdmin && (
               <button
@@ -383,12 +384,12 @@ function WassyPayApp() {
               <ScanCountdown />
             </div>
 
-            {/* Lottery Banner (shows when active/completed) */}
-            <LotteryBanner
+            {/* Games Banner (shows when active/completed) */}
+            <GamesBanner
               lottery={currentLottery}
               userWallet={solanaWallet?.address}
               xUsername={xUsername}
-              onOpenDetails={() => setCurrentPage('lottery')}
+              onOpenDetails={() => setCurrentPage('games')}
             />
 
             {/* Wallet Card */}
@@ -457,10 +458,11 @@ function WassyPayApp() {
                 setError(result.error || 'Failed to draw winner');
               }
             }}
+            onResetVaultCracker={resetVaultCracker}
             onClose={() => setCurrentPage('home')}
           />
-        ) : currentPage === 'lottery' ? (
-          <LotteryPage
+        ) : currentPage === 'games' ? (
+          <GamesPage
             currentLottery={currentLottery}
             lotteryHistory={lotteryHistory}
             eligibleUsers={allUsers || []}
@@ -468,6 +470,8 @@ function WassyPayApp() {
             userStats={userStats}
             userWallet={solanaWallet?.address}
             xUsername={xUsername}
+            wassyBalance={wassyBalance}
+            fetchWassyBalance={fetchBalance}
             isClaiming={isClaimingPrize}
             onClaim={async (id) => {
               setIsClaimingPrize(true);
@@ -589,8 +593,8 @@ function WassyPayApp() {
                 setCurrentPage('home');
                 setShowLeaderboard(false);
                 break;
-              case 'lottery':
-                setCurrentPage('lottery');
+              case 'games':
+                setCurrentPage('games');
                 setShowLeaderboard(false);
                 break;
               case 'profile':

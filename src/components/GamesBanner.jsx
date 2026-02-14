@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../index.css';
 
-export function LotteryBanner({
+export function GamesBanner({
     lottery,
     onOpenDetails,
     userWallet,
@@ -197,4 +197,4 @@ if (!document.querySelector('style[data-lottery-banner]')) {
     document.head.appendChild(style);
 }
 
-export default LotteryBanner;
+export default GamesBanner;
