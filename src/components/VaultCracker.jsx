@@ -250,7 +250,7 @@ export function VaultCracker({
                                                 className="btn btn-accent"
                                                 style={{ width: '100%', padding: '20px', fontSize: '1.2rem', fontWeight: 800, letterSpacing: '2px' }}
                                             >
-                                                {isGuessing ? 'DECODING...' : `CRACK VAULT (${(gameStatus?.guessCost / 1000).toFixed(0)}k $WASSY)`}
+                                                {isGuessing ? 'DECODING...' : `CRACK VAULT (${(gameStatus?.guessCost || 0).toLocaleString()} $WASSY)`}
                                             </button>
                                         )}
                                         <p className="mono label-subtle" style={{ color: 'var(--error)', marginTop: '15px', fontSize: '0.65rem' }}>

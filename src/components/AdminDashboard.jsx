@@ -470,10 +470,11 @@ export function AdminDashboard({
                                     />
                                 </div>
                                 <div>
-                                    <label className="mono" style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>GUESS_COST ($WASSY)</label>
+                                    <label className="mono" style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>GUESS_COST ($WASSY - FULL NUMBER)</label>
                                     <input
                                         type="number"
                                         className="input-field"
+                                        placeholder="e.g. 50000"
                                         value={vaultCost}
                                         onChange={(e) => setVaultCost(parseFloat(e.target.value) || 0)}
                                     />
