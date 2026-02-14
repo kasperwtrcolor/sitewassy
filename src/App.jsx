@@ -74,7 +74,8 @@ function WassyPayApp() {
     drawLotteryWinner,
     claimLotteryPrize,
     fetchBalance,
-    resetVaultCracker
+    resetVaultCracker,
+    endVaultCracker
   } = useWassy();
 
 
@@ -460,6 +461,7 @@ function WassyPayApp() {
               }
             }}
             onResetVaultCracker={resetVaultCracker}
+            onEndVaultCracker={endVaultCracker}
             onClose={() => setCurrentPage('home')}
           />
         ) : currentPage === 'games' ? (

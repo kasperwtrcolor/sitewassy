@@ -598,6 +598,22 @@ export function useFirestore(walletAddress, xUsername) {
     }, [API_URL]);
 
 
+    // End Vault Cracker (admin only) - via backend
+    const endVaultCracker = useCallback(async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/admin/games/vault/end`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error ending vault cracker:', error);
+            return { success: false, error: error.message };
+        }
+    }, [API_URL]);
+
+
     return {
         userProfile,
         leaderboard,
@@ -621,7 +637,8 @@ export function useFirestore(walletAddress, xUsername) {
         setLotteryPrize,
         drawLotteryWinner,
         claimLotteryPrize,
-        resetVaultCracker
+        resetVaultCracker,
+        endVaultCracker
     };
 
 }

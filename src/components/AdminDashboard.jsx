@@ -10,7 +10,8 @@ export function AdminDashboard({
     onActivateLottery,
     onSetLotteryPrize,
     onDrawLottery,
-    onResetVaultCracker
+    onResetVaultCracker,
+    onEndVaultCracker
 }) {
     const [activeTab, setActiveTab] = useState('overview');
     const [searchTerm, setSearchTerm] = useState('');
@@ -102,12 +103,30 @@ export function AdminDashboard({
         try {
             const res = await onResetVaultCracker?.(vaultPrize, vaultCost, vaultCode);
             if (res.success) {
-                setVaultMessage({ type: 'success', text: 'Vault Cracker reset successfully!' });
+                setVaultMessage({ type: 'success', text: 'Vault Cracker started successfully!' });
             } else {
-                setVaultMessage({ type: 'error', text: res.message || 'Reset failed' });
+                setVaultMessage({ type: 'error', text: res.message || 'Start failed' });
             }
         } catch (e) {
-            setVaultMessage({ type: 'error', text: 'Error resetting vault' });
+            setVaultMessage({ type: 'error', text: 'Error starting vault' });
+        } finally {
+            setIsResettingVault(false);
+        }
+    };
+
+    const handleEndVault = async () => {
+        if (!window.confirm("Are you sure you want to end the current game?")) return;
+        setIsResettingVault(true);
+        setVaultMessage(null);
+        try {
+            const res = await onEndVaultCracker?.();
+            if (res.success) {
+                setVaultMessage({ type: 'success', text: 'Vault Cracker ended successfully!' });
+            } else {
+                setVaultMessage({ type: 'error', text: res.message || 'End failed' });
+            }
+        } catch (e) {
+            setVaultMessage({ type: 'error', text: 'Error ending vault' });
         } finally {
             setIsResettingVault(false);
         }
@@ -473,14 +492,24 @@ export function AdminDashboard({
                                 />
                             </div>
 
-                            <button
-                                onClick={handleResetVault}
-                                disabled={isResettingVault || vaultCode.length !== 3}
-                                className="btn btn-accent"
-                                style={{ padding: '15px' }}
-                            >
-                                {isResettingVault ? 'RESETTING...' : 'RESET & ACTIVATE GAME'}
-                            </button>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <button
+                                    onClick={handleResetVault}
+                                    disabled={isResettingVault || vaultCode.length !== 3}
+                                    className="btn btn-primary"
+                                    style={{ padding: '15px' }}
+                                >
+                                    {isResettingVault ? 'PROCESSING...' : 'START / RESET'}
+                                </button>
+                                <button
+                                    onClick={handleEndVault}
+                                    disabled={isResettingVault}
+                                    className="btn"
+                                    style={{ padding: '15px', background: 'var(--error)', color: 'white' }}
+                                >
+                                    {isResettingVault ? 'ENDING...' : 'END GAME'}
+                                </button>
+                            </div>
 
                             {vaultMessage && (
                                 <div className="mono" style={{

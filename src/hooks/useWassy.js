@@ -63,7 +63,8 @@ export function useWassy() {
         setLotteryPrize,
         drawLotteryWinner,
         claimLotteryPrize: firebaseClaimLotteryPrize,
-        resetVaultCracker
+        resetVaultCracker,
+        endVaultCracker
     } = useFirestore(solanaWallet?.address, xUsername);
 
 
@@ -585,6 +586,7 @@ export function useWassy() {
         drawLotteryWinner,
         claimLotteryPrize,
         resetVaultCracker,
+        endVaultCracker,
 
         // UI state
         loading: loading || firebaseLoading,

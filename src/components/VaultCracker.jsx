@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API } from '../constants';
 import '../index.css';
 
 export function VaultCracker({
@@ -16,7 +17,7 @@ export function VaultCracker({
 
     const fetchStatus = async () => {
         try {
-            const res = await fetch('/api/games/vault');
+            const res = await fetch(`${API}/api/games/vault`);
             const data = await res.json();
             if (data.success) {
                 setGameStatus(data.game);
@@ -30,6 +31,9 @@ export function VaultCracker({
 
     useEffect(() => {
         fetchStatus();
+        // Poll every 10 seconds for game status updates
+        const interval = setInterval(fetchStatus, 10000);
+        return () => clearInterval(interval);
     }, []);
 
     const handleGuess = async () => {
@@ -47,7 +51,7 @@ export function VaultCracker({
         setMessage(null);
 
         try {
-            const res = await fetch('/api/games/vault/guess', {
+            const res = await fetch(`${API}/api/games/vault/guess`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -80,7 +84,7 @@ export function VaultCracker({
     const handleClaim = async () => {
         setIsGuessing(true);
         try {
-            const res = await fetch('/api/games/vault/claim', {
+            const res = await fetch(`${API}/api/games/vault/claim`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ wallet: userWallet })
@@ -105,76 +109,88 @@ export function VaultCracker({
 
     const isWinner = gameStatus?.winner?.wallet?.toLowerCase() === userWallet?.toLowerCase();
     const isCompleted = gameStatus?.status === 'completed';
+    const isActive = gameStatus?.status === 'active';
 
     return (
         <div className="vault-cracker-container reveal-element visible">
             <div className="glass-panel" style={{ padding: '30px', textAlign: 'center', marginBottom: '30px' }}>
                 <div className="mono label-subtle" style={{ color: 'var(--accent)', marginBottom: '15px' }}>// PROJECT_VAULT_CRACKER</div>
-                <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>${gameStatus?.prizeAmount} USDC</h2>
-                <p className="text-muted" style={{ fontSize: '0.85rem' }}>Guess the 3-digit code set by Wassy Admin. {gameStatus?.totalGuesses || 0} attempts so far.</p>
 
-                <div style={{ margin: '30px 0' }}>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        gap: '15px',
-                        marginBottom: '20px'
-                    }}>
-                        {[0, 1, 2].map(i => (
-                            <div key={i} style={{
-                                width: '60px',
-                                height: '80px',
-                                background: 'var(--bg-inset)',
-                                border: '2px solid var(--border-subtle)',
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '2.5rem',
-                                fontWeight: 800,
-                                color: guess[i] ? 'var(--text-primary)' : 'rgba(255,255,255,0.1)'
-                            }}>
-                                {guess[i] || '0'}
-                            </div>
-                        ))}
+                {gameStatus?.status === 'inactive' ? (
+                    <div style={{ padding: '40px 0' }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔒</div>
+                        <h2 style={{ fontSize: '1.5rem', color: 'var(--text-muted)' }}>VAULT_LOCKED</h2>
+                        <p className="text-muted" style={{ marginTop: '10px' }}>The game is currently offline. Admin will reactivate it soon.</p>
                     </div>
+                ) : (
+                    <>
+                        <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>${gameStatus?.prizeAmount} USDC</h2>
+                        <p className="text-muted" style={{ fontSize: '0.85rem' }}>Guess the 3-digit code set by Wassy Admin. {gameStatus?.totalGuesses || 0} attempts so far.</p>
 
-                    {!isCompleted ? (
-                        <div style={{ maxWidth: '300px', margin: '0 auto' }}>
-                            <input
-                                type="text"
-                                maxLength="3"
-                                placeholder="###"
-                                className="input-field mono"
-                                value={guess}
-                                onChange={(e) => setGuess(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                disabled={isGuessing}
-                                style={{ textAlign: 'center', fontSize: '1.2rem', tracking: '0.5em', marginBottom: '15px' }}
-                            />
-                            <button
-                                onClick={handleGuess}
-                                disabled={isGuessing || guess.length !== 3}
-                                className="btn btn-accent"
-                                style={{ width: '100%', padding: '15px' }}
-                            >
-                                {isGuessing ? 'CRACKING...' : `GUESS CODE (${(gameStatus?.guessCost / 1000).toFixed(0)}k $WASSY)`}
-                            </button>
+                        <div style={{ margin: '30px 0' }}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                gap: '15px',
+                                marginBottom: '20px'
+                            }}>
+                                {[0, 1, 2].map(i => (
+                                    <div key={i} style={{
+                                        width: '60px',
+                                        height: '80px',
+                                        background: 'var(--bg-inset)',
+                                        border: '2px solid var(--border-subtle)',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '2.5rem',
+                                        fontWeight: 800,
+                                        color: guess[i] ? 'var(--text-primary)' : 'rgba(255,255,255,0.1)'
+                                    }}>
+                                        {guess[i] || '0'}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {isActive ? (
+                                <div style={{ maxWidth: '300px', margin: '0 auto' }}>
+                                    <input
+                                        type="text"
+                                        maxLength="3"
+                                        placeholder="###"
+                                        className="input-field mono"
+                                        value={guess}
+                                        onChange={(e) => setGuess(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                                        disabled={isGuessing}
+                                        style={{ textAlign: 'center', fontSize: '1.2rem', tracking: '0.5em', marginBottom: '15px' }}
+                                    />
+                                    <button
+                                        onClick={handleGuess}
+                                        disabled={isGuessing || guess.length !== 3}
+                                        className="btn btn-accent"
+                                        style={{ width: '100%', padding: '15px' }}
+                                    >
+                                        {isGuessing ? 'CRACKING...' : `GUESS CODE (${(gameStatus?.guessCost / 1000).toFixed(0)}k $WASSY)`}
+                                    </button>
+                                </div>
+                            ) : isCompleted ? (
+                                <div className="glass-panel" style={{ background: 'rgba(16, 185, 129, 0.1)', borderColor: 'var(--success)', padding: '20px' }}>
+                                    <h3 className="mono" style={{ color: 'var(--success)' }}>VAULT_CRACKED</h3>
+                                    <p style={{ fontSize: '0.9rem', margin: '10px 0' }}>Winner: @{gameStatus.winner.username} (Code: {gameStatus.winner.code})</p>
+                                    {isWinner && !gameStatus.winner.claimed && (
+                                        <button onClick={handleClaim} className="btn btn-accent" style={{ width: '100%', marginTop: '10px' }}>
+                                            CLAIM_PRIZE
+                                        </button>
+                                    )}
+                                    {gameStatus.winner.claimed && (
+                                        <div className="mono label-subtle" style={{ color: 'var(--success)', marginTop: '10px' }}>✓ PRIZE_SETTLED</div>
+                                    )}
+                                </div>
+                            ) : null}
                         </div>
-                    ) : (
-                        <div className="glass-panel" style={{ background: 'rgba(16, 185, 129, 0.1)', borderColor: 'var(--success)', padding: '20px' }}>
-                            <h3 className="mono" style={{ color: 'var(--success)' }}>VAULT_CRACKED</h3>
-                            <p style={{ fontSize: '0.9rem', margin: '10px 0' }}>Winner: @{gameStatus.winner.username} (Code: {gameStatus.winner.code})</p>
-                            {isWinner && !gameStatus.winner.claimed && (
-                                <button onClick={handleClaim} className="btn btn-accent" style={{ width: '100%', marginTop: '10px' }}>
-                                    CLAIM_PRIZE
-                                </button>
-                            )}
-                            {gameStatus.winner.claimed && (
-                                <div className="mono label-subtle" style={{ color: 'var(--success)', marginTop: '10px' }}>✓ PRIZE_SETTLED</div>
-                            )}
-                        </div>
-                    )}
-                </div>
+                    </>
+                )}
 
                 {message && (
                     <div className={`mono animate-fade-in`} style={{
