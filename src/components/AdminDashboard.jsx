@@ -41,7 +41,7 @@ export function AdminDashboard({
         totalVolume: users?.reduce((sum, u) => sum + (u.total_sent || 0) + (u.total_claimed || 0), 0) || 0,
         totalSent: users?.reduce((sum, u) => sum + (u.total_sent || 0), 0) || 0,
         totalClaimed: users?.reduce((sum, u) => sum + (u.total_claimed || 0), 0) || 0,
-        activeUsers: users?.filter(u => (u.total_sent || 0) > 0 || (u.total_claimed || 0) > 0).length || 0
+        activeUsers: (users?.filter(u => (u.total_sent || 0) > 0 || (u.total_claimed || 0) > 0) || []).length
     };
 
     // Filter users by search

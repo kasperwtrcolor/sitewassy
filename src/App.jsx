@@ -73,7 +73,8 @@ function WassyPayApp() {
     setLotteryPrize: setLotteryPrizeApi,
     drawLotteryWinner,
     claimLotteryPrize,
-    fetchBalance
+    fetchBalance,
+    resetVaultCracker
   } = useWassy();
 
 
