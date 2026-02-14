@@ -13,7 +13,7 @@ import { PendingClaims } from './components/PendingClaims';
 import { PendingOutgoing } from './components/PendingOutgoing';
 import { PaymentHistory } from './components/PaymentHistory';
 import { StatsCard, HowToPayCard, Footer, PaymentTicker, ScanCountdown, TermsModal } from './components/Cards';
-import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal, ShareSuccessModal, LotteryWinModal } from './components/Modals';
+import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal, ShareSuccessModal, LotteryWinModal, WithdrawModal } from './components/Modals';
 import { TutorialOverlay, useTutorial } from './components/TutorialOverlay';
 import { MobileNav } from './components/MobileNav';
 import { ThemeToggle } from './components/ThemeToggle';
@@ -78,7 +78,8 @@ function WassyPayApp() {
     endVaultCracker,
     fetchVaultHistory,
     isWassyDelegated,
-    authorizeWassyDelegation
+    authorizeWassyDelegation,
+    handleWithdraw
   } = useWassy();
 
 
@@ -93,6 +94,7 @@ function WassyPayApp() {
   const [showTerms, setShowTerms] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showLotteryWinModal, setShowLotteryWinModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [lotteryWinAmount, setLotteryWinAmount] = useState(0);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [lastClaimedPayment, setLastClaimedPayment] = useState(null);
@@ -410,6 +412,7 @@ function WassyPayApp() {
               onAuthorize={handleAuthorize}
               onFundWallet={handleFundWallet}
               onExportWallet={solanaWallet ? handleExportWallet : null}
+              onWithdraw={() => setShowWithdrawModal(true)}
               error={error}
               success={success}
             />
@@ -582,6 +585,14 @@ function WassyPayApp() {
         <TermsModal
           show={showTerms}
           onClose={() => setShowTerms(false)}
+        />
+        <WithdrawModal
+          show={showWithdrawModal}
+          onClose={() => setShowWithdrawModal(false)}
+          onWithdraw={handleWithdraw}
+          walletBalance={walletBalance}
+          wassyBalance={wassyBalance}
+          isLoading={loading}
         />
         <LotteryWinModal
           show={showLotteryWinModal}

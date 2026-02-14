@@ -12,6 +12,7 @@ export function WalletCard({
     onAuthorize,
     onFundWallet,
     onExportWallet,
+    onWithdraw,
 }) {
     // Gas sponsorship is enabled, no need for manual SOL check for authorization
     const needsGas = false;
@@ -179,15 +180,9 @@ export function WalletCard({
                 <button onClick={onFundWallet} className="btn btn-accent" style={{ borderRadius: '12px' }}>
                     FUND
                 </button>
-                <a
-                    href={`https://solscan.io/account/${solanaWallet.address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary"
-                    style={{ borderRadius: '12px', textDecoration: 'none' }}
-                >
-                    SOLSCAN ↗
-                </a>
+                <button onClick={onWithdraw} className="btn btn-primary" style={{ borderRadius: '12px' }}>
+                    WITHDRAW
+                </button>
             </div>
 
             {onExportWallet && (

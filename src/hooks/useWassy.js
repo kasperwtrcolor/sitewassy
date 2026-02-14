@@ -3,7 +3,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useWallets, useSignAndSendTransaction, useExportWallet } from '@privy-io/react-auth/solana';
 // Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
 import { Connection, PublicKey, Transaction, ComputeBudgetProgram } from '@solana/web3.js';
-import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
+import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountInstruction, createTransferInstruction } from '@solana/spl-token';
 import { API, USDC_MINT, WASSY_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_USERNAMES } from '../constants';
 import { useFirestore } from './useFirestore';
 
@@ -471,6 +471,88 @@ export function useWassy() {
         }
     };
 
+    // Withdraw tokens (USDC or WASSY)
+    const handleWithdraw = async (recipientAddress, amount, isWassy = false) => {
+        const tokenLabel = isWassy ? 'WASSY' : 'USDC';
+        const mintAddress = isWassy ? WASSY_MINT : USDC_MINT;
+        const programId = isWassy ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
+
+        if (!solanaWallet?.address || !recipientAddress) {
+            setError('Missing wallet or recipient address');
+            return false;
+        }
+
+        setLoading(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            const connection = new Connection(SOLANA_RPC);
+            const walletPubkey = new PublicKey(solanaWallet.address);
+            const recipientPubkey = new PublicKey(recipientAddress);
+            const mintPubkey = new PublicKey(mintAddress);
+
+            const sourceATA = await getAssociatedTokenAddress(mintPubkey, walletPubkey, false, programId);
+            const destinationATA = await getAssociatedTokenAddress(mintPubkey, recipientPubkey, false, programId);
+
+            const transaction = new Transaction();
+            transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50000 }));
+
+            // Check if destination ATA exists
+            const destAccountInfo = await connection.getAccountInfo(destinationATA);
+            if (!destAccountInfo) {
+                console.log(`Adding instruction to create ${tokenLabel} destination ATA...`);
+                transaction.add(
+                    createAssociatedTokenAccountInstruction(
+                        walletPubkey,
+                        destinationATA,
+                        recipientPubkey,
+                        mintPubkey,
+                        programId
+                    )
+                );
+            }
+
+            const amountLamports = Math.floor(amount * 1_000_000);
+            transaction.add(createTransferInstruction(
+                sourceATA,
+                destinationATA,
+                walletPubkey,
+                amountLamports,
+                [],
+                programId
+            ));
+
+            const { blockhash } = await connection.getLatestBlockhash();
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = walletPubkey;
+
+            const result = await signAndSendTransaction({
+                transaction: Uint8Array.from(transaction.serialize({
+                    requireAllSignatures: false,
+                    verifySignatures: false
+                })),
+                wallet: solanaWallet,
+                chain: 'solana:mainnet',
+                options: { sponsor: true }
+            });
+
+            const signature = result?.signature;
+            setSuccess(`✓ Successfully withdrew ${amount.toLocaleString()} ${tokenLabel}!`);
+            console.log('Withdrawal signature:', signature);
+
+            await fetchBalance();
+            return true;
+        } catch (err) {
+            const cleanMessage = err.message?.split('?api-key')[0] || 'Unknown error';
+            setError(`Withdrawal failed: ${cleanMessage}`);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     // Fund wallet - just copy address to clipboard (no Solscan redirect)
     const handleFundWallet = async () => {
         if (!solanaWallet?.address) {
@@ -609,6 +691,7 @@ export function useWassy() {
         endVaultCracker,
         fetchVaultHistory,
         authorizeWassyDelegation,
+        handleWithdraw,
 
         // UI state
         loading: loading || firebaseLoading,

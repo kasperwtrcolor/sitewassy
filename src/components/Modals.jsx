@@ -1,5 +1,169 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import '../index.css';
+// Withdraw Modal - allows user to send funds to external address
+export function WithdrawModal({ show, onClose, onWithdraw, walletBalance, wassyBalance, isLoading }) {
+    const [address, setAddress] = useState('');
+    const [amount, setAmount] = useState('');
+    const [token, setToken] = useState('USDC'); // 'USDC' or 'WASSY'
+
+    if (!show) return null;
+
+    const currentBalance = token === 'USDC' ? walletBalance : wassyBalance;
+
+    const handleMax = () => {
+        setAmount(currentBalance.toString());
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!address || !amount || parseFloat(amount) <= 0) return;
+
+        const success = await onWithdraw(address, parseFloat(amount), token === 'WASSY');
+        if (success) {
+            onClose();
+        }
+    };
+
+    const isInvalid = !address || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > currentBalance;
+
+    return (
+        <div style={modalOverlayStyle} onClick={onClose}>
+            <div className="plate animate-scale modal-content" style={{
+                maxWidth: '450px',
+                width: '100%',
+                padding: '30px',
+                position: 'relative'
+            }} onClick={e => e.stopPropagation()}>
+                <div className="screw tl"></div>
+                <div className="screw tr"></div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px' }}>
+                    <span style={{ fontSize: '1.5rem' }}>💸</span>
+                    <span className="engraved" style={{ fontSize: '0.9rem' }}>WITHDRAW_FUNDS</span>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    {/* Token Selector */}
+                    <div style={{ marginBottom: '20px' }}>
+                        <div className="mono label-subtle" style={{ fontSize: '0.6rem', marginBottom: '10px' }}>SELECT_TOKEN</div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button
+                                type="button"
+                                onClick={() => setToken('USDC')}
+                                className={`btn ${token === 'USDC' ? 'btn-primary' : ''}`}
+                                style={{ flex: 1, fontSize: '0.75rem', opacity: token === 'USDC' ? 1 : 0.5 }}
+                            >
+                                USDC
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setToken('WASSY')}
+                                className={`btn ${token === 'WASSY' ? 'btn-accent' : ''}`}
+                                style={{ flex: 1, fontSize: '0.75rem', opacity: token === 'WASSY' ? 1 : 0.5 }}
+                            >
+                                $WASSY
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Recipient Address */}
+                    <div style={{ marginBottom: '20px' }}>
+                        <div className="mono label-subtle" style={{ fontSize: '0.6rem', marginBottom: '10px' }}>DESTINATION_ADDRESS (SOLANA)</div>
+                        <input
+                            type="text"
+                            placeholder="v3n...xk4"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            className="mono"
+                            style={{
+                                width: '100%',
+                                padding: '12px 15px',
+                                background: 'var(--bg-inset)',
+                                border: '1px solid var(--border-medium)',
+                                borderRadius: '12px',
+                                color: 'var(--text-primary)',
+                                fontSize: '0.8rem',
+                                outline: 'none'
+                            }}
+                        />
+                    </div>
+
+                    {/* Amount */}
+                    <div style={{ marginBottom: '25px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                            <div className="mono label-subtle" style={{ fontSize: '0.6rem' }}>AMOUNT</div>
+                            <div className="mono" style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>
+                                BAL: {currentBalance.toLocaleString()} {token}
+                            </div>
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type="number"
+                                step="any"
+                                placeholder="0.00"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                className="mono"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 65px 12px 15px',
+                                    background: 'var(--bg-inset)',
+                                    border: '1px solid var(--border-medium)',
+                                    borderRadius: '12px',
+                                    color: 'var(--text-primary)',
+                                    fontSize: '1rem',
+                                    outline: 'none'
+                                }}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleMax}
+                                style={{
+                                    position: 'absolute',
+                                    right: '10px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    padding: '5px 10px',
+                                    background: 'var(--bg-secondary)',
+                                    border: '1px solid var(--border-subtle)',
+                                    borderRadius: '8px',
+                                    fontSize: '0.6rem',
+                                    fontWeight: '700',
+                                    color: 'var(--accent)',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                MAX
+                            </button>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={isInvalid || isLoading}
+                        className={`btn ${token === 'USDC' ? 'btn-primary' : 'btn-accent'}`}
+                        style={{ width: '100%', borderRadius: '12px', padding: '15px' }}
+                    >
+                        {isLoading ? (
+                            <div className="tx-spinner" style={{ width: '20px', height: '20px', margin: '0 auto' }}></div>
+                        ) : (
+                            `WITHDRAW ${token}`
+                        )}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="btn"
+                        style={{ width: '100%', marginTop: '12px', background: 'transparent', border: '1px solid var(--border-medium)', borderRadius: '12px' }}
+                    >
+                        CANCEL
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
 
 const modalOverlayStyle = {
     position: 'fixed',
