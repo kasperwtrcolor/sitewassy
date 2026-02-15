@@ -79,7 +79,8 @@ function WassyPayApp() {
     fetchVaultHistory,
     isWassyDelegated,
     authorizeWassyDelegation,
-    handleWithdraw
+    handleWithdraw,
+    handleCancelPayment
   } = useWassy();
 
 
