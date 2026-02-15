@@ -25,7 +25,8 @@ export function PaymentHistory({ payments, xUsername }) {
                                     border: 'var(--border-subtle)',
                                     borderRadius: '12px',
                                     padding: '15px',
-                                    marginBottom: '10px'
+                                    marginBottom: '10px',
+                                    opacity: payment.status === 'cancelled' ? 0.5 : 1
                                 }}
                             >
                                 <div style={{
@@ -69,6 +70,7 @@ export function PaymentHistory({ payments, xUsername }) {
                                     <div style={{ fontSize: '1.2rem' }}>
                                         {payment.status === 'completed' && <span style={{ color: 'var(--success)' }}>✓</span>}
                                         {payment.status === 'pending' && <span style={{ color: 'var(--warning)' }}>⏳</span>}
+                                        {payment.status === 'cancelled' && <span style={{ color: 'var(--danger)', fontSize: '0.8rem', fontWeight: 700 }}>CANCELLED</span>}
                                         {payment.status === 'failed' && <span style={{ color: 'var(--danger)' }}>✗</span>}
                                     </div>
                                 </div>

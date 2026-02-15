@@ -605,6 +605,44 @@ export function useWassy() {
         return result;
     }, [firebaseClaimLotteryPrize, fetchBalance]);
 
+    // Cancel a pending payment
+    const handleCancelPayment = useCallback(async (tweetId) => {
+        if (!tweetId || !solanaWallet?.address) return false;
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`${API}/payments/cancel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tweet_id: tweetId,
+                    wallet: solanaWallet.address
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error || 'Failed to cancel payment');
+
+            setSuccess('Payment cancelled successfully');
+
+            // Refresh state
+            if (xUsername) {
+                fetchPayments(xUsername);
+                fetchPendingClaims(xUsername);
+            }
+
+            return true;
+        } catch (err) {
+            console.error('Cancel payment error:', err);
+            setError(err.message);
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    }, [solanaWallet, xUsername, fetchPayments, fetchPendingClaims]);
+
     // Data fetching effect
     useEffect(() => {
         if (!xUsername) return;
@@ -692,6 +730,7 @@ export function useWassy() {
         fetchVaultHistory,
         authorizeWassyDelegation,
         handleWithdraw,
+        handleCancelPayment,
 
         // UI state
         loading: loading || firebaseLoading,

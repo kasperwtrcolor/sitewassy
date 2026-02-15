@@ -1,6 +1,6 @@
 import '../index.css';
 
-export function PendingOutgoing({ payments, isDelegated, walletBalance }) {
+export function PendingOutgoing({ payments, isDelegated, walletBalance, onCancel }) {
     if (!payments || payments.length === 0) return null;
 
     const totalPending = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
@@ -77,8 +77,28 @@ export function PendingOutgoing({ payments, isDelegated, walletBalance }) {
                             {new Date(payment.created_at).toLocaleDateString()}
                         </div>
                     </div>
-                    <div className="mono" style={{ fontSize: '1.2rem', fontWeight: '700' }}>
-                        ${payment.amount}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                        <div className="mono" style={{ fontSize: '1.2rem', fontWeight: '700' }}>
+                            ${payment.amount}
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (window.confirm(`Are you sure you want to cancel the payment of $${payment.amount} to @${payment.recipient_username}?`)) {
+                                    onCancel(payment.tweet_id);
+                                }
+                            }}
+                            className="btn btn-danger"
+                            style={{
+                                padding: '4px 10px',
+                                fontSize: '0.65rem',
+                                borderRadius: '6px',
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                border: '1px solid #ef4444',
+                                color: '#ef4444'
+                            }}
+                        >
+                            CANCEL
+                        </button>
                     </div>
                 </div>
             ))}

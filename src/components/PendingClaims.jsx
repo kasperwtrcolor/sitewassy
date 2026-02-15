@@ -76,8 +76,23 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                         @{claim.sender || claim.sender_username}
                                     </div>
 
+                                    {claim.status === 'cancelled' && (
+                                        <div style={{
+                                            marginTop: '12px',
+                                            fontSize: '0.75rem',
+                                            padding: '8px 12px',
+                                            borderRadius: '8px',
+                                            background: 'rgba(239, 68, 68, 0.1)',
+                                            border: '1px solid #ef4444',
+                                            color: '#ef4444',
+                                            fontWeight: 700
+                                        }} className="mono">
+                                            ⚠ THIS PAYMENT WAS CANCELLED BY THE SENDER
+                                        </div>
+                                    )}
+
                                     {/* Sender Fund Status */}
-                                    {senderStatus && (
+                                    {senderStatus && claim.status !== 'cancelled' && (
                                         <div style={{
                                             marginTop: '12px',
                                             fontSize: '0.75rem',
@@ -96,14 +111,14 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                 </div>
                                 <button
                                     onClick={() => onClaim(claim)}
-                                    disabled={loading || !canClaim}
+                                    disabled={loading || !canClaim || claim.status === 'cancelled'}
                                     className="btn btn-accent"
                                     style={{
-                                        opacity: (loading || !canClaim) ? 0.7 : 1,
+                                        opacity: (loading || !canClaim || claim.status === 'cancelled') ? 0.7 : 1,
                                         borderRadius: '12px'
                                     }}
                                 >
-                                    {loading ? 'CLAIMING...' : (canClaim ? 'CLAIM NOW' : 'WAITING')}
+                                    {claim.status === 'cancelled' ? 'CANCELLED' : (loading ? 'CLAIMING...' : (canClaim ? 'CLAIM NOW' : 'WAITING'))}
                                 </button>
                             </div>
 

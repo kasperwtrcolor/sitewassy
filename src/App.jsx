@@ -422,6 +422,7 @@ function WassyPayApp() {
               payments={pendingOutgoing}
               isDelegated={isDelegated}
               walletBalance={walletBalance}
+              onCancel={handleCancelPayment}
             />
 
             {/* Pending Claims (for recipients) */}
