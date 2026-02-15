@@ -613,7 +613,7 @@ export function useWassy() {
         setError(null);
 
         try {
-            const response = await fetch(`${API}/payments/cancel`, {
+            const response = await fetch(`${API}/api/payments/cancel`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
