@@ -566,14 +566,17 @@ export function useWassy() {
                 address: solanaWallet.address,
                 options: {
                     asset: 'USDC',
-                    defaultFundingMethod: 'card',
                 }
             });
             // Refresh balance after funding
             await fetchBalance();
         } catch (err) {
-            // User closing the modal triggers a rejection — not an error
-            if (err?.message?.includes('cancelled') || err?.message?.includes('closed') || err?.message?.includes('dismissed')) {
+            // Privy funding modal throws on any user dismissal (cancel, back button, etc.)
+            // Only show real errors, suppress all user-initiated closures
+            const msg = err?.message?.toLowerCase() || '';
+            const isUserDismissal = msg.includes('cancel') || msg.includes('close') || msg.includes('dismiss') || msg.includes('exit') || msg.includes('user') || msg.includes('aborted');
+            if (isUserDismissal || !msg) {
+                console.log('Funding modal closed by user');
                 return;
             }
             console.error('Fund wallet error:', err);
