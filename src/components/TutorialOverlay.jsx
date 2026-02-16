@@ -34,7 +34,7 @@ const TUTORIAL_STEPS = [
         id: 'scan',
         selector: '.scan-countdown',
         title: '⏱️ Payment Scanner',
-        description: 'Our bot scans X for payment mentions every 30 minutes. The countdown shows when the next scan happens.',
+        description: 'Our bot scans X for payment mentions every 10 minutes. The countdown shows when the next scan happens.',
         position: 'bottom'
     }
 ];
