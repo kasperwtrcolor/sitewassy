@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useWallets, useSignAndSendTransaction, useExportWallet } from '@privy-io/react-auth/solana';
-// Note: useFundWallet removed - causes crashes with Solana, using manual funding approach
+import { useWallets, useSignAndSendTransaction, useExportWallet, useFundWallet, useSolanaFundingPlugin } from '@privy-io/react-auth/solana';
 import { Connection, PublicKey, Transaction, ComputeBudgetProgram } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountInstruction, createTransferInstruction } from '@solana/spl-token';
 import { API, USDC_MINT, WASSY_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_USERNAMES } from '../constants';
@@ -12,7 +11,9 @@ export function useWassy() {
     const { wallets, ready: walletsReady } = useWallets();
     const { signAndSendTransaction } = useSignAndSendTransaction();
     const { exportWallet } = useExportWallet();
-    // useFundWallet removed - causes crashes, using manual funding instead
+    const { fundWallet } = useFundWallet();
+    // Mount Solana funding plugin (required for Solana funding flows)
+    useSolanaFundingPlugin();
 
     // Find embedded Solana wallet (created by Privy)
     const embeddedWallet = wallets?.find(w => w.walletClientType === 'privy');
@@ -553,7 +554,7 @@ export function useWassy() {
     };
 
 
-    // Fund wallet - just copy address to clipboard (no Solscan redirect)
+    // Fund wallet via Privy modal (MoonPay, Google Pay, external wallet, etc.)
     const handleFundWallet = async () => {
         if (!solanaWallet?.address) {
             setError('No wallet found');
@@ -561,13 +562,17 @@ export function useWassy() {
         }
 
         try {
-            await navigator.clipboard.writeText(solanaWallet.address);
-            setSuccess('✓ Address copied! Send USDC to this address on Solana.');
-            setTimeout(() => setSuccess(''), 5000);
+            await fundWallet({ address: solanaWallet.address });
+            // Refresh balance after funding
+            await fetchBalance();
         } catch (err) {
-            // Fallback for browsers that don't support clipboard
-            setSuccess(`Send USDC to: ${solanaWallet.address.slice(0, 8)}...${solanaWallet.address.slice(-4)}`);
-            setTimeout(() => setSuccess(''), 8000);
+            // User closing the modal triggers a rejection — not an error
+            if (err?.message?.includes('cancelled') || err?.message?.includes('closed') || err?.message?.includes('dismissed')) {
+                return;
+            }
+            console.error('Fund wallet error:', err);
+            setError('Failed to open funding options. Please try again.');
+            setTimeout(() => setError(''), 5000);
         }
     };
 
