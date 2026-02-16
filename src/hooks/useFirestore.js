@@ -627,6 +627,35 @@ export function useFirestore(walletAddress, xUsername) {
     }, [API_URL]);
 
 
+    // Burn $WASSY from vault (admin only) - via backend
+    const burnVaultWassy = useCallback(async (amount, adminWallet) => {
+        try {
+            const response = await fetch(`${API_URL}/api/admin/burn-wassy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, adminWallet })
+            });
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error burning vault WASSY:', error);
+            return { success: false, message: error.message };
+        }
+    }, [API_URL]);
+
+    // Get vault $WASSY balance (admin only)
+    const getVaultWassyBalance = useCallback(async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/admin/vault-wassy-balance`);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching vault WASSY balance:', error);
+            return { success: false, balance: 0 };
+        }
+    }, [API_URL]);
+
+
     return {
         userProfile,
         leaderboard,
@@ -652,7 +681,9 @@ export function useFirestore(walletAddress, xUsername) {
         claimLotteryPrize,
         resetVaultCracker,
         endVaultCracker,
-        fetchVaultHistory
+        fetchVaultHistory,
+        burnVaultWassy,
+        getVaultWassyBalance
     };
 
 }

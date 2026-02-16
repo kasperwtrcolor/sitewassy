@@ -80,7 +80,9 @@ function WassyPayApp() {
     isWassyDelegated,
     authorizeWassyDelegation,
     handleWithdraw,
-    handleCancelPayment
+    handleCancelPayment,
+    burnVaultWassy,
+    getVaultWassyBalance
   } = useWassy();
 
 
@@ -470,6 +472,8 @@ function WassyPayApp() {
             }}
             onResetVaultCracker={resetVaultCracker}
             onEndVaultCracker={endVaultCracker}
+            onBurnVaultWassy={burnVaultWassy}
+            onGetVaultWassyBalance={getVaultWassyBalance}
             onClose={() => setCurrentPage('home')}
           />
         ) : currentPage === 'games' ? (

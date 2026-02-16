@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { VAULT_ADDRESS } from '../constants';
 import '../index.css';
 
 export function AdminDashboard({
@@ -11,7 +12,9 @@ export function AdminDashboard({
     onSetLotteryPrize,
     onDrawLottery,
     onResetVaultCracker,
-    onEndVaultCracker
+    onEndVaultCracker,
+    onBurnVaultWassy,
+    onGetVaultWassyBalance
 }) {
     const [activeTab, setActiveTab] = useState('overview');
     const [searchTerm, setSearchTerm] = useState('');
@@ -28,6 +31,13 @@ export function AdminDashboard({
     const [vaultCode, setVaultCode] = useState('000');
     const [isResettingVault, setIsResettingVault] = useState(false);
     const [vaultMessage, setVaultMessage] = useState(null);
+
+    // Burn WASSY state
+    const [burnAmount, setBurnAmount] = useState('');
+    const [isBurning, setIsBurning] = useState(false);
+    const [burnMessage, setBurnMessage] = useState(null);
+    const [vaultWassyBalance, setVaultWassyBalance] = useState(null);
+    const [loadingBalance, setLoadingBalance] = useState(false);
 
     // Set default end time to 24 hours from now
     useEffect(() => {
@@ -132,11 +142,57 @@ export function AdminDashboard({
         }
     };
 
+    // Fetch vault WASSY balance
+    const fetchVaultWassyBalance = async () => {
+        setLoadingBalance(true);
+        try {
+            const res = await onGetVaultWassyBalance?.();
+            if (res?.success) {
+                setVaultWassyBalance(res.balance);
+            }
+        } catch (e) {
+            console.error('Error fetching vault balance:', e);
+        } finally {
+            setLoadingBalance(false);
+        }
+    };
+
+    // Handle WASSY burn
+    const handleBurnWassy = async () => {
+        const amount = parseFloat(burnAmount);
+        if (!amount || amount <= 0) {
+            setBurnMessage({ type: 'error', text: 'Enter a valid amount' });
+            return;
+        }
+
+        if (!window.confirm(`🔥 Are you sure you want to PERMANENTLY BURN ${amount.toLocaleString()} $WASSY from the vault? This action cannot be undone.`)) {
+            return;
+        }
+
+        setIsBurning(true);
+        setBurnMessage(null);
+        try {
+            const res = await onBurnVaultWassy?.(amount, VAULT_ADDRESS);
+            if (res?.success) {
+                setBurnMessage({ type: 'success', text: `🔥 ${amount.toLocaleString()} $WASSY burned! TX: ${res.txSignature?.slice(0, 12)}...` });
+                setBurnAmount('');
+                setVaultWassyBalance(res.remainingBalance);
+            } else {
+                setBurnMessage({ type: 'error', text: res?.message || 'Burn failed' });
+            }
+        } catch (e) {
+            setBurnMessage({ type: 'error', text: 'Error burning WASSY' });
+        } finally {
+            setIsBurning(false);
+        }
+    };
+
     const tabs = [
         { id: 'overview', label: '📊 Overview' },
         { id: 'users', label: '👥 Users' },
         { id: 'lottery', label: '🎰 Lottery' },
-        { id: 'vault', label: '🔐 Vault Cracker' }
+        { id: 'vault', label: '🔐 Vault Cracker' },
+        { id: 'burn', label: '🔥 Burn WASSY' }
     ];
 
     return (
@@ -534,6 +590,93 @@ export function AdminDashboard({
                             Users' $WASSY will be deducted on each guess.
                             The game remains active until the correct code is guessed or you reset it again.
                         </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Burn WASSY Tab */}
+            {activeTab === 'burn' && (
+                <div className="glass-panel" style={{ padding: '25px', marginBottom: '20px' }}>
+                    <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// VAULT_WASSY_BURN</div>
+
+                    {/* Vault Balance */}
+                    <div className="inset-panel" style={{ padding: '20px', marginBottom: '20px' }}>
+                        <div className="engraved" style={{ fontSize: '0.7rem', marginBottom: '15px' }}>VAULT $WASSY BALANCE</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontSize: '1.8rem', fontWeight: '700', color: 'var(--accent-gold)' }}>
+                                {vaultWassyBalance !== null ? `${Number(vaultWassyBalance).toLocaleString()} $WASSY` : '—'}
+                            </div>
+                            <button
+                                onClick={fetchVaultWassyBalance}
+                                disabled={loadingBalance}
+                                className="btn"
+                                style={{ padding: '8px 16px', fontSize: '0.75rem' }}
+                            >
+                                {loadingBalance ? '⏳' : '🔄 Refresh'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Burn Controls */}
+                    <div className="inset-panel" style={{ padding: '20px', marginBottom: '20px' }}>
+                        <div className="engraved" style={{ fontSize: '0.7rem', marginBottom: '20px' }}>BURN $WASSY FROM VAULT</div>
+
+                        <div style={{ display: 'grid', gap: '15px' }}>
+                            <div>
+                                <label className="mono" style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>AMOUNT TO BURN</label>
+                                <input
+                                    type="number"
+                                    className="input-field"
+                                    placeholder="e.g. 100000"
+                                    value={burnAmount}
+                                    onChange={(e) => setBurnAmount(e.target.value)}
+                                    style={{ fontSize: '1.2rem', fontWeight: '700' }}
+                                />
+                            </div>
+
+                            {vaultWassyBalance !== null && burnAmount && (
+                                <div className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                    Remaining after burn: {Math.max(0, vaultWassyBalance - (parseFloat(burnAmount) || 0)).toLocaleString()} $WASSY
+                                </div>
+                            )}
+
+                            <button
+                                onClick={handleBurnWassy}
+                                disabled={isBurning || !burnAmount || parseFloat(burnAmount) <= 0}
+                                className="btn"
+                                style={{
+                                    padding: '15px',
+                                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                                    color: 'white',
+                                    fontSize: '0.9rem',
+                                    fontWeight: '700'
+                                }}
+                            >
+                                {isBurning ? '⏳ BURNING...' : '🔥 BURN $WASSY'}
+                            </button>
+
+                            {burnMessage && (
+                                <div className="mono" style={{
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    fontSize: '0.8rem',
+                                    textAlign: 'center',
+                                    background: burnMessage.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    color: burnMessage.type === 'success' ? 'var(--success)' : 'var(--error)'
+                                }}>
+                                    {burnMessage.text}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Warning */}
+                    <div style={{ padding: '15px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                        <div style={{ color: 'var(--error)', fontSize: '0.8rem' }}>
+                            ⚠️ <strong>Warning:</strong> Burning tokens is permanent and irreversible.
+                            Burned $WASSY is removed from the total supply forever.
+                            Always refresh the balance before burning to see the latest vault holdings.
+                        </div>
                     </div>
                 </div>
             )}
