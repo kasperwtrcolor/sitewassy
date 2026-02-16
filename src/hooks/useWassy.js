@@ -562,7 +562,13 @@ export function useWassy() {
         }
 
         try {
-            await fundWallet({ address: solanaWallet.address });
+            await fundWallet({
+                address: solanaWallet.address,
+                options: {
+                    asset: 'USDC',
+                    defaultFundingMethod: 'card',
+                }
+            });
             // Refresh balance after funding
             await fetchBalance();
         } catch (err) {
