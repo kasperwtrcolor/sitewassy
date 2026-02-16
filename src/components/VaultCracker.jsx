@@ -94,7 +94,8 @@ export function VaultCracker({
                     setMessage({ type: 'success', text: '🎉 CORRECT! THE VAULT IS YOURS!' });
                     fetchStatus();
                 } else {
-                    setMessage({ type: 'error', text: '❌ INCORRECT SEQUENCE.' });
+                    const matchText = data.matches === 1 ? '1 MATCH FOUND' : `${data.matches} MATCHES FOUND`;
+                    setMessage({ type: 'error', text: `❌ INCORRECT SEQUENCE. (${matchText})` });
                 }
                 fetchWassyBalance?.();
             } else {
@@ -286,18 +287,45 @@ export function VaultCracker({
                                     overflowY: 'auto',
                                     padding: '5px'
                                 }}>
-                                    {(gameStatus?.recentGuesses || []).map((g, i) => (
-                                        <div key={i} className="mono" style={{
-                                            padding: '4px 10px',
-                                            background: 'var(--bg-inset)',
-                                            border: '1px solid var(--border-subtle)',
-                                            borderRadius: '6px',
-                                            fontSize: '0.7rem',
-                                            color: 'var(--text-muted)'
-                                        }}>
-                                            {g.code}
-                                        </div>
-                                    ))}
+                                    {(gameStatus?.recentGuesses || []).map((g, i) => {
+                                        const hasMatches = g.matches > 0;
+                                        return (
+                                            <div key={i} className="mono" style={{
+                                                padding: '4px 10px',
+                                                background: 'var(--bg-inset)',
+                                                border: hasMatches ? '1px solid var(--accent)' : '1px solid var(--border-subtle)',
+                                                borderRadius: '6px',
+                                                fontSize: '0.7rem',
+                                                color: 'var(--text-muted)',
+                                                boxShadow: hasMatches ? `0 0 ${g.matches * 5}px var(--accent)` : 'none',
+                                                animation: hasMatches ? 'match-glow 2s infinite alternate' : 'none'
+                                            }}>
+                                                {g.code} {g.matches !== undefined && (
+                                                    <span style={{
+                                                        color: hasMatches ? 'var(--accent)' : 'var(--text-muted)',
+                                                        fontWeight: hasMatches ? '800' : '400',
+                                                        opacity: hasMatches ? 1 : 0.6
+                                                    }}>
+                                                        ({g.matches})
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                    <style>{`
+                                        @keyframes match-glow {
+                                            from { box-shadow: 0 0 2px var(--accent); border-color: rgba(var(--accent-rgb), 0.5); }
+                                            to { box-shadow: 0 0 8px var(--accent); border-color: var(--accent); }
+                                        }
+                                        .pulse-success {
+                                            animation: pulse-green 2s infinite;
+                                        }
+                                        @keyframes pulse-green {
+                                            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+                                            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+                                            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+                                        }
+                                    `}</style>
                                     {(!gameStatus?.recentGuesses || gameStatus.recentGuesses.length === 0) && (
                                         <span className="mono label-subtle" style={{ fontSize: '0.65rem' }}>NO_ATTEMPTS_YET</span>
                                     )}
@@ -355,7 +383,9 @@ export function VaultCracker({
                         background: message.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                         color: message.type === 'success' ? 'var(--success)' : 'var(--error)',
                         marginTop: '25px',
-                        border: `1px solid ${message.type === 'success' ? 'var(--success)' : 'var(--error)'}`
+                        border: `1px solid ${message.type === 'success' ? 'var(--success)' : 'var(--error)'}`,
+                        boxShadow: message.text.includes('MATCH') ? '0 0 15px var(--accent)' : 'none',
+                        animation: message.type === 'success' ? 'pulse-success 2s infinite' : (message.text.includes('MATCH') ? 'match-glow 1s infinite alternate' : 'none')
                     }}>
                         {message.text}
                     </div>
