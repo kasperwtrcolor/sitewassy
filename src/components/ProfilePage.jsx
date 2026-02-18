@@ -210,12 +210,10 @@ export function ProfilePage({
                                     ) : (
                                         (recipient.username && recipient.username[0]) ? recipient.username[0].toUpperCase() : 'U'
                                     )}
-                                    <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', transform: 'scale(0.7)' }}>
-                                        <EthosBadge level={recipient.ethosScore || recipient.ethos_score} username={recipient.username} />
-                                    </div>
                                 </div>
-                                <div className="mono" style={{ fontSize: '0.6rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
-                                    @{recipient.username}
+                                <div className="mono" style={{ fontSize: '0.6rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                    <span>@{recipient.username}</span>
+                                    <EthosBadge level={recipient.ethosScore || recipient.ethos_score} username={recipient.username} />
                                 </div>
                             </button>
                         ))}

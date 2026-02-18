@@ -255,13 +255,11 @@ export function LeaderboardModal({ show, onClose, users }) {
                                         ) : (
                                             (u.x_username || 'U')[0].toUpperCase()
                                         )}
-                                        <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', transform: 'scale(0.65)' }}>
-                                            <EthosBadge level={u.ethos_score || u.ethosScore} username={u.x_username} />
-                                        </div>
                                     </div>
                                     <div>
-                                        <div style={{ fontWeight: '700', fontSize: '1rem', color: idx === 0 ? 'var(--text-on-status)' : 'var(--text-primary)' }}>
+                                        <div style={{ fontWeight: '700', fontSize: '1rem', color: idx === 0 ? 'var(--text-on-status)' : 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             @{u.x_username}
+                                            <EthosBadge level={u.ethos_score || u.ethosScore} username={u.x_username} />
                                         </div>
                                         <div className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                                             ${(u.total_deposited || 0).toFixed(0)} + ${(u.total_sent || 0).toFixed(0)} + ${(u.total_claimed || 0).toFixed(0)}

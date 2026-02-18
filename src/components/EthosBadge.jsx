@@ -46,7 +46,7 @@ export function EthosBadge({ level, username, style = {} }) {
             ...style
         }}>
             <img
-                src="/assets/ethos_logo.png"
+                src="/ethos_logo.png"
                 alt="Ethos"
                 style={{ width: '12px', height: '12px', marginRight: '4px', objectFit: 'contain' }}
             />
