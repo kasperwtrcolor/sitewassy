@@ -16,20 +16,16 @@ const ETHOS_LEVELS = {
 export function EthosBadge({ level, username, style = {} }) {
     if (level === undefined || level === null) return null;
 
-    // Handle numeric scores by mapping to levels
+    // Numeric scores are used directly, level strings are mapped to colors
     let displayLevel = level;
-    let numericScore = null;
+    let numericScore = typeof level === 'number' ? level : null;
 
-    if (typeof level === 'number') {
-        numericScore = level;
-        if (level >= 90) displayLevel = 'renowned';
-        else if (level >= 80) displayLevel = 'distinguished';
-        else if (level >= 70) displayLevel = 'exemplary';
-        else if (level >= 60) displayLevel = 'reputable';
-        else if (level >= 50) displayLevel = 'established';
-        else if (level >= 40) displayLevel = 'known';
-        else if (level >= 30) displayLevel = 'neutral';
-        else if (level >= 15) displayLevel = 'questionable';
+    if (numericScore !== null) {
+        // Broad color mapping for numeric scores
+        if (numericScore >= 80) displayLevel = 'renowned';
+        else if (numericScore >= 60) displayLevel = 'reputable';
+        else if (numericScore >= 40) displayLevel = 'known';
+        else if (numericScore >= 20) displayLevel = 'neutral';
         else displayLevel = 'untrusted';
     }
 

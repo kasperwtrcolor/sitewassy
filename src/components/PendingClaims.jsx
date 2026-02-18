@@ -66,9 +66,34 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                 gap: '15px'
                             }}>
                                 <div>
-                                    <div className="amount-display" style={{ fontSize: '2rem' }}>
-                                        ${claim.amount}
-                                        <span className="currency">USDC</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '15px' }}>
+                                        <div style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            borderRadius: '16px',
+                                            background: 'var(--accent)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            overflow: 'hidden',
+                                            flexShrink: 0,
+                                            border: '2px solid var(--border-medium)'
+                                        }}>
+                                            {claim.sender_profile_image ? (
+                                                <img
+                                                    src={claim.sender_profile_image}
+                                                    alt={claim.sender || claim.sender_username}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = (claim.sender || claim.sender_username || 'U')[0].toUpperCase(); }}
+                                                />
+                                            ) : (
+                                                <span style={{ fontSize: '1.5rem', fontWeight: 800 }}>{(claim.sender || claim.sender_username || 'U')[0].toUpperCase()}</span>
+                                            )}
+                                        </div>
+                                        <div className="amount-display" style={{ fontSize: '2rem' }}>
+                                            ${claim.amount}
+                                            <span className="currency">USDC</span>
+                                        </div>
                                     </div>
                                     <div className="handle-badge" style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center' }}>

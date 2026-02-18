@@ -70,13 +70,38 @@ export function PendingOutgoing({ payments, isDelegated, walletBalance, onCancel
                     alignItems: 'center',
                     color: 'var(--text-primary)'
                 }}>
-                    <div>
-                        <div style={{ fontWeight: '600', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            To: @{payment.recipient_username}
-                            <EthosBadge level={payment.recipient_ethos_score} username={payment.recipient_username} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '10px',
+                            background: 'var(--accent)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            flexShrink: 0,
+                            border: '1px solid var(--border-medium)'
+                        }}>
+                            {payment.recipient_profile_image ? (
+                                <img
+                                    src={payment.recipient_profile_image}
+                                    alt={payment.recipient_username}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = payment.recipient_username[0].toUpperCase(); }}
+                                />
+                            ) : (
+                                <span style={{ fontWeight: 800 }}>{payment.recipient_username[0].toUpperCase()}</span>
+                            )}
                         </div>
-                        <div className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                            {new Date(payment.created_at).toLocaleDateString()}
+                        <div>
+                            <div style={{ fontWeight: '600', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                To: @{payment.recipient_username}
+                                <EthosBadge level={payment.recipient_ethos_score} username={payment.recipient_username} />
+                            </div>
+                            <div className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                {new Date(payment.created_at).toLocaleDateString()}
+                            </div>
                         </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>

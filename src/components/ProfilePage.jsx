@@ -78,8 +78,31 @@ export function ProfilePage({
             {/* Profile Header */}
             <div className="glass-panel animate-fade-in" style={{ textAlign: 'center', marginBottom: '30px' }}>
                 <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// USER_IDENTITY</div>
-                <div style={{ width: '80px', height: '80px', margin: '0 auto 20px', background: 'var(--accent)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: '2rem', fontWeight: 900 }}>
-                    {xUsername ? xUsername[0].toUpperCase() : 'W'}
+                <div style={{
+                    width: '80px',
+                    height: '80px',
+                    margin: '0 auto 20px',
+                    background: 'var(--accent)',
+                    borderRadius: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#000',
+                    fontSize: '2rem',
+                    fontWeight: 900,
+                    overflow: 'hidden',
+                    border: '2px solid var(--border-medium)'
+                }}>
+                    {userStats?.profileImage ? (
+                        <img
+                            src={userStats.profileImage}
+                            alt={xUsername}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = xUsername[0].toUpperCase(); }}
+                        />
+                    ) : (
+                        xUsername ? xUsername[0].toUpperCase() : 'W'
+                    )}
                 </div>
                 <h2 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>@{xUsername}</h2>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center', marginBottom: '15px' }}>

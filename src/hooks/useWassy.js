@@ -76,28 +76,26 @@ export function useWassy() {
 
 
     // State for backend stats (from backend_users collection via API)
-    const [backendStats, setBackendStats] = useState({ totalSent: 0, totalClaimed: 0, hasSent: false });
+    const [backendStats, setBackendStats] = useState({ totalSent: 0, totalClaimed: 0, hasSent: false, profileImage: null });
 
     // Fetch backend stats from backend_users collection via the leaderboard API
     useEffect(() => {
         if (!xUsername) return;
 
         const fetchBackendStats = async () => {
+            if (!xUsername) return;
             try {
-                const response = await fetch(`${API}/api/leaderboard`);
+                const response = await fetch(`${API}/api/user/stats/${xUsername}`);
                 if (response.ok) {
                     const data = await response.json();
-                    // Find this user's stats in the leaderboard data
-                    const myStats = data.users?.find(u =>
-                        u.x_username?.toLowerCase() === xUsername.toLowerCase()
-                    );
-                    if (myStats) {
+                    if (data.success && data.stats) {
                         setBackendStats({
-                            totalSent: myStats.total_sent || 0,
-                            totalClaimed: myStats.total_claimed || 0,
-                            points: myStats.points || 0,
-                            hasSent: myStats.has_sent || false,
-                            ethosScore: myStats.ethos_score || null
+                            totalSent: data.stats.total_sent || 0,
+                            totalClaimed: data.stats.total_claimed || 0,
+                            points: data.stats.points || 0,
+                            hasSent: data.stats.has_sent || false,
+                            ethosScore: data.stats.ethos_score || null,
+                            profileImage: data.stats.profile_image_url || null
                         });
                     }
                 }
@@ -119,7 +117,8 @@ export function useWassy() {
         totalClaimed: backendStats.totalClaimed || userProfile?.stats?.totalClaimed || 0,
         hasSent: backendStats.hasSent || (userProfile?.stats?.totalSent > 0) || false,
         points: backendStats.points || userProfile?.stats?.points || 0,
-        ethosScore: backendStats.ethosScore || null
+        ethosScore: backendStats.ethosScore || null,
+        profileImage: backendStats.profileImage || null
     };
 
     // Sync isDelegated from Firebase (real-time)
