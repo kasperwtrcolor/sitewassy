@@ -317,7 +317,7 @@ export function AdminDashboard({
                                     <tr key={u.wallet_address || u.x_username} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
                                         <td style={{ padding: '12px' }}>@{u.x_username}</td>
                                         <td style={{ padding: '12px' }}>
-                                            <EthosBadge level={u.ethos_score} />
+                                            <EthosBadge level={u.ethos_score} username={u.x_username} />
                                         </td>
                                         <td className="mono" style={{ padding: '12px', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                                             {(u.wallet_address || u.walletAddress || '').slice(0, 6)}...{(u.wallet_address || u.walletAddress || '').slice(-4)}
@@ -381,7 +381,7 @@ export function AdminDashboard({
                                         <td style={{ padding: '12px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 @{p.username}
-                                                <EthosBadge level={p.ethos_score} />
+                                                <EthosBadge level={p.ethos_score} username={p.username} />
                                             </div>
                                         </td>
                                         <td style={{ padding: '12px', textAlign: 'center' }}>

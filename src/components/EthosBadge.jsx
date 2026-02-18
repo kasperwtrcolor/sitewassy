@@ -13,8 +13,8 @@ const ETHOS_LEVELS = {
     'renowned': { label: 'Renowned', color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.1)', glow: true }
 };
 
-export function EthosBadge({ level, style = {} }) {
-    if (level === undefined || level === null) return null;
+export function EthosBadge({ level, username, style = {} }) {
+    if (level === undefined || level === null || String(level).toLowerCase() === 'neutral') return null;
 
     // Handle numeric scores by mapping to levels
     let displayLevel = level;
@@ -33,9 +33,12 @@ export function EthosBadge({ level, style = {} }) {
         else displayLevel = 'untrusted';
     }
 
+    // Hide neutral even if numeric (if user wants "actual scores" but not the low-trust "neutral" label)
+    if (displayLevel === 'neutral') return null;
+
     const config = ETHOS_LEVELS[String(displayLevel).toLowerCase()] || ETHOS_LEVELS.neutral;
 
-    return (
+    const badge = (
         <span className={`ethos-badge ${config.glow ? 'glow-text' : ''}`} style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -53,6 +56,22 @@ export function EthosBadge({ level, style = {} }) {
             {numericScore !== null ? numericScore : config.label}
         </span>
     );
+
+    if (username) {
+        return (
+            <a
+                href={`https://app.ethos.network/profile/${username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                style={{ textDecoration: 'none', display: 'inline-flex' }}
+            >
+                {badge}
+            </a>
+        );
+    }
+
+    return badge;
 }
 
 export default EthosBadge;

@@ -77,7 +77,10 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                             </svg>
                                             @{claim.sender || claim.sender_username}
                                         </div>
-                                        <EthosBadge level={claim.sender_ethos_score || claim.ethos_score} />
+                                        <EthosBadge
+                                            level={claim.sender_ethos_score || claim.ethos_score}
+                                            username={claim.sender || claim.sender_username}
+                                        />
                                     </div>
 
                                     {claim.status === 'cancelled' && (

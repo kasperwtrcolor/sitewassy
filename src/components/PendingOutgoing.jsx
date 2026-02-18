@@ -73,7 +73,7 @@ export function PendingOutgoing({ payments, isDelegated, walletBalance, onCancel
                     <div>
                         <div style={{ fontWeight: '600', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             To: @{payment.recipient_username}
-                            <EthosBadge level={payment.recipient_ethos_score} />
+                            <EthosBadge level={payment.recipient_ethos_score} username={payment.recipient_username} />
                         </div>
                         <div className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                             {new Date(payment.created_at).toLocaleDateString()}

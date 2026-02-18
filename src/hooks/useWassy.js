@@ -333,7 +333,7 @@ export function useWassy() {
                 recipientsMap.set(handle, {
                     username: p.recipient_username,
                     lastPaidAt: timestamp,
-                    ethosScore: p.recipient_ethos_score || 'neutral',
+                    ethosScore: p.recipient_ethos_score || null,
                     count: 1
                 });
             } else {

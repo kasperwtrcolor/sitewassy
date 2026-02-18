@@ -85,7 +85,7 @@ export function ProfilePage({
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center', marginBottom: '15px' }}>
                     {userStats?.ethosScore && (
                         <div title="Ethos Reputation Score">
-                            <EthosBadge level={userStats.ethosScore} style={{ padding: '4px 12px', fontSize: '0.75rem' }} />
+                            <EthosBadge level={userStats.ethosScore} username={xUsername} style={{ padding: '4px 12px', fontSize: '0.75rem' }} />
                         </div>
                     )}
                     <div className="mono" style={{ padding: '6px 15px', borderRadius: '100px', background: 'var(--bg-inset)', fontSize: '0.8rem' }}>
@@ -178,7 +178,7 @@ export function ProfilePage({
                                 }}>
                                     {(recipient.username && recipient.username[0]) ? recipient.username[0].toUpperCase() : 'U'}
                                     <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', transform: 'scale(0.7)' }}>
-                                        <EthosBadge level={recipient.ethosScore || recipient.ethos_score} />
+                                        <EthosBadge level={recipient.ethosScore || recipient.ethos_score} username={recipient.username} />
                                     </div>
                                 </div>
                                 <div className="mono" style={{ fontSize: '0.6rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
