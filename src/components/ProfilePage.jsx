@@ -17,6 +17,12 @@ export function ProfilePage({
 }) {
     const [selectedRecipient, setSelectedRecipient] = useState(null);
     const [quickPayAmount, setQuickPayAmount] = useState('5');
+    const [payeeSearch, setPayeeSearch] = useState('');
+
+    // Filter payees based on search
+    const filteredPayees = payeeSearch.trim()
+        ? recentlyPaid.filter(p => p.username?.toLowerCase().includes(payeeSearch.toLowerCase()))
+        : recentlyPaid.slice(0, 8); // Top 8 by default
 
     const handleQuickPay = () => {
         if (!selectedRecipient || !quickPayAmount) return;
@@ -101,10 +107,43 @@ export function ProfilePage({
 
             {/* Quick Pay / Recently Paid */}
             {recentlyPaid && recentlyPaid.length > 0 && (
-                <div className="glass-panel animate-fade-in" style={{ marginBottom: '30px' }}>
-                    <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// QUICK_PAY (RECENT_RECIPIENTS)</div>
-                    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '20px' }}>
-                        {recentlyPaid.map((recipient) => (
+                <div className="inset-panel" style={{ padding: '25px', marginBottom: '30px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <div className="engraved" style={{ fontSize: '0.6rem' }}>
+                            {payeeSearch ? 'SEARCH RESULTS' : 'QUICK PAY (RECENT)'}
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type="text"
+                                placeholder="Search payees..."
+                                value={payeeSearch}
+                                onChange={(e) => setPayeeSearch(e.target.value)}
+                                style={{
+                                    background: 'var(--bg-secondary)',
+                                    border: '1px solid var(--border-subtle)',
+                                    borderRadius: '8px',
+                                    padding: '6px 12px',
+                                    paddingLeft: '30px',
+                                    fontSize: '0.75rem',
+                                    color: 'var(--text-primary)',
+                                    outline: 'none',
+                                    width: '180px'
+                                }}
+                            />
+                            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, fontSize: '0.8rem' }}>🔍</span>
+                        </div>
+                    </div>
+
+                    <div style={{
+                        display: 'flex',
+                        gap: '15px',
+                        overflowX: 'auto',
+                        paddingBottom: '10px',
+                        marginBottom: '20px',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none'
+                    }}>
+                        {filteredPayees.map((recipient) => (
                             <button
                                 key={recipient.username}
                                 onClick={() => setSelectedRecipient(recipient.username)}
@@ -132,9 +171,13 @@ export function ProfilePage({
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontSize: '1.2rem',
-                                    border: '1px solid var(--border-medium)'
+                                    border: '1px solid var(--border-medium)',
+                                    position: 'relative'
                                 }}>
                                     {(recipient.username && recipient.username[0]) ? recipient.username[0].toUpperCase() : 'U'}
+                                    <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', transform: 'scale(0.7)' }}>
+                                        <EthosBadge level={recipient.ethosScore || recipient.ethos_score} />
+                                    </div>
                                 </div>
                                 <div className="mono" style={{ fontSize: '0.6rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
                                     @{recipient.username}

@@ -318,6 +318,7 @@ export function useWassy() {
                 recipientsMap.set(handle, {
                     username: p.recipient_username,
                     lastPaidAt: timestamp,
+                    ethosScore: p.recipient_ethos_score || 'neutral',
                     count: 1
                 });
             } else {
@@ -330,8 +331,7 @@ export function useWassy() {
         });
 
         return Array.from(recipientsMap.values())
-            .sort((a, b) => b.lastPaidAt - a.lastPaidAt)
-            .slice(0, 8); // Show top 8 recent recipients
+            .sort((a, b) => b.lastPaidAt - a.lastPaidAt);
     }, [payments, xUsername]);
 
     // Fetch leaderboard users (public endpoint)

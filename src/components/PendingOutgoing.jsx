@@ -1,4 +1,5 @@
 import '../index.css';
+import { EthosBadge } from './EthosBadge';
 
 export function PendingOutgoing({ payments, isDelegated, walletBalance, onCancel }) {
     if (!payments || payments.length === 0) return null;
@@ -70,8 +71,9 @@ export function PendingOutgoing({ payments, isDelegated, walletBalance, onCancel
                     color: 'var(--text-primary)'
                 }}>
                     <div>
-                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                        <div style={{ fontWeight: '600', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             To: @{payment.recipient_username}
+                            <EthosBadge level={payment.recipient_ethos_score} />
                         </div>
                         <div className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                             {new Date(payment.created_at).toLocaleDateString()}
