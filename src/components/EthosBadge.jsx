@@ -1,4 +1,5 @@
 import React from 'react';
+import ethosLogo from '../assets/ethos_logo.png';
 
 const ETHOS_LEVELS = {
     'untrusted': { label: 'Untrusted', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' },
@@ -46,7 +47,7 @@ export function EthosBadge({ level, username, style = {} }) {
             ...style
         }}>
             <img
-                src="/ethos_logo.png"
+                src={ethosLogo}
                 alt="Ethos"
                 style={{ width: '12px', height: '12px', marginRight: '4px', objectFit: 'contain' }}
             />

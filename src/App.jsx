@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { Home, User, Trophy, Ticket, Crown } from 'lucide-react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { createSolanaRpc, createSolanaRpcSubscriptions } from '@solana/kit';
 import { PRIVY_APP_ID, SOLANA_RPC } from './constants';
@@ -348,31 +349,69 @@ function WassyPayApp() {
             <button
               onClick={() => setCurrentPage('home')}
               className="btn"
-              style={{ padding: '10px 16px', fontSize: '0.75rem', background: currentPage === 'home' ? 'var(--text-primary)' : 'transparent', color: currentPage === 'home' ? 'var(--bg-primary)' : 'var(--text-primary)' }}
+              style={{
+                padding: '10px 16px',
+                fontSize: '0.75rem',
+                background: currentPage === 'home' ? 'var(--text-primary)' : 'transparent',
+                color: currentPage === 'home' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                gap: '8px'
+              }}
             >
-              HOME
+              <Home size={16} /> HOME
             </button>
             <button
               onClick={() => setCurrentPage('profile')}
               className="btn"
-              style={{ padding: '10px 16px', fontSize: '0.75rem', background: currentPage === 'profile' ? 'var(--text-primary)' : 'transparent', color: currentPage === 'profile' ? 'var(--bg-primary)' : 'var(--text-primary)' }}
+              style={{
+                padding: '10px 16px',
+                fontSize: '0.75rem',
+                background: currentPage === 'profile' ? 'var(--text-primary)' : 'transparent',
+                color: currentPage === 'profile' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                gap: '8px'
+              }}
             >
-              PROFILE
+              <User size={16} /> PROFILE
             </button>
             <button
               onClick={() => setCurrentPage('games')}
               className="btn"
-              style={{ padding: '10px 16px', fontSize: '0.75rem', background: currentPage === 'games' ? 'var(--text-primary)' : 'transparent', color: currentPage === 'games' ? 'var(--bg-primary)' : 'var(--text-primary)' }}
+              style={{
+                padding: '10px 16px',
+                fontSize: '0.75rem',
+                background: currentPage === 'games' ? 'var(--text-primary)' : 'transparent',
+                color: currentPage === 'games' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                gap: '8px'
+              }}
             >
-              GAMES
+              <Ticket size={16} /> GAMES
+            </button>
+            <button
+              onClick={() => setShowLeaderboard(true)}
+              className="btn"
+              style={{
+                padding: '10px 16px',
+                fontSize: '0.75rem',
+                background: showLeaderboard ? 'var(--text-primary)' : 'transparent',
+                color: showLeaderboard ? 'var(--bg-primary)' : 'var(--text-primary)',
+                gap: '8px'
+              }}
+            >
+              <Trophy size={16} color={showLeaderboard ? 'var(--bg-primary)' : 'var(--accent)'} /> LEADERS
             </button>
             {isAdmin && (
               <button
                 onClick={() => setCurrentPage('admin')}
                 className="btn"
-                style={{ padding: '10px 16px', fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700 }}
+                style={{
+                  padding: '10px 16px',
+                  fontSize: '0.75rem',
+                  background: currentPage === 'admin' ? 'var(--text-primary)' : 'transparent',
+                  color: currentPage === 'admin' ? 'var(--accent)' : 'var(--text-primary)',
+                  fontWeight: 700,
+                  gap: '8px'
+                }}
               >
-                ADMIN
+                <Crown size={16} /> ADMIN
               </button>
             )}
           </div>
