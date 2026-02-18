@@ -134,7 +134,7 @@ export function ProfilePage({
                                     fontSize: '1.2rem',
                                     border: '1px solid var(--border-medium)'
                                 }}>
-                                    {recipient.username[0].toUpperCase()}
+                                    {(recipient.username && recipient.username[0]) ? recipient.username[0].toUpperCase() : 'U'}
                                 </div>
                                 <div className="mono" style={{ fontSize: '0.6rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
                                     @{recipient.username}

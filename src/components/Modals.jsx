@@ -1,3 +1,4 @@
+import { useRef, useEffect, useState } from 'react';
 import '../index.css';
 import { EthosBadge } from './EthosBadge';
 // Withdraw Modal - allows user to send funds to external address

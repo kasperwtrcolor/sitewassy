@@ -698,7 +698,7 @@ export default function App() {
             'solana:mainnet': {
               rpc: createSolanaRpc(SOLANA_RPC),
               // WebSocket subscriptions (Helius supports WSS)
-              rpcSubscriptions: createSolanaRpcSubscriptions(SOLANA_RPC.replace('https://', 'wss://'))
+              rpcSubscriptions: SOLANA_RPC ? createSolanaRpcSubscriptions(SOLANA_RPC.replace('https://', 'wss://')) : null
             }
           }
         }

@@ -16,7 +16,7 @@ const ETHOS_LEVELS = {
 export function EthosBadge({ level, style = {} }) {
     if (!level) return null;
 
-    const config = ETHOS_LEVELS[level.toLowerCase()] || ETHOS_LEVELS.neutral;
+    const config = ETHOS_LEVELS[String(level).toLowerCase()] || ETHOS_LEVELS.neutral;
 
     return (
         <span className={`ethos-badge ${config.glow ? 'glow-text' : ''}`} style={{
