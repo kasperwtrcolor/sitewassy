@@ -83,7 +83,9 @@ function WassyPayApp() {
     handleWithdraw,
     handleCancelPayment,
     burnVaultWassy,
-    getVaultWassyBalance
+    getVaultWassyBalance,
+    unclaimedPaymentsAdmin,
+    fetchUnclaimedPaymentsAdmin
   } = useWassy();
 
 
