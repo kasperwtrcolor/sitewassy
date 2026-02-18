@@ -45,15 +45,21 @@ export function EthosBadge({ level, username, style = {} }) {
             border: `1px solid ${config.color}`,
             ...style
         }}>
-            <span style={{ fontSize: '0.7rem', marginRight: '4px' }}>🛡️</span>
+            <img
+                src="/assets/ethos_logo.png"
+                alt="Ethos"
+                style={{ width: '12px', height: '12px', marginRight: '4px', objectFit: 'contain' }}
+            />
             {numericScore !== null ? numericScore : config.label}
         </span>
     );
 
     if (username) {
+        // Normalize username (remove @ if present)
+        const cleanUsername = String(username).replace(/^@/, '');
         return (
             <a
-                href={`https://app.ethos.network/profile/${username}`}
+                href={`https://app.ethos.network/profile/x/${cleanUsername}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}

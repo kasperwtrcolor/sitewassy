@@ -197,9 +197,19 @@ export function ProfilePage({
                                     justifyContent: 'center',
                                     fontSize: '1.2rem',
                                     border: '1px solid var(--border-medium)',
-                                    position: 'relative'
+                                    position: 'relative',
+                                    overflow: 'hidden'
                                 }}>
-                                    {(recipient.username && recipient.username[0]) ? recipient.username[0].toUpperCase() : 'U'}
+                                    {recipient.profileImage ? (
+                                        <img
+                                            src={recipient.profileImage}
+                                            alt={recipient.username}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = recipient.username[0].toUpperCase(); }}
+                                        />
+                                    ) : (
+                                        (recipient.username && recipient.username[0]) ? recipient.username[0].toUpperCase() : 'U'
+                                    )}
                                     <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', transform: 'scale(0.7)' }}>
                                         <EthosBadge level={recipient.ethosScore || recipient.ethos_score} username={recipient.username} />
                                     </div>

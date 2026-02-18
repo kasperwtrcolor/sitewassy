@@ -233,24 +233,35 @@ export function LeaderboardModal({ show, onClose, users }) {
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                     <div style={{
-                                        width: '30px',
-                                        height: '30px',
-                                        background: 'var(--bg-secondary)',
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '12px',
+                                        background: 'var(--bg-inset)',
                                         border: '1px solid var(--border-medium)',
-                                        borderRadius: '50%',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontWeight: '700',
-                                        fontSize: '0.8rem',
-                                        color: idx < 3 ? 'var(--accent-gold)' : 'var(--text-muted)'
+                                        overflow: 'hidden',
+                                        position: 'relative',
+                                        flexShrink: 0
                                     }}>
-                                        {idx + 1}
+                                        {u.profile_image_url || u.profileImage ? (
+                                            <img
+                                                src={u.profile_image_url || u.profileImage}
+                                                alt={u.x_username}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = (u.x_username || 'U')[0].toUpperCase(); }}
+                                            />
+                                        ) : (
+                                            (u.x_username || 'U')[0].toUpperCase()
+                                        )}
+                                        <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', transform: 'scale(0.65)' }}>
+                                            <EthosBadge level={u.ethos_score || u.ethosScore} username={u.x_username} />
+                                        </div>
                                     </div>
                                     <div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>@{u.x_username}</div>
-                                            <EthosBadge level={u.ethos_score} />
+                                        <div style={{ fontWeight: '700', fontSize: '1rem', color: idx === 0 ? 'var(--text-on-status)' : 'var(--text-primary)' }}>
+                                            @{u.x_username}
                                         </div>
                                         <div className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                                             ${(u.total_deposited || 0).toFixed(0)} + ${(u.total_sent || 0).toFixed(0)} + ${(u.total_claimed || 0).toFixed(0)}
@@ -373,8 +384,38 @@ export function AdminModal({ show, onClose, users }) {
                             </thead>
                             <tbody>
                                 {users.map((u) => (
-                                    <tr key={u.wallet_address} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
-                                        <td style={{ padding: '12px' }}>@{u.x_username}</td>
+                                    <tr key={u.wallet_address || u.x_username} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
+                                        <td style={{ padding: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: '24px',
+                                                    height: '24px',
+                                                    borderRadius: '6px',
+                                                    background: 'var(--bg-inset)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    overflow: 'hidden',
+                                                    border: '1px solid var(--border-medium)',
+                                                    flexShrink: 0
+                                                }}>
+                                                    {u.profile_image_url || u.profileImage ? (
+                                                        <img
+                                                            src={u.profile_image_url || u.profileImage}
+                                                            alt={u.x_username}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = (u.x_username || 'U')[0].toUpperCase(); }}
+                                                        />
+                                                    ) : (
+                                                        (u.x_username || 'U')[0].toUpperCase()
+                                                    )}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    @{u.x_username}
+                                                    <EthosBadge level={u.ethos_score || u.ethosScore} username={u.x_username} />
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td className="mono" style={{ padding: '12px', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                                             {u.wallet_address?.substring(0, 6)}...{u.wallet_address?.substring(u.wallet_address.length - 4)}
                                         </td>

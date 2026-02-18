@@ -56,11 +56,29 @@ export function PaymentHistory({ payments, xUsername }) {
                                             </span>
                                             <span className="mono" style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>${payment.amount}</span>
                                         </div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             {isSent ? (
-                                                <>To: @{payment.recipient_username}</>
+                                                <>To:
+                                                    <div style={{ width: '18px', height: '18px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-subtle)', background: 'var(--bg-inset)' }}>
+                                                        {payment.recipient_profile_image ? (
+                                                            <img src={payment.recipient_profile_image} alt={payment.recipient_username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        ) : (
+                                                            <div style={{ fontSize: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>{(payment.recipient_username || 'U')[0].toUpperCase()}</div>
+                                                        )}
+                                                    </div>
+                                                    @{payment.recipient_username}
+                                                </>
                                             ) : (
-                                                <>From: @{payment.sender_username}</>
+                                                <>From:
+                                                    <div style={{ width: '18px', height: '18px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-subtle)', background: 'var(--bg-inset)' }}>
+                                                        {payment.sender_profile_image ? (
+                                                            <img src={payment.sender_profile_image} alt={payment.sender_username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        ) : (
+                                                            <div style={{ fontSize: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>{(payment.sender_username || 'U')[0].toUpperCase()}</div>
+                                                        )}
+                                                    </div>
+                                                    @{payment.sender_username}
+                                                </>
                                             )}
                                         </div>
                                         <div className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '5px' }}>

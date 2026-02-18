@@ -333,11 +333,15 @@ export function useWassy() {
                     username: p.recipient_username,
                     lastPaidAt: timestamp,
                     ethosScore: p.recipient_ethos_score || null,
+                    profileImage: p.recipient_profile_image || null,
                     count: 1
                 });
             } else {
                 const existing = recipientsMap.get(handle);
                 existing.count += 1;
+                // Update to latest profile info if available
+                if (p.recipient_profile_image) existing.profileImage = p.recipient_profile_image;
+                if (p.recipient_ethos_score) existing.ethosScore = p.recipient_ethos_score;
                 if (timestamp > existing.lastPaidAt) {
                     existing.lastPaidAt = timestamp;
                 }

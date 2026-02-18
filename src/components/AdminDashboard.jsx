@@ -315,7 +315,34 @@ export function AdminDashboard({
                             <tbody>
                                 {filteredUsers.map((u) => (
                                     <tr key={u.wallet_address || u.x_username} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
-                                        <td style={{ padding: '12px' }}>@{u.x_username}</td>
+                                        <td style={{ padding: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: '24px',
+                                                    height: '24px',
+                                                    borderRadius: '6px',
+                                                    background: 'var(--bg-inset)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    overflow: 'hidden',
+                                                    border: '1px solid var(--border-medium)',
+                                                    flexShrink: 0
+                                                }}>
+                                                    {u.profile_image_url ? (
+                                                        <img
+                                                            src={u.profile_image_url}
+                                                            alt={u.x_username}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = (u.x_username || 'U')[0].toUpperCase(); }}
+                                                        />
+                                                    ) : (
+                                                        (u.x_username || 'U')[0].toUpperCase()
+                                                    )}
+                                                </div>
+                                                @{u.x_username}
+                                            </div>
+                                        </td>
                                         <td style={{ padding: '12px' }}>
                                             <EthosBadge level={u.ethos_score} username={u.x_username} />
                                         </td>
@@ -379,9 +406,34 @@ export function AdminDashboard({
                                 {filteredUnclaimed.map((p) => (
                                     <tr key={p.username} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
                                         <td style={{ padding: '12px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                @{p.username}
-                                                <EthosBadge level={p.ethos_score} username={p.username} />
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: '24px',
+                                                    height: '24px',
+                                                    borderRadius: '6px',
+                                                    background: 'var(--bg-inset)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    overflow: 'hidden',
+                                                    border: '1px solid var(--border-medium)',
+                                                    flexShrink: 0
+                                                }}>
+                                                    {p.profile_image_url ? (
+                                                        <img
+                                                            src={p.profile_image_url}
+                                                            alt={p.username}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = (p.username || 'U')[0].toUpperCase(); }}
+                                                        />
+                                                    ) : (
+                                                        (p.username || 'U')[0].toUpperCase()
+                                                    )}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    @{p.username}
+                                                    <EthosBadge level={p.ethos_score} username={p.username} />
+                                                </div>
                                             </div>
                                         </td>
                                         <td style={{ padding: '12px', textAlign: 'center' }}>
