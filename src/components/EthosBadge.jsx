@@ -14,6 +14,9 @@ const ETHOS_LEVELS = {
 };
 
 export function EthosBadge({ level, style = {} }) {
+    // Hidden for now per user request
+    return null;
+
     if (!level) return null;
 
     const config = ETHOS_LEVELS[String(level).toLowerCase()] || ETHOS_LEVELS.neutral;
