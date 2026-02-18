@@ -81,14 +81,16 @@ export function ProfilePage({
                 <div style={{ width: '80px', height: '80px', margin: '0 auto 20px', background: 'var(--accent)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: '2rem', fontWeight: 900 }}>
                     {xUsername ? xUsername[0].toUpperCase() : 'W'}
                 </div>
-                <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>@{xUsername}</h2>
-                {userStats?.ethosScore && (
-                    <div style={{ marginBottom: '15px' }}>
-                        <EthosBadge level={userStats.ethosScore} style={{ padding: '4px 12px', fontSize: '0.75rem' }} />
+                <h2 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>@{xUsername}</h2>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center', marginBottom: '15px' }}>
+                    {userStats?.ethosScore && (
+                        <div title="Ethos Reputation Score">
+                            <EthosBadge level={userStats.ethosScore} style={{ padding: '4px 12px', fontSize: '0.75rem' }} />
+                        </div>
+                    )}
+                    <div className="mono" style={{ padding: '6px 15px', borderRadius: '100px', background: 'var(--bg-inset)', fontSize: '0.8rem' }}>
+                        <span className="text-muted">POINTS:</span> <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{userStats?.points?.toFixed(0) || 0}</span>
                     </div>
-                )}
-                <div className="mono" style={{ display: 'inline-block', padding: '6px 15px', borderRadius: '100px', background: 'var(--bg-inset)', fontSize: '0.8rem' }}>
-                    <span className="text-muted">POINTS_REWARD:</span> <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{userStats?.points?.toFixed(0) || 0}</span>
                 </div>
             </div>
 

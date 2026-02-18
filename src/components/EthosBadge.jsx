@@ -14,12 +14,26 @@ const ETHOS_LEVELS = {
 };
 
 export function EthosBadge({ level, style = {} }) {
-    // Hidden for now per user request
-    return null;
+    if (level === undefined || level === null) return null;
 
-    if (!level) return null;
+    // Handle numeric scores by mapping to levels
+    let displayLevel = level;
+    let numericScore = null;
 
-    const config = ETHOS_LEVELS[String(level).toLowerCase()] || ETHOS_LEVELS.neutral;
+    if (typeof level === 'number') {
+        numericScore = level;
+        if (level >= 90) displayLevel = 'renowned';
+        else if (level >= 80) displayLevel = 'distinguished';
+        else if (level >= 70) displayLevel = 'exemplary';
+        else if (level >= 60) displayLevel = 'reputable';
+        else if (level >= 50) displayLevel = 'established';
+        else if (level >= 40) displayLevel = 'known';
+        else if (level >= 30) displayLevel = 'neutral';
+        else if (level >= 15) displayLevel = 'questionable';
+        else displayLevel = 'untrusted';
+    }
+
+    const config = ETHOS_LEVELS[String(displayLevel).toLowerCase()] || ETHOS_LEVELS.neutral;
 
     return (
         <span className={`ethos-badge ${config.glow ? 'glow-text' : ''}`} style={{
@@ -36,7 +50,7 @@ export function EthosBadge({ level, style = {} }) {
             ...style
         }}>
             <span style={{ fontSize: '0.7rem', marginRight: '4px' }}>🛡️</span>
-            {config.label}
+            {numericScore !== null ? numericScore : config.label}
         </span>
     );
 }

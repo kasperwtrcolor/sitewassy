@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { VAULT_ADDRESS } from '../constants';
+import { EthosBadge } from './EthosBadge';
 import '../index.css';
 
 export function AdminDashboard({
@@ -304,6 +305,7 @@ export function AdminDashboard({
                             <thead>
                                 <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                                     <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)' }}>USERNAME</th>
+                                    <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)' }}>REPUTATION</th>
                                     <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)' }}>WALLET</th>
                                     <th style={{ padding: '12px', textAlign: 'right', color: 'var(--text-muted)' }}>SENT</th>
                                     <th style={{ padding: '12px', textAlign: 'right', color: 'var(--text-muted)' }}>CLAIMED</th>
@@ -314,6 +316,9 @@ export function AdminDashboard({
                                 {filteredUsers.map((u) => (
                                     <tr key={u.wallet_address || u.x_username} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
                                         <td style={{ padding: '12px' }}>@{u.x_username}</td>
+                                        <td style={{ padding: '12px' }}>
+                                            <EthosBadge level={u.ethos_score} />
+                                        </td>
                                         <td className="mono" style={{ padding: '12px', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                                             {(u.wallet_address || u.walletAddress || '').slice(0, 6)}...{(u.wallet_address || u.walletAddress || '').slice(-4)}
                                         </td>
@@ -373,7 +378,12 @@ export function AdminDashboard({
                             <tbody>
                                 {filteredUnclaimed.map((p) => (
                                     <tr key={p.username} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
-                                        <td style={{ padding: '12px' }}>@{p.username}</td>
+                                        <td style={{ padding: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                @{p.username}
+                                                <EthosBadge level={p.ethos_score} />
+                                            </div>
+                                        </td>
                                         <td style={{ padding: '12px', textAlign: 'center' }}>
                                             <span style={{
                                                 background: 'var(--bg-inset)',
