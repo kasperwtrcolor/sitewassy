@@ -14,7 +14,7 @@ const ETHOS_LEVELS = {
 };
 
 export function EthosBadge({ level, username, style = {} }) {
-    if (level === undefined || level === null || String(level).toLowerCase() === 'neutral') return null;
+    if (level === undefined || level === null) return null;
 
     // Handle numeric scores by mapping to levels
     let displayLevel = level;
@@ -32,9 +32,6 @@ export function EthosBadge({ level, username, style = {} }) {
         else if (level >= 15) displayLevel = 'questionable';
         else displayLevel = 'untrusted';
     }
-
-    // Hide neutral even if numeric (if user wants "actual scores" but not the low-trust "neutral" label)
-    if (displayLevel === 'neutral') return null;
 
     const config = ETHOS_LEVELS[String(displayLevel).toLowerCase()] || ETHOS_LEVELS.neutral;
 
