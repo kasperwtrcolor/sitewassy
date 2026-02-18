@@ -46,6 +46,7 @@ function WassyPayApp() {
     setDelegationAmount,
     authorizeDelegation,
     payments,
+    recentlyPaid,
     pendingClaims,
     pendingOutgoing,
     claimPayment,
@@ -439,6 +440,7 @@ function WassyPayApp() {
             xUsername={xUsername}
             userStats={userStats}
             isDelegated={isDelegated}
+            recentlyPaid={recentlyPaid}
             achievements={userProfile?.achievements || []}
             onCheckPayments={handleCheckForPayments}
             onResetTutorial={() => {

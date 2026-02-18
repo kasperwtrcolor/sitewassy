@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useWallets, useSignAndSendTransaction, useExportWallet, useFundWallet, useSolanaFundingPlugin } from '@privy-io/react-auth/solana';
 import { Connection, PublicKey, Transaction, ComputeBudgetProgram } from '@solana/web3.js';
@@ -95,7 +95,8 @@ export function useWassy() {
                             totalSent: myStats.total_sent || 0,
                             totalClaimed: myStats.total_claimed || 0,
                             points: myStats.points || 0,
-                            hasSent: myStats.has_sent || false
+                            hasSent: myStats.has_sent || false,
+                            ethosScore: myStats.ethos_score || null
                         });
                     }
                 }
@@ -116,7 +117,8 @@ export function useWassy() {
         totalSent: backendStats.totalSent || userProfile?.stats?.totalSent || 0,
         totalClaimed: backendStats.totalClaimed || userProfile?.stats?.totalClaimed || 0,
         hasSent: backendStats.hasSent || (userProfile?.stats?.totalSent > 0) || false,
-        points: backendStats.points || userProfile?.stats?.points || 0
+        points: backendStats.points || userProfile?.stats?.points || 0,
+        ethosScore: backendStats.ethosScore || null
     };
 
     // Sync isDelegated from Firebase (real-time)
@@ -294,6 +296,43 @@ export function useWassy() {
             console.error('Error fetching payments:', err);
         }
     }, [xUsername]);
+
+    // Compute recently paid users from payment history
+    const recentlyPaid = useMemo(() => {
+        if (!payments || payments.length === 0 || !xUsername) return [];
+
+        const mySentPayments = payments.filter(p =>
+            p.sender_username?.toLowerCase() === xUsername.toLowerCase()
+        );
+
+        const recipientsMap = new Map();
+        mySentPayments.forEach(p => {
+            const handle = p.recipient_username?.toLowerCase();
+            if (!handle) return;
+
+            const timestamp = p.created_at?.toMillis ? p.created_at.toMillis() :
+                p.created_at?.seconds ? p.created_at.seconds * 1000 :
+                    new Date(p.created_at).getTime() || 0;
+
+            if (!recipientsMap.has(handle)) {
+                recipientsMap.set(handle, {
+                    username: p.recipient_username,
+                    lastPaidAt: timestamp,
+                    count: 1
+                });
+            } else {
+                const existing = recipientsMap.get(handle);
+                existing.count += 1;
+                if (timestamp > existing.lastPaidAt) {
+                    existing.lastPaidAt = timestamp;
+                }
+            }
+        });
+
+        return Array.from(recipientsMap.values())
+            .sort((a, b) => b.lastPaidAt - a.lastPaidAt)
+            .slice(0, 8); // Show top 8 recent recipients
+    }, [payments, xUsername]);
 
     // Fetch leaderboard users (public endpoint)
     const fetchAllUsers = useCallback(async () => {
@@ -708,6 +747,7 @@ export function useWassy() {
 
         // Payments
         payments,
+        recentlyPaid,
         pendingClaims,
         pendingOutgoing,
         claimPayment,

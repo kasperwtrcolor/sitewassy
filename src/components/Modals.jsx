@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from 'react';
 import '../index.css';
+import { EthosBadge } from './EthosBadge';
 // Withdraw Modal - allows user to send funds to external address
 export function WithdrawModal({ show, onClose, onWithdraw, walletBalance, wassyBalance, isLoading }) {
     const [address, setAddress] = useState('');
@@ -247,7 +247,10 @@ export function LeaderboardModal({ show, onClose, users }) {
                                         {idx + 1}
                                     </div>
                                     <div>
-                                        <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>@{u.x_username}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>@{u.x_username}</div>
+                                            <EthosBadge level={u.ethos_score} />
+                                        </div>
                                         <div className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
                                             ${(u.total_deposited || 0).toFixed(0)} + ${(u.total_sent || 0).toFixed(0)} + ${(u.total_claimed || 0).toFixed(0)}
                                         </div>
@@ -414,10 +417,16 @@ export function StatsModal({ show, onClose, userStats }) {
                 <div className="screw tl"></div>
                 <div className="screw tr"></div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '25px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                     <span style={{ fontSize: '1.5rem' }}>📊</span>
                     <span className="engraved" style={{ fontSize: '0.9rem' }}>YOUR STATS</span>
                 </div>
+
+                {userStats?.ethosScore && (
+                    <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
+                        <EthosBadge level={userStats.ethosScore} style={{ padding: '4px 12px', fontSize: '0.7rem' }} />
+                    </div>
+                )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                     <div className="inset-panel" style={{ textAlign: 'center', padding: '20px' }}>

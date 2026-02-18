@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import '../index.css';
+import { EthosBadge } from './EthosBadge';
 
 // Note: achievements prop is an array of achievement objects from Firebase (with id, name, icon, etc.)
 
@@ -10,8 +12,18 @@ export function ProfilePage({
     onResetTutorial,
     onOpenLeaderboard,
     onBack,
+    recentlyPaid = [],
     achievements = [] // Array of unlocked achievement OBJECTS from Firebase
 }) {
+    const [selectedRecipient, setSelectedRecipient] = useState(null);
+    const [quickPayAmount, setQuickPayAmount] = useState('5');
+
+    const handleQuickPay = () => {
+        if (!selectedRecipient || !quickPayAmount) return;
+        const text = `@bot_wassy send @${selectedRecipient} $${quickPayAmount}`;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    };
     // Full achievements list for display
     const ACHIEVEMENTS = [
         { id: 'first_payment', name: 'First Blood', desc: 'Send your first payment', icon: '🎯' },
@@ -64,6 +76,11 @@ export function ProfilePage({
                     {xUsername ? xUsername[0].toUpperCase() : 'W'}
                 </div>
                 <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>@{xUsername}</h2>
+                {userStats?.ethosScore && (
+                    <div style={{ marginBottom: '15px' }}>
+                        <EthosBadge level={userStats.ethosScore} style={{ padding: '4px 12px', fontSize: '0.75rem' }} />
+                    </div>
+                )}
                 <div className="mono" style={{ display: 'inline-block', padding: '6px 15px', borderRadius: '100px', background: 'var(--bg-inset)', fontSize: '0.8rem' }}>
                     <span className="text-muted">POINTS_REWARD:</span> <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{userStats?.points?.toFixed(0) || 0}</span>
                 </div>
@@ -81,6 +98,92 @@ export function ProfilePage({
                     </button>
                 </div>
             </div>
+
+            {/* Quick Pay / Recently Paid */}
+            {recentlyPaid && recentlyPaid.length > 0 && (
+                <div className="glass-panel animate-fade-in" style={{ marginBottom: '30px' }}>
+                    <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// QUICK_PAY (RECENT_RECIPIENTS)</div>
+                    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '20px' }}>
+                        {recentlyPaid.map((recipient) => (
+                            <button
+                                key={recipient.username}
+                                onClick={() => setSelectedRecipient(recipient.username)}
+                                style={{
+                                    flex: '0 0 auto',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '12px',
+                                    background: selectedRecipient === recipient.username ? 'var(--bg-inset)' : 'transparent',
+                                    border: selectedRecipient === recipient.username ? '1px solid var(--accent)' : '1px solid var(--border-subtle)',
+                                    borderRadius: '16px',
+                                    width: '85px',
+                                    transition: 'all 0.2s ease',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '12px',
+                                    background: 'var(--bg-secondary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '1.2rem',
+                                    border: '1px solid var(--border-medium)'
+                                }}>
+                                    {recipient.username[0].toUpperCase()}
+                                </div>
+                                <div className="mono" style={{ fontSize: '0.6rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>
+                                    @{recipient.username}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {selectedRecipient && (
+                        <div className="inset-panel animate-fade-in" style={{ padding: '20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                                <div style={{ flex: 1, minWidth: '150px' }}>
+                                    <div className="mono label-subtle" style={{ fontSize: '0.6rem', marginBottom: '8px' }}>PAYING: @{selectedRecipient}</div>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 700 }}>$</span>
+                                        <input
+                                            type="number"
+                                            value={quickPayAmount}
+                                            onChange={(e) => setQuickPayAmount(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '10px 10px 10px 25px',
+                                                background: 'var(--bg-secondary)',
+                                                border: '1px solid var(--border-medium)',
+                                                borderRadius: '12px',
+                                                color: 'var(--text-primary)',
+                                                fontSize: '1rem',
+                                                fontWeight: 700,
+                                                outline: 'none'
+                                            }}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleQuickPay}
+                                    className="btn btn-accent"
+                                    style={{ padding: '12px 25px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}
+                                >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                                    </svg>
+                                    SEND_USDC
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Achievements */}
             <div className="glass-panel animate-fade-in" style={{ marginBottom: '30px' }}>
