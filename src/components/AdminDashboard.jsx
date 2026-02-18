@@ -14,7 +14,10 @@ export function AdminDashboard({
     onResetVaultCracker,
     onEndVaultCracker,
     onBurnVaultWassy,
-    onGetVaultWassyBalance
+    onGetVaultWassyBalance,
+    // Unclaimed payments
+    unclaimedPayments = [],
+    onFetchUnclaimedPayments
 }) {
     const [activeTab, setActiveTab] = useState('overview');
     const [searchTerm, setSearchTerm] = useState('');
@@ -46,6 +49,13 @@ export function AdminDashboard({
         setNewEndTime(tomorrow.toISOString().slice(0, 16)); // Format for datetime-local
     }, []);
 
+    // Fetch unclaimed payments when tab change
+    useEffect(() => {
+        if (activeTab === 'unclaimed') {
+            onFetchUnclaimedPayments?.();
+        }
+    }, [activeTab, onFetchUnclaimedPayments]);
+
     // Calculate metrics from users data
     const metrics = {
         totalUsers: users?.length || 0,
@@ -59,6 +69,10 @@ export function AdminDashboard({
     const filteredUsers = users?.filter(u =>
         u.x_username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.wallet_address?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
+
+    const filteredUnclaimed = unclaimedPayments?.filter(p =>
+        p.username?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
 
     // Eligible users count (users who have sent payments)
@@ -190,6 +204,7 @@ export function AdminDashboard({
     const tabs = [
         { id: 'overview', label: '📊 Overview' },
         { id: 'users', label: '👥 Users' },
+        { id: 'unclaimed', label: '🎁 Unclaimed' },
         { id: 'lottery', label: '🎰 Lottery' },
         { id: 'vault', label: '🔐 Vault Cracker' },
         { id: 'burn', label: '🔥 Burn WASSY' }
@@ -314,6 +329,86 @@ export function AdminDashboard({
                         {filteredUsers.length === 0 && (
                             <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
                                 No users found
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Unclaimed Tab */}
+            {activeTab === 'unclaimed' && (
+                <div className="glass-panel" style={{ padding: '25px', marginBottom: '20px' }}>
+                    <div className="mono label-subtle" style={{ marginBottom: '20px' }}>// UNCLAIMED_PAYMENTS</div>
+
+                    {/* Search */}
+                    <div style={{ marginBottom: '20px' }}>
+                        <input
+                            type="text"
+                            placeholder="Search by recipient handle..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                background: 'var(--bg-inset)',
+                                border: '1px solid var(--border-medium)',
+                                borderRadius: '8px',
+                                color: 'var(--text-primary)',
+                                fontSize: '0.9rem'
+                            }}
+                        />
+                    </div>
+
+                    {/* Unclaimed Table */}
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                                    <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)' }}>RECIPIENT</th>
+                                    <th style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)' }}>PENDING COUNT</th>
+                                    <th style={{ padding: '12px', textAlign: 'right', color: 'var(--text-muted)' }}>TOTAL AMOUNT</th>
+                                    <th style={{ padding: '12px', textAlign: 'right', color: 'var(--text-muted)' }}>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredUnclaimed.map((p) => (
+                                    <tr key={p.username} style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
+                                        <td style={{ padding: '12px' }}>@{p.username}</td>
+                                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                                            <span style={{
+                                                background: 'var(--bg-inset)',
+                                                padding: '2px 8px',
+                                                borderRadius: '10px',
+                                                border: '1px solid var(--border-medium)'
+                                            }}>
+                                                {p.count}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '12px', textAlign: 'right', fontWeight: '700', color: 'var(--success)' }}>
+                                            ${p.totalAmount.toFixed(2)}
+                                        </td>
+                                        <td style={{ padding: '12px', textAlign: 'right' }}>
+                                            <a
+                                                href={`https://twitter.com/intent/tweet?text=Hey%20@${p.username},%20you%20have%20${p.count}%20pending%20USDC%20payments%20on%20WassyPay!%20Head%20over%20to%20https://wassy-pay-backend.onrender.com%20to%20claim%20them.%20@bot_wassy`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-primary"
+                                                style={{
+                                                    padding: '4px 12px',
+                                                    fontSize: '0.7rem',
+                                                    borderRadius: '6px'
+                                                }}
+                                            >
+                                                REMIND ON X
+                                            </a>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {filteredUnclaimed.length === 0 && (
+                            <div style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                No pending claims found
                             </div>
                         )}
                     </div>

@@ -476,6 +476,8 @@ function WassyPayApp() {
             onEndVaultCracker={endVaultCracker}
             onBurnVaultWassy={burnVaultWassy}
             onGetVaultWassyBalance={getVaultWassyBalance}
+            unclaimedPayments={unclaimedPaymentsAdmin}
+            onFetchUnclaimedPayments={fetchUnclaimedPaymentsAdmin}
             onClose={() => setCurrentPage('home')}
           />
         ) : currentPage === 'games' ? (

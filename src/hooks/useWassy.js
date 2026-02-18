@@ -41,6 +41,7 @@ export function useWassy() {
     const [pendingOutgoing, setPendingOutgoing] = useState([]); // Payments user sent that aren't claimed yet
     const [allUsers, setAllUsers] = useState([]);
     const [lotteryParticipants, setLotteryParticipants] = useState([]);
+    const [unclaimedPaymentsAdmin, setUnclaimedPaymentsAdmin] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -296,6 +297,20 @@ export function useWassy() {
             console.error('Error fetching payments:', err);
         }
     }, [xUsername]);
+
+    // Fetch unclaimed payments for admin
+    const fetchUnclaimedPaymentsAdmin = useCallback(async () => {
+        if (!isAdmin) return;
+        try {
+            const response = await fetch(`${API}/api/admin/pending-claims`);
+            if (response.ok) {
+                const data = await response.json();
+                setUnclaimedPaymentsAdmin(data.pendingClaims || []);
+            }
+        } catch (err) {
+            console.error('Error fetching unclaimed payments admin:', err);
+        }
+    }, [isAdmin]);
 
     // Compute recently paid users from payment history
     const recentlyPaid = useMemo(() => {
@@ -750,8 +765,10 @@ export function useWassy() {
         recentlyPaid,
         pendingClaims,
         pendingOutgoing,
+        unclaimedPaymentsAdmin,
         claimPayment,
         fetchPendingClaims,
+        fetchUnclaimedPaymentsAdmin,
 
         // Admin
         allUsers,
