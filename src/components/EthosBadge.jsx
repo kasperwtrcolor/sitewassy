@@ -41,15 +41,16 @@ export function EthosBadge({ level, username, style = {} }) {
             fontSize: '0.6rem',
             fontWeight: 800,
             textTransform: 'uppercase',
-            backgroundColor: config.bg,
+            backgroundColor: 'transparent',
             color: config.color,
-            border: `1px solid ${config.color}`,
+            border: 'none',
+            textShadow: `0 0 8px ${config.color}60, 0 2px 4px rgba(0,0,0,0.3)`,
             ...style
         }}>
             <img
                 src={ethosLogo}
                 alt="Ethos"
-                style={{ width: '12px', height: '12px', marginRight: '4px', objectFit: 'contain' }}
+                style={{ width: '12px', height: '12px', marginRight: '4px', objectFit: 'contain', filter: `drop-shadow(0 0 4px ${config.color}80)` }}
             />
             {numericScore !== null ? numericScore : config.label}
         </span>
