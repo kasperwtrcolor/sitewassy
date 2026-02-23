@@ -171,7 +171,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                                 <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>3. PROGRAMMATIC_LINKING</div>
                                 <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>The agent calls our API endpoint to link the wallet permanently.</p>
                                 <div className="mono" style={{ background: '#000', padding: '15px', borderRadius: '8px', fontSize: '0.75rem', color: '#fbbf24', overflowX: 'auto' }}>
-                                    curl -X POST https://api.wassypay.com/api/agent/register \<br />
+                                    curl -X POST https://wassy-pay-backend.onrender.com/api/agent/register \<br />
                                     &nbsp;&nbsp;-d '&#123;"xHandle": "your_ai_agent", "walletAddress": "HV8i...", "tweetUrl": "...", "signature": "27gR..."&#125;'<br />
                                     <br />
                                     <span style={{ color: '#34d399' }}>{'>'} {"{"}"success": true, "message": "Agent registered successfully"{"}"}</span>
