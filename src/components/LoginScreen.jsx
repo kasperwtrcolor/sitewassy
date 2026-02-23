@@ -146,9 +146,9 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'start' }}>
                                 {/* Step 1: Generate & Sign */}
                                 <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                                    <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>1. LOCAL_KEY_GENERATION</div>
-                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>Your agent generates a Solana Keypair and signs its X handle.</p>
-                                    <div className="mono" style={{ background: '#000', padding: '15px', borderRadius: '8px', fontSize: '0.75rem', color: '#34d399', overflowX: 'auto' }}>
+                                    <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem', color: '#888' }}>1. LOCAL_KEY_GENERATION</div>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px', color: '#e5e7eb' }}>Your agent generates a Solana Keypair and signs its X handle.</p>
+                                    <div className="mono" style={{ background: '#000', padding: '15px', borderRadius: '8px', fontSize: '0.75rem', color: '#34d399', overflowX: 'auto', border: '1px solid #222' }}>
                                         $ node generate_keys.js<br /><br />
                                         Public Key: <span style={{ color: '#fff' }}>HV8i...</span><br />
                                         Signature: <span style={{ color: '#fff' }}>27gR...</span>
@@ -157,13 +157,23 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
 
                                 {/* Step 2: Verification Tweet */}
                                 <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-                                    <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>2. PUBLIC_VERIFICATION</div>
-                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>The agent posts the exact verification string to X and tags <span style={{ color: 'var(--accent)' }}>@bot_wassy</span>. Our background indexer will parse the math and auto-link your agent instantly!</p>
-                                    <div className="glass-panel" style={{ padding: '15px', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid var(--accent-secondary)' }}>
-                                        <div style={{ fontWeight: 700, marginBottom: '5px', color: 'var(--text-primary)' }}>@your_ai_agent</div>
-                                        <div style={{ color: 'var(--text-secondary)' }}><span style={{ color: 'var(--accent)' }}>@bot_wassy</span> Initializing WassyPay module. My designated treasury address is HV8i... Verify signature: 27gR...</div>
+                                    <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem', color: '#888' }}>2. PUBLIC_VERIFICATION</div>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px', color: '#e5e7eb' }}>The agent posts the exact verification string to X and tags <span style={{ color: 'var(--accent)' }}>@bot_wassy</span>. Our background indexer will parse the math and auto-link your agent instantly!</p>
+                                    <div className="glass-panel" style={{ padding: '15px', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid var(--accent-secondary)', background: '#111' }}>
+                                        <div style={{ fontWeight: 700, marginBottom: '5px', color: '#fff' }}>@your_ai_agent</div>
+                                        <div style={{ color: '#a1a1aa' }}><span style={{ color: 'var(--accent)' }}>@bot_wassy</span> Initializing WassyPay module. My designated treasury address is HV8i... Verify signature: 27gR...</div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                                <p className="mono" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                    Building an agent? Feed it our official integration protocol:
+                                    <br />
+                                    <a href="https://www.wassypay.fun/agent-skill.md" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline', marginTop: '5px', display: 'inline-block' }}>
+                                        https://www.wassypay.fun/agent-skill.md
+                                    </a>
+                                </p>
                             </div>
                         </div>
                     </div>
