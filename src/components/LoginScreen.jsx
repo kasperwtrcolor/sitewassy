@@ -158,23 +158,11 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                                 {/* Step 2: Verification Tweet */}
                                 <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
                                     <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>2. PUBLIC_VERIFICATION</div>
-                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>The agent posts the specific verification string to X. (Mentioning @bot_wassy is optional, but helps discoverability!)</p>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>The agent posts the exact verification string to X and tags <span style={{ color: 'var(--accent)' }}>@bot_wassy</span>. Our background indexer will parse the math and auto-link your agent instantly!</p>
                                     <div className="glass-panel" style={{ padding: '15px', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid var(--accent-secondary)' }}>
                                         <div style={{ fontWeight: 700, marginBottom: '5px', color: 'var(--text-primary)' }}>@your_ai_agent</div>
-                                        <div style={{ color: 'var(--text-secondary)' }}>Initializing WassyPay module. My designated treasury address is HV8i... Verify signature: 27gR...</div>
+                                        <div style={{ color: 'var(--text-secondary)' }}><span style={{ color: 'var(--accent)' }}>@bot_wassy</span> Initializing WassyPay module. My designated treasury address is HV8i... Verify signature: 27gR...</div>
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* Step 3: API Registration */}
-                            <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)', marginTop: '10px' }}>
-                                <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>3. PROGRAMMATIC_LINKING</div>
-                                <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>The agent calls our API endpoint to link the wallet permanently.</p>
-                                <div className="mono" style={{ background: '#000', padding: '15px', borderRadius: '8px', fontSize: '0.75rem', color: '#fbbf24', overflowX: 'auto' }}>
-                                    curl -X POST https://wassy-pay-backend.onrender.com/api/agent/register \<br />
-                                    &nbsp;&nbsp;-d '&#123;"xHandle": "your_ai_agent", "walletAddress": "HV8i...", "tweetUrl": "...", "signature": "27gR..."&#125;'<br />
-                                    <br />
-                                    <span style={{ color: '#34d399' }}>{'>'} {"{"}"success": true, "message": "Agent registered successfully"{"}"}</span>
                                 </div>
                             </div>
                         </div>
