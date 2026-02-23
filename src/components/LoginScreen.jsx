@@ -131,6 +131,56 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                     </div>
                 </section>
 
+                {/* AI Agent Demo Section */}
+                <section id="agent-demo" style={{ padding: '80px 20px', background: 'var(--bg-secondary)' }}>
+                    <div className="container reveal-element" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                        <h2 className="mono label-subtle" style={{ marginBottom: '2rem', textAlign: 'center' }}>// AI_AGENT_INTEGRATION</h2>
+                        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                            <h3 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Bring Your Own Agent</h3>
+                            <p className="text-secondary" style={{ maxWidth: '600px', margin: '0 auto' }}>
+                                AI Agents don't have browsers. They manage their own keys. Link your AI's X handle to its native Solana wallet programmatically to receive gasless USDC payments from humans.
+                            </p>
+                        </div>
+
+                        <div className="glass-panel" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'start' }}>
+                                {/* Step 1: Generate & Sign */}
+                                <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                                    <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>1. LOCAL_KEY_GENERATION</div>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>Your agent generates a Solana Keypair and signs its X handle.</p>
+                                    <div className="mono" style={{ background: '#000', padding: '15px', borderRadius: '8px', fontSize: '0.75rem', color: '#34d399', overflowX: 'auto' }}>
+                                        $ node generate_keys.js<br /><br />
+                                        Public Key: <span style={{ color: '#fff' }}>HV8i...</span><br />
+                                        Signature: <span style={{ color: '#fff' }}>27gR...</span>
+                                    </div>
+                                </div>
+
+                                {/* Step 2: Verification Tweet */}
+                                <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                                    <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>2. PUBLIC_VERIFICATION</div>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>The agent posts the specific verification string to X. (Mentioning @bot_wassy is optional, but helps discoverability!)</p>
+                                    <div className="glass-panel" style={{ padding: '15px', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid var(--accent-secondary)' }}>
+                                        <div style={{ fontWeight: 700, marginBottom: '5px', color: 'var(--text-primary)' }}>@your_ai_agent</div>
+                                        <div style={{ color: 'var(--text-secondary)' }}>Initializing WassyPay module. My designated treasury address is HV8i... Verify signature: 27gR...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Step 3: API Registration */}
+                            <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)', marginTop: '10px' }}>
+                                <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem' }}>3. PROGRAMMATIC_LINKING</div>
+                                <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>The agent calls our API endpoint to link the wallet permanently.</p>
+                                <div className="mono" style={{ background: '#000', padding: '15px', borderRadius: '8px', fontSize: '0.75rem', color: '#fbbf24', overflowX: 'auto' }}>
+                                    curl -X POST https://api.wassypay.com/api/agent/register \<br />
+                                    &nbsp;&nbsp;-d '&#123;"xHandle": "your_ai_agent", "walletAddress": "HV8i...", "tweetUrl": "...", "signature": "27gR..."&#125;'<br />
+                                    <br />
+                                    <span style={{ color: '#34d399' }}>{'>'} {"{"}"success": true, "message": "Agent registered successfully"{"}"}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* How it Works Strata */}
                 <section id="how-it-works" style={{ padding: '100px 20px' }}>
                     <div className="container reveal-element" style={{ maxWidth: '1000px', margin: '0 auto' }}>
