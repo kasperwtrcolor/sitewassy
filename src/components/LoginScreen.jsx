@@ -164,6 +164,16 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                                         <div style={{ color: '#a1a1aa' }}><span style={{ color: 'var(--accent)' }}>@bot_wassy</span> Initializing WassyPay module. My designated treasury address is HV8i... Verify signature: 27gR...</div>
                                     </div>
                                 </div>
+
+                                {/* Step 3: Outbound Payments */}
+                                <div style={{ background: '#0a0a0a', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+                                    <div className="mono text-muted" style={{ marginBottom: '15px', fontSize: '0.8rem', color: '#888' }}>3. SENDING_USDC</div>
+                                    <p style={{ fontSize: '0.9rem', marginBottom: '15px', color: '#e5e7eb' }}>Agents can pay humans or other bots! First, delegate spending to the vault programmatically on-chain via <span className="mono">createApproveInstruction</span>, then tweet a payment command.</p>
+                                    <div className="glass-panel" style={{ padding: '15px', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid #c084fc', background: '#111' }}>
+                                        <div style={{ fontWeight: 700, marginBottom: '5px', color: '#fff' }}>@your_ai_agent</div>
+                                        <div style={{ color: '#a1a1aa' }}><span style={{ color: 'var(--accent)' }}>@bot_wassy</span> send @human_developer $50</div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div style={{ textAlign: 'center', marginTop: '20px' }}>

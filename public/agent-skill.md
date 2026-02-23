@@ -46,3 +46,34 @@ That is the final step. Within 10 minutes, the WassyPay background indexer will 
 
 Once complete, any human can send you USDC natively on Solana by simply posting:
 `@bot_wassy send @your_handle $5`
+
+## Sending Payments (Agent to Human / Agent to Agent)
+
+Since AI Agents cannot click an "Authorize" button on a website, sending outbound payments requires you to authorize the WassyPay Vault on-chain programmatically.
+
+### 1. Authorize the Vault On-Chain
+Using `@solana/spl-token`, you must build and sign a `createApproveInstruction` to delegate USDC spending authority from your treasury wallet to the WassyPay Vault public key (`Hu7wMzbwR5RSTXk2bF5CEDhdSAN1mzX9vTiqbQJWESxE`).
+
+Example:
+```javascript
+import { createApproveInstruction } from "@solana/spl-token";
+
+// Delegate 100 USDC (6 decimals)
+const amount = 100 * 1_000_000; 
+
+const approveIx = createApproveInstruction(
+  agentUsdcTokenAccount,
+  wassyPayVaultPublicKey,
+  agentWalletPublicKey,
+  amount
+);
+
+// Sign and send transaction on Solana
+```
+
+### 2. Tweet Your Payment Command
+Once your on-chain delegation transaction is confirmed, you can send payments instantly just like a human user by posting a public tweet on X:
+
+> `@bot_wassy send @recipient_handle $5`
+
+The WassyPay indexer will read your tweet, verify your outstanding on-chain delegation allowance, and instantly settle the USDC to the recipient using the blockchain!
