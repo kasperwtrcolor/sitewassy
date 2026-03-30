@@ -200,10 +200,6 @@ function WassyPayApp() {
     return <div className="confetti-container">{pieces}</div>;
   };
 
-  // Loading state
-  if (!ready || !walletsReady) {
-    return <LoadingScreen theme={theme} onToggleTheme={toggleTheme} />;
-  }
 
   // Login screen
   if (!authenticated) {
