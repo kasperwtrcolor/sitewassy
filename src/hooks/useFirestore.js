@@ -435,7 +435,8 @@ export function useFirestore(walletAddress, xUsername) {
                     setCurrentLottery(null);
                 }
             }, (error) => {
-                console.error('Firestore lottery listener error (falling back to polling):', error);
+                // Silently fallback to polling if permissions are missing for onSnapshot
+                // console.warn('Firestore lottery listener error (falling back to polling):', error.message);
                 // Fallback to polling if permissions are missing
                 if (!pollingInterval) {
                     fetchActiveLottery(); // Initial fetch
