@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { usePrivy, useExportWallet as useEvmExportWallet } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
 import { useWallets, useSignAndSendTransaction, useExportWallet, useFundWallet, useSolanaFundingPlugin } from '@privy-io/react-auth/solana';
 import { Connection, PublicKey, Transaction, ComputeBudgetProgram } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountInstruction, createTransferInstruction } from '@solana/spl-token';
@@ -7,11 +7,10 @@ import { API, USDC_MINT, WASSY_MINT, SOLANA_RPC, VAULT_ADDRESS, ADMIN_USERNAMES 
 import { useFirestore } from './useFirestore';
 
 export function useWassy() {
-    const { ready, authenticated, user, login, logout } = usePrivy();
+    const { ready, authenticated, user, login, logout, exportWallet: exportEvmWallet } = usePrivy();
     const { wallets, ready: walletsReady } = useWallets();
     const { signAndSendTransaction } = useSignAndSendTransaction();
     const { exportWallet } = useExportWallet();
-    const { exportWallet: exportEvmWallet } = useEvmExportWallet();
     const { fundWallet } = useFundWallet();
     // Mount Solana funding plugin (required for Solana funding flows)
     useSolanaFundingPlugin();
