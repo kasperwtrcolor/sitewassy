@@ -419,7 +419,9 @@ export function useWassy() {
                 // Record claim in Firebase for stats and achievements
                 await recordFirebaseClaim(claim.amount, claim.sender_username);
 
-                setSuccess(`Successfully claimed $${claim.amount} from @${claim.sender_username || claim.sender}!`);
+                const ticker = claim.ticker || 'USDC';
+                const claimLabel = ticker !== 'USDC' ? `$${claim.amount} of $${ticker}` : `$${claim.amount} USDC`;
+                setSuccess(`Successfully claimed ${claimLabel} from @${claim.sender_username || claim.sender}!`);
                 await fetchPendingClaims();
                 await fetchBalance(); // Refresh balance after claim
                 setTimeout(() => setSuccess(''), 5000);

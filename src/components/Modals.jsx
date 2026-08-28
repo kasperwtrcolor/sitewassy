@@ -584,8 +584,15 @@ export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) 
 
     if (!show || !payment) return null;
 
+    const isStock = payment.ticker && payment.ticker !== 'USDC';
+    const ticker = payment.ticker || 'USDC';
+    const chainName = payment.target_chain === 'robinhood' ? 'Robinhood Chain' : payment.target_chain === 'ink' ? 'Ink Network' : isStock ? 'Ink Network' : 'Solana';
+    const amountDisplay = isStock ? `$${payment.amount} of $${ticker}` : `$${payment.amount} USDC`;
+
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        `Just claimed $${payment.amount} USDC on X via @bot_wassy! 💸\n\nSocial payments are finally here on Solana. ◎\n\nClaim yours at wassypay.fun`
+        isStock
+            ? `Just claimed $${payment.amount} of $${ticker} on ${chainName} via @bot_wassy! 📈✨\n\nCross-chain tokenized stock payments on X.\n\nClaim yours at wassypay.fun`
+            : `Just claimed $${payment.amount} USDC on X via @bot_wassy! 💸\n\nSocial payments are finally here on Solana. ◎\n\nClaim yours at wassypay.fun`
     )}`;
 
     const generateReceipt = () => {
@@ -622,7 +629,7 @@ export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) 
         }
 
         // Draw border
-        ctx.strokeStyle = isLight ? '#000000' : '#31d7ff';
+        ctx.strokeStyle = isLight ? '#000000' : (isStock ? '#a855f7' : '#31d7ff');
         ctx.lineWidth = 10;
         ctx.strokeRect(20, 20, width - 40, height - 40);
 
@@ -654,28 +661,28 @@ export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) 
 
         // Amount Display
         ctx.fillStyle = isLight ? '#000000' : '#ffffff';
-        ctx.font = 'bold 80px Space Grotesk';
+        ctx.font = isStock ? 'bold 64px Space Grotesk' : 'bold 80px Space Grotesk';
         ctx.textAlign = 'center';
-        ctx.fillText(`$${payment.amount} USDC`, width / 2, boxY + 100);
+        ctx.fillText(amountDisplay, width / 2, boxY + 95);
 
         // Recipients
         ctx.textAlign = 'left';
         ctx.font = '20px JetBrains Mono';
-        ctx.fillStyle = isLight ? '#000000' : '#31d7ff';
+        ctx.fillStyle = isLight ? '#000000' : (isStock ? '#a855f7' : '#31d7ff');
         ctx.fillText(`FROM: @${payment.sender_username}`, 80, boxY + boxHeight + 50);
         ctx.fillText(`CLAIMED BY: @${xUsername}`, 80, boxY + boxHeight + 80);
 
         // Status
         ctx.textAlign = 'right';
-        ctx.font = 'bold 24px Space Grotesk';
+        ctx.font = 'bold 22px Space Grotesk';
         ctx.fillStyle = '#4ade80';
-        ctx.fillText('✓ CONFIRMED ON SOLANA', width - 80, boxY + boxHeight + 65);
+        ctx.fillText(`✓ CONFIRMED ON ${chainName.toUpperCase()}`, width - 80, boxY + boxHeight + 65);
 
         // Branding
         ctx.textAlign = 'center';
         ctx.font = '14px Space Grotesk';
         ctx.fillStyle = isLight ? '#999999' : '#444444';
-        ctx.fillText('BUILT ON SOLANA // WASSYPAY.FUN', width / 2, height - 45);
+        ctx.fillText('BUILT ON SOLANA & EVM // WASSYPAY.FUN', width / 2, height - 45);
 
         // Download
         const link = document.createElement('a');
@@ -718,8 +725,8 @@ export function ShareSuccessModal({ show, onClose, payment, xUsername, theme }) 
                 </h2>
 
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', lineHeight: 1.6 }}>
-                    You just claimed <span style={{ color: 'var(--success)', fontWeight: '700' }}>${payment.amount} USDC</span>.
-                    The funds are available in your wallet.
+                    You just claimed <span style={{ color: 'var(--success)', fontWeight: '700' }}>{amountDisplay}</span>{isStock ? ` on ${chainName}` : ''}.
+                    The funds are available in your {isStock ? 'EVM' : 'Solana'} wallet.
                 </p>
 
                 <div className="inset-panel" style={{ marginBottom: '30px', padding: '20px' }}>
