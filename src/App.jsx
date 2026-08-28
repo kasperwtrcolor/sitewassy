@@ -346,32 +346,8 @@ function WassyPayApp() {
             >
               <User size={16} /> PROFILE
             </button>
-            <button
-              onClick={() => setCurrentPage('games')}
-              className="btn"
-              style={{
-                padding: '10px 16px',
-                fontSize: '0.75rem',
-                background: currentPage === 'games' ? 'var(--text-primary)' : 'transparent',
-                color: currentPage === 'games' ? 'var(--bg-primary)' : 'var(--text-primary)',
-                gap: '8px'
-              }}
-            >
-              <Ticket size={16} /> GAMES
-            </button>
-            <button
-              onClick={() => setShowLeaderboard(true)}
-              className="btn"
-              style={{
-                padding: '10px 16px',
-                fontSize: '0.75rem',
-                background: showLeaderboard ? 'var(--text-primary)' : 'transparent',
-                color: showLeaderboard ? 'var(--bg-primary)' : 'var(--text-primary)',
-                gap: '8px'
-              }}
-            >
-              <Trophy size={16} color={showLeaderboard ? 'var(--bg-primary)' : 'var(--accent)'} /> LEADERS
-            </button>
+
+
             {isAdmin && (
               <button
                 onClick={() => setCurrentPage('admin')}
