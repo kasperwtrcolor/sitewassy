@@ -582,52 +582,6 @@ export function useFirestore(walletAddress, xUsername) {
     }, [currentLottery, fetchActiveLottery]);
 
 
-    // Fetch Vault History
-    const fetchVaultHistory = useCallback(async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/games/vault/history`);
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error fetching vault history:', error);
-            return { success: false, error: error.message };
-        }
-    }, [API_URL]);
-
-
-    // Reset Vault Cracker (admin only) - via backend
-    const resetVaultCracker = useCallback(async (prizeAmount, guessCost, targetCode) => {
-        try {
-            const response = await fetch(`${API_URL}/api/admin/games/vault/reset`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prizeAmount, guessCost, targetCode })
-            });
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error resetting vault cracker:', error);
-            return { success: false, error: error.message };
-        }
-    }, [API_URL]);
-
-
-    // End Vault Cracker (admin only) - via backend
-    const endVaultCracker = useCallback(async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/admin/games/vault/end`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error ending vault cracker:', error);
-            return { success: false, error: error.message };
-        }
-    }, [API_URL]);
-
-
     // Burn $WASSY from vault (admin only) - via backend
     const burnVaultWassy = useCallback(async (amount, adminWallet) => {
         try {
@@ -670,21 +624,7 @@ export function useFirestore(walletAddress, xUsername) {
         fetchLeaderboard,
         updateUsername,
         ACHIEVEMENTS,
-        // Enhanced Lottery
-        currentLottery,
-        lotteryHistory,
-        createLottery,
-        activateLottery,
-        fetchActiveLottery,
-        fetchLotteryHistory,
-        setLotteryPrize,
-        drawLotteryWinner,
-        claimLotteryPrize,
-        resetVaultCracker,
-        endVaultCracker,
-        fetchVaultHistory,
-        burnVaultWassy,
-        getVaultWassyBalance
+        
     };
 
 }

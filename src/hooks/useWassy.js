@@ -40,7 +40,6 @@ export function useWassy() {
     const [pendingClaims, setPendingClaims] = useState([]);
     const [pendingOutgoing, setPendingOutgoing] = useState([]); // Payments user sent that aren't claimed yet
     const [allUsers, setAllUsers] = useState([]);
-    const [lotteryParticipants, setLotteryParticipants] = useState([]);
     const [unclaimedPaymentsAdmin, setUnclaimedPaymentsAdmin] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -62,11 +61,9 @@ export function useWassy() {
         lotteryHistory,
         createLottery,
         activateLottery,
-        fetchActiveLottery,
         fetchLotteryHistory,
         setLotteryPrize,
         drawLotteryWinner,
-        claimLotteryPrize: firebaseClaimLotteryPrize,
         resetVaultCracker,
         endVaultCracker,
         fetchVaultHistory,
@@ -365,18 +362,7 @@ export function useWassy() {
         }
     }, []);
 
-    // Fetch dedicated lottery participants (all users with has_sent: true)
-    const fetchLotteryParticipants = useCallback(async () => {
-        try {
-            const response = await fetch(`${API}/api/lottery/participants`);
-            if (response.ok) {
-                const data = await response.json();
-                setLotteryParticipants(data.participants || []);
-            }
-        } catch (err) {
-            console.error('Error fetching lottery participants:', err);
-        }
-    }, []);
+    
 
     // Claim a payment
     const claimPayment = async (claim) => {
@@ -668,15 +654,7 @@ export function useWassy() {
         }
     };
 
-    // Wrap lottery claim to refresh balance
-    const claimLotteryPrize = useCallback(async (lotteryId) => {
-        const result = await firebaseClaimLotteryPrize(lotteryId);
-        if (result?.success) {
-            console.log('🔄 Refreshing balance after lottery claim...');
-            await fetchBalance();
-        }
-        return result;
-    }, [firebaseClaimLotteryPrize, fetchBalance]);
+    
 
     // Cancel a pending payment
     const handleCancelPayment = useCallback(async (tweetId) => {
@@ -723,13 +701,11 @@ export function useWassy() {
         fetchPayments();
         fetchPendingClaims();
         fetchAllUsers();
-        fetchLotteryParticipants();
 
         const interval = setInterval(() => {
             fetchPayments();
             fetchPendingClaims();
             fetchAllUsers();
-            fetchLotteryParticipants();
         }, 120000); // Every 2 minutes (was 30s)
 
         return () => clearInterval(interval);
@@ -775,7 +751,6 @@ export function useWassy() {
 
         // Admin
         allUsers,
-        lotteryParticipants,
 
         // Actions
         handleFundWallet,
@@ -796,11 +771,9 @@ export function useWassy() {
         lotteryHistory,
         createLottery,
         activateLottery,
-        fetchActiveLottery,
         fetchLotteryHistory,
         setLotteryPrize,
         drawLotteryWinner,
-        claimLotteryPrize,
         resetVaultCracker,
         endVaultCracker,
         fetchVaultHistory,

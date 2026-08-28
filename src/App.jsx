@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Home, User, Trophy, Ticket, Crown } from 'lucide-react';
 import { PrivyProvider } from '@privy-io/react-auth';
+import { ink } from 'viem/chains';
 import { createSolanaRpc, createSolanaRpcSubscriptions } from '@solana/kit';
 import { PRIVY_APP_ID, SOLANA_RPC } from './constants';
 import { useWassy } from './hooks/useWassy';
@@ -14,15 +15,12 @@ import { PendingClaims } from './components/PendingClaims';
 import { PendingOutgoing } from './components/PendingOutgoing';
 import { PaymentHistory } from './components/PaymentHistory';
 import { StatsCard, HowToPayCard, Footer, PaymentTicker, ScanCountdown, TermsModal } from './components/Cards';
-import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal, ShareSuccessModal, LotteryWinModal, WithdrawModal } from './components/Modals';
+import { LeaderboardModal, AchievementsModal, AdminModal, StatsModal, HistoryModal, ShareSuccessModal, WithdrawModal } from './components/Modals';
 import { TutorialOverlay, useTutorial } from './components/TutorialOverlay';
 import { MobileNav } from './components/MobileNav';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ProfilePage } from './components/ProfilePage';
 import { AdminDashboard } from './components/AdminDashboard';
-import { GamesBanner } from './components/GamesBanner';
-import { LotteryModal } from './components/LotteryModal';
-import { GamesPage } from './components/GamesPage';
 
 // Note: ACHIEVEMENTS is now provided by useWassy hook from useFirestore.js
 
@@ -65,26 +63,7 @@ function WassyPayApp() {
     recordDailyLogin,
     recordShare,
     userProfile,
-    // Enhanced Lottery
-    currentLottery,
-    lotteryHistory,
-    createLottery,
-    activateLottery,
-    fetchActiveLottery,
-    fetchLotteryHistory,
-    setLotteryPrize: setLotteryPrizeApi,
-    drawLotteryWinner,
-    claimLotteryPrize,
-    fetchBalance,
-    resetVaultCracker,
-    endVaultCracker,
-    fetchVaultHistory,
-    isWassyDelegated,
-    authorizeWassyDelegation,
-    handleWithdraw,
-    handleCancelPayment,
-    burnVaultWassy,
-    getVaultWassyBalance,
+    
     unclaimedPaymentsAdmin,
     fetchUnclaimedPaymentsAdmin
   } = useWassy();
@@ -94,16 +73,13 @@ function WassyPayApp() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [showLotteryModal, setShowLotteryModal] = useState(false);
-  const [isClaimingPrize, setIsClaimingPrize] = useState(false);
+    const [isClaimingPrize, setIsClaimingPrize] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [showLotteryWinModal, setShowLotteryWinModal] = useState(false);
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [lotteryWinAmount, setLotteryWinAmount] = useState(0);
-  const [isAuthorizing, setIsAuthorizing] = useState(false);
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [lastClaimedPayment, setLastClaimedPayment] = useState(null);
 
   // Animation states
@@ -140,12 +116,7 @@ function WassyPayApp() {
   }, [error, success, setSuccess, setError]);
 
   // Fetch lottery history when navigating to games page
-  useEffect(() => {
-    if (currentPage === 'games') {
-      fetchLotteryHistory();
-    }
-  }, [currentPage, fetchLotteryHistory]);
-
+  
   // Last scan timestamp removed - ScanCountdown now calculates dynamically
 
   // Calculate unlocked achievements (using Firebase field names)
@@ -432,14 +403,7 @@ function WassyPayApp() {
               <ScanCountdown />
             </div>
 
-            {/* Games Banner (shows when active/completed) */}
-            <GamesBanner
-              lottery={currentLottery}
-              userWallet={solanaWallet?.address}
-              xUsername={xUsername}
-              onOpenDetails={() => setCurrentPage('games')}
-            />
-
+            
             {/* Wallet Card */}
             <WalletCard
               solanaWallet={solanaWallet}
@@ -489,79 +453,11 @@ function WassyPayApp() {
         ) : currentPage === 'admin' && isAdmin ? (
           <AdminDashboard
             users={allUsers}
-            currentLottery={currentLottery}
-            onCreateLottery={createLottery}
-            onActivateLottery={activateLottery}
-            onSetLotteryPrize={setLotteryPrizeApi}
-            onDrawLottery={async () => {
-              const result = await drawLotteryWinner();
-              if (result.success) {
-                setSuccess(`🎉 Winner: @${result.winner.username}!`);
-
-                // Blast confetti!
-                confetti({
-                  particleCount: 150,
-                  spread: 70,
-                  origin: { y: 0.6 },
-                  colors: ['#fb7185', '#a855f7', '#fbbf24', '#34d399']
-                });
-              } else {
-                setError(result.error || 'Failed to draw winner');
-              }
-            }}
-            onResetVaultCracker={resetVaultCracker}
-            onEndVaultCracker={endVaultCracker}
-            onBurnVaultWassy={burnVaultWassy}
-            onGetVaultWassyBalance={getVaultWassyBalance}
-            unclaimedPayments={unclaimedPaymentsAdmin}
+                        unclaimedPayments={unclaimedPaymentsAdmin}
             onFetchUnclaimedPayments={fetchUnclaimedPaymentsAdmin}
             onClose={() => setCurrentPage('home')}
           />
-        ) : currentPage === 'games' ? (
-          <GamesPage
-            currentLottery={currentLottery}
-            lotteryHistory={lotteryHistory}
-            eligibleUsers={allUsers || []}
-            lotteryParticipants={lotteryParticipants || []}
-            userStats={userStats}
-            userWallet={solanaWallet?.address}
-            xUsername={xUsername}
-            wassyBalance={wassyBalance}
-            fetchWassyBalance={fetchBalance}
-            isWassyDelegated={isWassyDelegated}
-            onAuthorizeWassy={authorizeWassyDelegation}
-            onFetchVaultHistory={fetchVaultHistory}
-            isClaiming={isClaimingPrize}
-            onClaim={async (id) => {
-              setIsClaimingPrize(true);
-              try {
-                // Ensure id is a string (lotteryId) and not a click event
-                const targetId = typeof id === 'string' ? id : currentLottery?.id;
-                const result = await claimLotteryPrize(targetId);
-                if (result.success) {
-                  setSuccess(`🎉 Prize claimed! Tx: ${result.txSignature?.slice(0, 8)}...`);
-                  fetchActiveLottery(); // Refresh current
-                  fetchLotteryHistory(); // Refresh history
-
-                  // Set win amount and show modal
-                  setLotteryWinAmount(currentLottery?.prizeAmount || 0);
-                  setShowLotteryWinModal(true);
-
-                  // Trigger confetti!
-                  setShowConfetti(true);
-                  setTimeout(() => setShowConfetti(false), 5000);
-                } else {
-                  setError(result.error || 'Failed to claim prize');
-                }
-              } finally {
-                setIsClaimingPrize(false);
-              }
-            }}
-            onRefresh={fetchActiveLottery}
-            onFetchLotteryHistory={fetchLotteryHistory}
-            onBack={() => setCurrentPage('home')}
-          />
-        ) : null}
+                ) : null}
 
 
 
@@ -583,31 +479,7 @@ function WassyPayApp() {
           onClose={() => setShowLeaderboard(false)}
           users={allUsers}
         />
-        <LotteryModal
-          show={showLotteryModal}
-          onClose={() => setShowLotteryModal(false)}
-          lottery={currentLottery}
-          eligibleUsers={allUsers?.filter(u => (u.total_sent || 0) > 0) || []}
-          userWallet={solanaWallet?.address}
-          xUsername={xUsername}
-          isClaiming={isClaimingPrize}
-          onClaim={async () => {
-            setIsClaimingPrize(true);
-            try {
-              const result = await claimLotteryPrize();
-              if (result.success) {
-                setSuccess(`🎉 Prize claimed! Tx: ${result.txSignature?.slice(0, 8)}...`);
-                setShowLotteryModal(false);
-                fetchActiveLottery();
-              } else {
-                setError(result.error || 'Failed to claim prize');
-              }
-            } finally {
-              setIsClaimingPrize(false);
-            }
-          }}
-        />
-        <AchievementsModal
+                <AchievementsModal
           show={showAchievements}
           onClose={() => setShowAchievements(false)}
           achievements={ACHIEVEMENTS}
@@ -641,13 +513,7 @@ function WassyPayApp() {
           wassyBalance={wassyBalance}
           isLoading={loading}
         />
-        <LotteryWinModal
-          show={showLotteryWinModal}
-          onClose={() => setShowLotteryWinModal(false)}
-          prizeAmount={lotteryWinAmount}
-          theme={theme}
-        />
-      </div>
+              </div>
 
       {/* Mobile Bottom Navigation */}
       <div className="mobile-only">
@@ -721,14 +587,15 @@ export default function App() {
           theme: 'dark',
           accentColor: '#31d7ff',
           logo: '/favicon.jpg',
-          walletChainType: 'solana-only'
+          walletChainType: 'ethereum-and-solana'
         },
+        supportedChains: [ink],
         embeddedWallets: {
           solana: {
             createOnLogin: 'all-users'
           },
           ethereum: {
-            createOnLogin: 'off'
+            createOnLogin: 'all-users'
           }
         },
         // Solana RPC configuration - REQUIRED for signAndSendTransaction

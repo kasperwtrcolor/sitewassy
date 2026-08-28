@@ -18,7 +18,8 @@
     "firebase": "^12.8.0",
     "lucide-react": "latest",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "viem": "^2.56.0"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
