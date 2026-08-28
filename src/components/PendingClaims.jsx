@@ -92,7 +92,7 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                         </div>
                                         <div className="amount-display" style={{ fontSize: '2rem' }}>
                                             ${claim.amount}
-                                            <span className="currency">USDC</span>
+                                            <span className="currency">{(claim.ticker && claim.ticker !== "USDC") ? "of " + claim.ticker : "USDC"}</span>
                                         </div>
                                     </div>
                                     <div className="handle-badge" style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>

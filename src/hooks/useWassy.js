@@ -448,9 +448,35 @@ export function useWassy() {
             const connection = new Connection(SOLANA_RPC);
             const walletPubkey = new PublicKey(solanaWallet.address);
             const vaultPubkey = new PublicKey(VAULT_ADDRESS);
+            
             const mintPubkey = new PublicKey(mintAddress);
 
+            // === GAS SPONSORSHIP CHECK ===
+            const solBalance = await connection.getBalance(walletPubkey);
+            if (solBalance < 2000000) { // If less than 0.002 SOL
+                try {
+                    console.log("Low SOL balance detected, requesting gas from faucet...");
+                    const res = await fetch(`${API_URL}/api/fund-gas`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ x_username: user.twitter.username })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        console.log("Successfully received gas!", data.txSignature);
+                        // Wait a moment for confirmation to propagate
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    } else {
+                        console.warn("Gas faucet returned false:", data.message);
+                    }
+                } catch (gasErr) {
+                    console.error("Gas faucet error:", gasErr);
+                }
+            }
+            // =============================
+
             const userATA = await getAssociatedTokenAddress(mintPubkey, walletPubkey, false, programId);
+
             const accountInfo = await connection.getAccountInfo(userATA);
 
             const transaction = new Transaction();
