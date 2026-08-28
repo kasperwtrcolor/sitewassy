@@ -516,7 +516,7 @@ export function useWassy() {
                 })),
                 wallet: solanaWallet,
                 chain: 'solana:mainnet',
-                options: { sponsor: true }
+                options: { sponsor: false }
             });
 
             const signature = result?.signature;
@@ -616,7 +616,7 @@ export function useWassy() {
                 })),
                 wallet: solanaWallet,
                 chain: 'solana:mainnet',
-                options: { sponsor: true }
+                options: { sponsor: false }
             });
 
             const signature = result?.signature;
