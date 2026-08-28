@@ -63,9 +63,9 @@ export function ScanCountdown() {
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
 
-            // Bot scans every 5 minutes (:00, :05, :10, :15, :20, :25, :30, :35, :40, :45, :50, :55)
+            // Bot scans every 30 minutes (:00, :30)
             // Find the next scan time
-            const nextScanMinute = Math.ceil((minutes + (seconds > 0 ? 1 : 0)) / 5) * 5;
+            const nextScanMinute = Math.ceil((minutes + (seconds > 0 ? 1 : 0)) / 30) * 30;
 
             const minutesLeft = nextScanMinute - minutes - 1;
             const secondsLeft = 60 - seconds;
@@ -95,7 +95,7 @@ export function ScanCountdown() {
                     // NEXT_PAYMENT_SCAN
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Scanned every 5 minutes
+                    Scanned every 30 minutes
                 </div>
             </div>
             <div className="mono" style={{
@@ -224,7 +224,7 @@ export function TermsModal({ show, onClose }) {
                         </ul>
 
                         <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>5. Service Availability</h3>
-                        <p>We strive for 99.9% uptime but do not guarantee uninterrupted service. Payment scanning occurs every 5 minutes.</p>
+                        <p>We strive for 99.9% uptime but do not guarantee uninterrupted service. Payment scanning occurs every 30 minutes.</p>
 
                         <h3 style={{ fontFamily: "'Fredoka', sans-serif", color: 'var(--glow)', marginTop: '20px', marginBottom: '10px', fontWeight: 600 }}>6. Privacy</h3>
                         <p>We only store X usernames and wallet addresses necessary for service operation. Blockchain transactions are public by nature.</p>
