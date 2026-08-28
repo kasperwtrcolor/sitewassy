@@ -114,7 +114,7 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             Social Payments,<br />Simplified.
                         </h1>
                         <p className="text-secondary" style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', maxWidth: '550px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>
-                            Send USDC to anyone on X with a simple post. Fast, secure, and fully non-custodial. No hidden fees, no complicated onboarding.
+                            Send USDC and tokenized stocks ($NVDA, $AAPL, etc.) to anyone on X with a simple post. Fast, secure, cross-chain social payments. Claim on Solana, Ink, or Robinhood Chain.
                         </p>
 
                         <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '25px', borderRadius: '24px', margin: '0 auto 3rem', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
@@ -145,13 +145,13 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                             <div className="glass-panel" style={{ padding: '40px 25px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <div style={{ width: '48px', height: '48px', borderRadius: '24px', background: 'var(--accent)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '20px' }}>2</div>
                                 <h3 style={{ marginBottom: '12px', fontSize: '1.2rem', color: 'var(--text-primary)' }}>Post on X</h3>
-                                <p className="text-secondary" style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>Just mention @bot_wassy, the recipient, and the amount to authorize a payment instantly.</p>
+                                <p className="text-secondary" style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>Just mention @bot_wassy, the recipient, and the amount (e.g., $5 of $NVDA) to authorize a payment instantly.</p>
                             </div>
 
                             <div className="glass-panel" style={{ padding: '40px 25px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <div style={{ width: '48px', height: '48px', borderRadius: '24px', background: 'var(--accent)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '20px' }}>3</div>
                                 <h3 style={{ marginBottom: '12px', fontSize: '1.2rem', color: 'var(--text-primary)' }}>Instant Claim</h3>
-                                <p className="text-secondary" style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>The recipient clicks the link in our automated reply to securely claim their USDC directly to their wallet.</p>
+                                <p className="text-secondary" style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>The recipient clicks the link in our automated reply to securely claim their USDC or tokenized stock directly to their preferred chain.</p>
                             </div>
                         </div>
                     </div>
@@ -200,11 +200,11 @@ export function LoginScreen({ onLogin, theme, onToggleTheme }) {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1px', background: 'var(--border-subtle)', border: '1px solid var(--border-subtle)', borderRadius: '16px', overflow: 'hidden' }}>
                             <div className="glass-panel" style={{ borderRadius: 0, border: 'none', padding: '30px 20px', textAlign: 'center' }}>
                                 <p className="text-secondary" style={{ marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Settlement</p>
-                                <h3 style={{ color: 'var(--text-primary)', fontSize: '1.2rem' }}>Solana Mainnet</h3>
+                                <h3 style={{ color: 'var(--text-primary)', fontSize: '1.2rem' }}>Cross-Chain</h3>
                             </div>
                             <div className="glass-panel" style={{ borderRadius: 0, border: 'none', padding: '30px 20px', textAlign: 'center' }}>
                                 <p className="text-secondary" style={{ marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Currency</p>
-                                <h3 style={{ color: 'var(--accent)', fontSize: '1.2rem' }}>USDC</h3>
+                                <h3 style={{ color: 'var(--accent)', fontSize: '1.2rem' }}>USDC & Stocks</h3>
                             </div>
                             <div className="glass-panel" style={{ borderRadius: 0, border: 'none', padding: '30px 20px', textAlign: 'center' }}>
                                 <p className="text-secondary" style={{ marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Speed</p>
