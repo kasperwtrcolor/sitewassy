@@ -78,37 +78,77 @@ export function WalletCard({
                 
             {evmBalances && (
                 <div className="inset-panel" style={{ marginBottom: '25px' }}>
-                    <div className="mono label-subtle" style={{ marginBottom: '12px', fontSize: '0.6rem' }}>EVM TOKEN BALANCES</div>
-                        
-                        {(evmBalances.ink?.length === 0 && evmBalances.robinhood?.length === 0) && (
-                            <div className="text-muted" style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>
-                                0.0000 ETH (Ink)
-                            </div>
-                        )}
+                    <div className="mono label-subtle" style={{ marginBottom: '12px', fontSize: '0.6rem' }}>EVM TOKEN BALANCES (STOCKS & ETH)</div>
                         
                         {/* Ink Balances */}
-                        {evmBalances.ink?.length > 0 && (
-                            <div style={{ marginBottom: '15px' }}>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>Ink Network:</span>
-                                {evmBalances.ink.map((b, i) => (
-                                    <div key={i} className="mono" style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '4px' }}>
-                                        {b.amount.toFixed(4)} <span className="text-muted" style={{ fontSize: '0.75rem' }}>{b.ticker}</span>
-                                    </div>
-                                ))}
+                        <div style={{ marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>Ink Network</span>
+                                <span className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Chain ID: 57073</span>
                             </div>
-                        )}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
+                                {(evmBalances.ink || []).map((b, i) => {
+                                    const isPositive = b.amount > 0;
+                                    return (
+                                        <div key={i} className="mono" style={{
+                                            padding: '8px 10px',
+                                            background: isPositive ? 'rgba(49, 215, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                                            border: `1px solid ${isPositive ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                                            borderRadius: '8px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '2px'
+                                        }}>
+                                            <span style={{ fontSize: '0.65rem', color: isPositive ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
+                                                {b.type === 'token' ? `$${b.ticker}` : b.ticker}
+                                            </span>
+                                            <span style={{
+                                                fontSize: '0.85rem',
+                                                fontWeight: isPositive ? 700 : 400,
+                                                color: isPositive ? 'var(--text-primary)' : 'var(--text-secondary)'
+                                            }}>
+                                                {b.amount > 0 ? b.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : '0.0000'}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                         
                         {/* Robinhood Balances */}
-                        {evmBalances.robinhood?.length > 0 && (
-                            <div style={{ marginBottom: '5px' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#00C805', fontWeight: 600 }}>Robinhood Chain:</span>
-                                {evmBalances.robinhood.map((b, i) => (
-                                    <div key={i} className="mono" style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '4px' }}>
-                                        {b.amount.toFixed(4)} <span className="text-muted" style={{ fontSize: '0.75rem' }}>{b.ticker}</span>
-                                    </div>
-                                ))}
+                        <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                <span style={{ fontSize: '0.75rem', color: '#00C805', fontWeight: 600 }}>Robinhood Chain</span>
+                                <span className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Stock Tokens</span>
                             </div>
-                        )}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
+                                {(evmBalances.robinhood || []).map((b, i) => {
+                                    const isPositive = b.amount > 0;
+                                    return (
+                                        <div key={i} className="mono" style={{
+                                            padding: '8px 10px',
+                                            background: isPositive ? 'rgba(0, 200, 5, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                                            border: `1px solid ${isPositive ? '#00C805' : 'var(--border-subtle)'}`,
+                                            borderRadius: '8px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '2px'
+                                        }}>
+                                            <span style={{ fontSize: '0.65rem', color: isPositive ? '#00C805' : 'var(--text-muted)', fontWeight: 600 }}>
+                                                {b.type === 'token' ? `$${b.ticker}` : b.ticker}
+                                            </span>
+                                            <span style={{
+                                                fontSize: '0.85rem',
+                                                fontWeight: isPositive ? 700 : 400,
+                                                color: isPositive ? 'var(--text-primary)' : 'var(--text-secondary)'
+                                            }}>
+                                                {b.amount > 0 ? b.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : '0.0000'}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                 </div>
             )}
 
