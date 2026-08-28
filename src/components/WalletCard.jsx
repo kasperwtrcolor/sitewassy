@@ -74,10 +74,11 @@ export function WalletCard({
                     <span>{walletBalance.toFixed(4)} USDC_NATIVE</span>
                     <span style={{ color: needsGas ? 'var(--error)' : 'var(--text-muted)' }}>GAS: {solBalance.toFixed(4)} SOL</span>
                 </div>
+            </div>
                 
-                {evmBalances && (
-                    <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid var(--border-medium)' }}>
-                        <div className="mono label-subtle" style={{ marginBottom: '12px', fontSize: '0.6rem' }}>EVM TOKEN BALANCES</div>
+            {evmBalances && (
+                <div className="inset-panel" style={{ marginBottom: '25px' }}>
+                    <div className="mono label-subtle" style={{ marginBottom: '12px', fontSize: '0.6rem' }}>EVM TOKEN BALANCES</div>
                         
                         {(evmBalances.ink?.length === 0 && evmBalances.robinhood?.length === 0) && (
                             <div className="text-muted" style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>
@@ -108,9 +109,8 @@ export function WalletCard({
                                 ))}
                             </div>
                         )}
-                    </div>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* SOL Gas Warning */}
             {needsGas && (
