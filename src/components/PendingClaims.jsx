@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import '../index.css';
 import { EthosBadge } from './EthosBadge';
 
 export function PendingClaims({ claims, onClaim, loading }) {
     const hasClaims = claims && claims.length > 0;
-
+    const [chainModal, setChainModal] = useState(null); // holds the claim being chain-selected
 
     // Helper to determine sender fund status
     const getSenderStatus = (claim) => {
@@ -27,6 +28,24 @@ export function PendingClaims({ claims, onClaim, loading }) {
         return null;
     };
 
+    const handleClaimClick = (claim) => {
+        const ticker = claim.ticker || 'USDC';
+        if (ticker !== 'USDC') {
+            // Show chain selection modal for tokenized stocks
+            setChainModal(claim);
+        } else {
+            // USDC claims go directly (Solana only)
+            onClaim(claim);
+        }
+    };
+
+    const handleChainSelect = (chain) => {
+        if (chainModal) {
+            onClaim({ ...chainModal, target_chain: chain });
+            setChainModal(null);
+        }
+    };
+
     return (
         <div className="glass-panel claims-card" style={{
             padding: '30px',
@@ -43,6 +62,99 @@ export function PendingClaims({ claims, onClaim, loading }) {
                     {hasClaims ? claims.length : 0}
                 </span>
             </div>
+
+            {/* Chain Selection Modal */}
+            {chainModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.7)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999
+                }} onClick={() => setChainModal(null)}>
+                    <div style={{
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border-medium)',
+                        borderRadius: '20px',
+                        padding: '30px',
+                        maxWidth: '400px',
+                        width: '90%',
+                        textAlign: 'center'
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔗</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '6px' }}>
+                            Choose Your Chain
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
+                            Where do you want to receive your <span style={{ color: 'var(--accent)', fontWeight: 700 }}>${chainModal.amount} of {chainModal.ticker}</span>?
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <button
+                                onClick={() => handleChainSelect('ink')}
+                                className="btn"
+                                style={{
+                                    background: 'linear-gradient(135deg, #3A2A1C 0%, #5a3d2a 100%)',
+                                    color: '#F1EADA',
+                                    border: '1px solid #5a3d2a',
+                                    borderRadius: '14px',
+                                    padding: '16px 20px',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px'
+                                }}
+                            >
+                                <span style={{ fontSize: '1.2rem' }}>🖋️</span>
+                                Receive on Ink
+                                <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>(Quotrons wToken)</span>
+                            </button>
+                            <button
+                                onClick={() => handleChainSelect('robinhood')}
+                                className="btn"
+                                style={{
+                                    background: 'linear-gradient(135deg, #00C805 0%, #009904 100%)',
+                                    color: '#fff',
+                                    border: '1px solid #00C805',
+                                    borderRadius: '14px',
+                                    padding: '16px 20px',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px'
+                                }}
+                            >
+                                <span style={{ fontSize: '1.2rem' }}>🪶</span>
+                                Receive on Robinhood Chain
+                                <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>(Official RH Token)</span>
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={() => setChainModal(null)}
+                            style={{
+                                marginTop: '16px',
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--text-muted)',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem'
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {!hasClaims ? (
                 <div className="inset-panel" style={{ padding: '20px', textAlign: 'center' }}>
@@ -142,7 +254,7 @@ export function PendingClaims({ claims, onClaim, loading }) {
                                     )}
                                 </div>
                                 <button
-                                    onClick={() => onClaim(claim)}
+                                    onClick={() => handleClaimClick(claim)}
                                     disabled={loading || !canClaim || claim.status === 'cancelled'}
                                     className="btn btn-accent"
                                     style={{
@@ -177,4 +289,3 @@ export function PendingClaims({ claims, onClaim, loading }) {
         </div>
     );
 }
-

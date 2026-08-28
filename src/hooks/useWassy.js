@@ -393,7 +393,9 @@ export function useWassy() {
                 body: JSON.stringify({
                     tweet_id: claim.tweet_id,
                     wallet: solanaWallet.address,
-                    username: xUsername
+                    username: xUsername,
+                    target_chain: claim.target_chain || "ink",
+                    evm_wallet: claim.evm_wallet || null
                 })
             });
 
