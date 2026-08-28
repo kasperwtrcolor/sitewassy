@@ -6,6 +6,7 @@ export function WalletCard({
     onExportEvmWallet,
     walletBalance,
     wassyBalance,
+    evmBalances,
     solBalance,
     isDelegated,
     delegationAmount,

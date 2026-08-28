@@ -36,6 +36,7 @@ function WassyPayApp() {
     walletsReady,
     walletBalance,
     wassyBalance,
+    evmBalances,
     solBalance,
     hasEmbeddedWallet,
     xUsername,
@@ -395,6 +396,7 @@ function WassyPayApp() {
               evmWallet={evmAccount}
               walletBalance={walletBalance}
               wassyBalance={wassyBalance}
+              evmBalances={evmBalances}
               solBalance={solBalance}
               isDelegated={isDelegated}
               delegationAmount={delegationAmount}
