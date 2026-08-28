@@ -35,10 +35,9 @@ export function useWassy() {
 
     // State
     const [walletBalance, setWalletBalance] = useState(0);
-    const [wassyBalance,
-        evmBalances, setWassyBalance] = useState(0);
+    const [wassyBalance, setWassyBalance] = useState(0);
     const [solBalance, setSolBalance] = useState(0);
-    const [evmBalances, setEvmBalances] = useState({ ink: [], robinhood: [] }); // SOL balance for gas fees
+    const [evmBalances, setEvmBalances] = useState({ ink: [], robinhood: [] });
     const [isDelegated, setIsDelegated] = useState(false);
     const [delegationAmount, setDelegationAmount] = useState(1000);
     const [isWassyDelegated, setIsWassyDelegated] = useState(false);
