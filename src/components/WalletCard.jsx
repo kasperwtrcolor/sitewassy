@@ -75,9 +75,15 @@ export function WalletCard({
                     <span style={{ color: needsGas ? 'var(--error)' : 'var(--text-muted)' }}>GAS: {solBalance.toFixed(4)} SOL</span>
                 </div>
                 
-                {evmBalances && (evmBalances.ink?.length > 0 || evmBalances.robinhood?.length > 0) && (
+                {evmBalances && (
                     <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid var(--border-medium)' }}>
                         <div className="mono label-subtle" style={{ marginBottom: '12px', fontSize: '0.6rem' }}>EVM TOKEN BALANCES</div>
+                        
+                        {(evmBalances.ink?.length === 0 && evmBalances.robinhood?.length === 0) && (
+                            <div className="text-muted" style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>
+                                0.0000 ETH (Ink)
+                            </div>
+                        )}
                         
                         {/* Ink Balances */}
                         {evmBalances.ink?.length > 0 && (
