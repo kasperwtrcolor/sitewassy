@@ -2,6 +2,8 @@ import '../index.css';
 
 export function WalletCard({
     solanaWallet,
+    evmWallet,
+    onExportEvmWallet,
     walletBalance,
     wassyBalance,
     solBalance,
@@ -83,13 +85,24 @@ export function WalletCard({
                 </div>
             )}
 
+            
             {/* Address */}
             <div style={{ marginBottom: '25px' }}>
-                <div className="mono label-subtle" style={{ marginBottom: '8px', fontSize: '0.6rem' }}>WALLET_ID</div>
+                <div className="mono label-subtle" style={{ marginBottom: '8px', fontSize: '0.6rem' }}>SOLANA WALLET</div>
                 <div className="inset-panel" style={{ padding: '12px 15px', fontSize: '0.7rem' }}>
-                    <span className="mono text-glow" style={{ wordBreak: 'break-all' }}>{solanaWallet.address}</span>
+                    <span className="mono text-glow" style={{ wordBreak: 'break-all' }}>{solanaWallet?.address}</span>
                 </div>
+                
+                {evmWallet && (
+                    <>
+                        <div className="mono label-subtle" style={{ marginTop: '15px', marginBottom: '8px', fontSize: '0.6rem' }}>EVM WALLET (INK / BASE)</div>
+                        <div className="inset-panel" style={{ padding: '12px 15px', fontSize: '0.7rem' }}>
+                            <span className="mono text-glow" style={{ wordBreak: 'break-all' }}>{evmWallet.address}</span>
+                        </div>
+                    </>
+                )}
             </div>
+
 
             {/* Authorization Section */}
             {isDelegated ? (

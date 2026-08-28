@@ -54,6 +54,7 @@ function WassyPayApp() {
     lotteryParticipants,
     handleFundWallet,
     handleExportWallet,
+    handleExportEvmWallet,
     loading,
     error,
     success,
@@ -388,8 +389,9 @@ function WassyPayApp() {
 
             
             {/* Wallet Card */}
-            <WalletCard
+                        <WalletCard
               solanaWallet={solanaWallet}
+              evmWallet={evmAccount}
               walletBalance={walletBalance}
               wassyBalance={wassyBalance}
               solBalance={solBalance}
@@ -400,6 +402,7 @@ function WassyPayApp() {
               onAuthorize={handleAuthorize}
               onFundWallet={handleFundWallet}
               onExportWallet={solanaWallet ? handleExportWallet : null}
+              onExportEvmWallet={evmAccount ? () => handleExportEvmWallet(evmAccount.address) : null}
               onWithdraw={() => setShowWithdrawModal(true)}
               error={error}
               success={success}

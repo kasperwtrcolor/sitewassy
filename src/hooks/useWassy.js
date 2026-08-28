@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useExportWallet as useEvmExportWallet } from '@privy-io/react-auth';
 import { useWallets, useSignAndSendTransaction, useExportWallet, useFundWallet, useSolanaFundingPlugin } from '@privy-io/react-auth/solana';
 import { Connection, PublicKey, Transaction, ComputeBudgetProgram } from '@solana/web3.js';
 import { createApproveInstruction, getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountInstruction, createTransferInstruction } from '@solana/spl-token';
@@ -11,6 +11,7 @@ export function useWassy() {
     const { wallets, ready: walletsReady } = useWallets();
     const { signAndSendTransaction } = useSignAndSendTransaction();
     const { exportWallet } = useExportWallet();
+    const { exportWallet: exportEvmWallet } = useEvmExportWallet();
     const { fundWallet } = useFundWallet();
     // Mount Solana funding plugin (required for Solana funding flows)
     useSolanaFundingPlugin();
@@ -219,13 +220,18 @@ export function useWassy() {
 
         const registerUser = async () => {
             try {
+                // Find EVM embedded wallet from linkedAccounts
+                const evmAccount = user?.linkedAccounts?.find(a => a.type === 'wallet' && a.walletClientType === 'privy' && a.chainType === 'ethereum');
+                const evmAddress = evmAccount ? evmAccount.address : null;
+
                 const response = await fetch(`${API}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         x_username: xUsername,
                         x_user_id: user?.twitter?.subject || '',
-                        wallet_address: solanaWallet.address
+                        wallet_address: solanaWallet.address,
+                        evm_address: evmAddress
                     })
                 });
 
@@ -631,6 +637,16 @@ export function useWassy() {
     };
 
     // Export/manage wallet with error handling for mobile
+
+    const handleExportEvmWallet = async (address) => {
+        if (!exportEvmWallet) return;
+        try {
+            await exportEvmWallet({ address });
+        } catch (err) {
+            console.error('Export EVM wallet error:', err);
+        }
+    };
+
     const handleExportWallet = async () => {
         if (!exportWallet) {
             setError('Wallet management not available');
@@ -755,6 +771,7 @@ export function useWassy() {
         // Actions
         handleFundWallet,
         handleExportWallet,
+        handleExportEvmWallet,
         fetchBalance,
 
         // Firebase data
