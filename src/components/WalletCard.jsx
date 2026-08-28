@@ -74,6 +74,36 @@ export function WalletCard({
                     <span>{walletBalance.toFixed(4)} USDC_NATIVE</span>
                     <span style={{ color: needsGas ? 'var(--error)' : 'var(--text-muted)' }}>GAS: {solBalance.toFixed(4)} SOL</span>
                 </div>
+                
+                {evmBalances && (evmBalances.ink?.length > 0 || evmBalances.robinhood?.length > 0) && (
+                    <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid var(--border-medium)' }}>
+                        <div className="mono label-subtle" style={{ marginBottom: '12px', fontSize: '0.6rem' }}>EVM TOKEN BALANCES</div>
+                        
+                        {/* Ink Balances */}
+                        {evmBalances.ink?.length > 0 && (
+                            <div style={{ marginBottom: '15px' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>Ink Network:</span>
+                                {evmBalances.ink.map((b, i) => (
+                                    <div key={i} className="mono" style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '4px' }}>
+                                        {b.amount.toFixed(4)} <span className="text-muted" style={{ fontSize: '0.75rem' }}>{b.ticker}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {/* Robinhood Balances */}
+                        {evmBalances.robinhood?.length > 0 && (
+                            <div style={{ marginBottom: '5px' }}>
+                                <span style={{ fontSize: '0.75rem', color: '#00C805', fontWeight: 600 }}>Robinhood Chain:</span>
+                                {evmBalances.robinhood.map((b, i) => (
+                                    <div key={i} className="mono" style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '4px' }}>
+                                        {b.amount.toFixed(4)} <span className="text-muted" style={{ fontSize: '0.75rem' }}>{b.ticker}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* SOL Gas Warning */}
