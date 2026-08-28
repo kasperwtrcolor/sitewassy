@@ -83,7 +83,7 @@ export function WalletCard({
                         {/* Ink Balances */}
                         <div style={{ marginBottom: '16px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>Ink Network</span>
+                                <span style={{ fontSize: '0.75rem', color: '#a855f7', fontWeight: 600 }}>Ink Network</span>
                                 <span className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Chain ID: 57073</span>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
@@ -92,14 +92,14 @@ export function WalletCard({
                                     return (
                                         <div key={i} className="mono" style={{
                                             padding: '8px 10px',
-                                            background: isPositive ? 'rgba(49, 215, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)',
-                                            border: `1px solid ${isPositive ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                                            background: isPositive ? 'rgba(168, 85, 247, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                                            border: `1px solid ${isPositive ? '#a855f7' : 'var(--border-subtle)'}`,
                                             borderRadius: '8px',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             gap: '2px'
                                         }}>
-                                            <span style={{ fontSize: '0.65rem', color: isPositive ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
+                                            <span style={{ fontSize: '0.65rem', color: isPositive ? '#a855f7' : 'var(--text-muted)', fontWeight: 600 }}>
                                                 {b.type === 'token' ? `$${b.ticker}` : b.ticker}
                                             </span>
                                             <span style={{
