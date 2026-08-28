@@ -64,7 +64,14 @@ function WassyPayApp() {
     recordShare,
     userProfile,
     
+    
+    fetchBalance,
+    isWassyDelegated,
+    authorizeWassyDelegation,
+    handleWithdraw,
+    handleCancelPayment,
     unclaimedPaymentsAdmin,
+
     fetchUnclaimedPaymentsAdmin
   } = useWassy();
 

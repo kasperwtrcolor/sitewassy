@@ -399,20 +399,7 @@ export function useFirestore(walletAddress, xUsername) {
 
     const API_URL = import.meta.env.VITE_API_URL || 'https://wassy-pay-backend.onrender.com';
 
-    // Manual fetch fallback for active lottery
-    const fetchActiveLottery = useCallback(async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/lottery/active`);
-            const data = await response.json();
-
-            if (data.success) {
-                setCurrentLottery(data.lottery);
-            }
-        } catch (error) {
-            console.error('Error fetching active lottery:', error);
-        }
-    }, [API_URL]);
-
+    
     // Listens to active lottery changes via Firestore (with polling fallback)
     useEffect(() => {
         let unsubscribe = null;
@@ -598,18 +585,7 @@ export function useFirestore(walletAddress, xUsername) {
         }
     }, [API_URL]);
 
-    // Get vault $WASSY balance (admin only)
-    const getVaultWassyBalance = useCallback(async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/admin/vault-wassy-balance`);
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error fetching vault WASSY balance:', error);
-            return { success: false, balance: 0 };
-        }
-    }, [API_URL]);
-
+    
 
     return {
         userProfile,
