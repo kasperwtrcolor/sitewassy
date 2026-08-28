@@ -15,10 +15,15 @@ export function useWassy() {
     // Mount Solana funding plugin (required for Solana funding flows)
     useSolanaFundingPlugin();
 
+
     // Find embedded Solana wallet (created by Privy)
     const embeddedWallet = wallets?.find(w => w.walletClientType === 'privy');
     // Fall back to any available wallet for transactions
     const solanaWallet = embeddedWallet || wallets?.[0] || null;
+    
+    // Find EVM embedded wallet from linkedAccounts
+    const evmAccount = user?.linkedAccounts?.find(a => a.type === 'wallet' && a.walletClientType === 'privy' && a.chainType === 'ethereum');
+
     // Track if user has an embedded wallet (for export functionality)
     const hasEmbeddedWallet = !!embeddedWallet;
 
@@ -220,7 +225,7 @@ export function useWassy() {
         const registerUser = async () => {
             try {
                 // Find EVM embedded wallet from linkedAccounts
-                const evmAccount = user?.linkedAccounts?.find(a => a.type === 'wallet' && a.walletClientType === 'privy' && a.chainType === 'ethereum');
+                // evmAccount already defined at the top
                 const evmAddress = evmAccount ? evmAccount.address : null;
 
                 const response = await fetch(`${API}/api/login`, {
