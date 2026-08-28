@@ -211,7 +211,22 @@ export function useWassy() {
                 console.error('Error fetching WASSY balance:', err);
             }
         }
-    }, [solanaWallet?.address]);
+        
+        // Fetch EVM Balances if they have an EVM account
+        if (evmAccount && evmAccount.address) {
+            try {
+                const response = await fetch(`${API}/api/evm-balance/${evmAccount.address}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        setEvmBalances(data.balances);
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching EVM balance:", err);
+            }
+        }
+    }, [solanaWallet?.address, evmAccount?.address]);
 
     // Fetch balance on wallet change (no polling - refresh manually after transactions)
     useEffect(() => {
