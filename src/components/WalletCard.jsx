@@ -189,21 +189,31 @@ export function WalletCard({
             )}
 
             {/* Action Buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '20px' }}>
-                <button onClick={onFundWallet} className="btn btn-accent" style={{ borderRadius: '12px' }}>
-                    FUND
-                </button>
-                <button onClick={onWithdraw} className="btn btn-primary" style={{ borderRadius: '12px' }}>
-                    WITHDRAW
-                </button>
-            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '20px' }}>
+                
+                <div className="mono label-subtle" style={{ fontSize: '0.6rem', textAlign: 'center', marginTop: '10px' }}>SOLANA ACTIONS</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <button onClick={onFundWallet} className="btn btn-accent" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>
+                        FUND SOLANA
+                    </button>
+                    <button onClick={onWithdraw} className="btn btn-primary" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>
+                        WITHDRAW SOLANA
+                    </button>
+                </div>
+                {onExportWallet && (
+                    <button onClick={onExportWallet} className="btn" style={{ width: '100%', background: 'transparent', border: '1px solid var(--border-medium)', borderRadius: '12px', fontSize: '0.75rem' }}>
+                        MANAGE SOLANA KEY
+                    </button>
+                )}
 
-            {onExportWallet && (
-                <button onClick={onExportWallet} className="btn" style={{ width: '100%', marginTop: '12px', background: 'transparent', border: '1px solid var(--border-medium)', borderRadius: '12px', fontSize: '0.75rem' }}>
-                    MANAGE WALLET
-                </button>
-            )}
+                <div className="mono label-subtle" style={{ fontSize: '0.6rem', textAlign: 'center', marginTop: '15px' }}>EVM ACTIONS (INK)</div>
+                {onExportEvmWallet && (
+                    <button onClick={onExportEvmWallet} className="btn" style={{ width: '100%', background: 'transparent', border: '1px solid var(--border-medium)', borderRadius: '12px', fontSize: '0.75rem' }}>
+                        EXPORT EVM KEY
+                    </button>
+                )}
+                
+            </div>
         </div>
     );
 }
-
