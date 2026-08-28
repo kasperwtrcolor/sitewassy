@@ -735,6 +735,7 @@ export function useWassy() {
 
         // Wallet state
         solanaWallet,
+        evmAccount,
         walletsReady,
         walletBalance,
         solBalance,

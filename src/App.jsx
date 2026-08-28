@@ -32,6 +32,7 @@ function WassyPayApp() {
     login,
     logout,
     solanaWallet,
+    evmAccount,
     walletsReady,
     walletBalance,
     wassyBalance,
